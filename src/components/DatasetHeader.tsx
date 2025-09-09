@@ -5,11 +5,23 @@ import {
   ExternalLink,
   LogIn,
   LogOut,
+  Trash2, // Иконка удаления
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // useNavigate для редиректа
 import { useAuth } from "@/hooks/useAuth";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // Компоненты для подтверждения
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +32,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dataset } from "@/types";
+import { toast } from "sonner"; // Для уведомлений
+import axios from "axios"; // Для отправки запроса
 
 interface DatasetHeaderProps {
   dataset?: Dataset;
@@ -27,6 +41,27 @@ interface DatasetHeaderProps {
 
 export function DatasetHeader({ dataset }: DatasetHeaderProps) {
   const { user, logout } = useAuth();
+  const navigate = useNavigate(); // Инициализируем хук
+
+  const isOwner = user && dataset && user.id === dataset.user.id;
+  const isAdmin = user && user.role === 'Administrator';
+  const canDelete = isOwner || isAdmin;
+
+  const handleDelete = async () => {
+    if (!dataset) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/datasets/${dataset.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success(`Dataset "${dataset.name}" has been deleted.`);
+      navigate('/'); // Редирект на главную страницу
+    } catch (error) {
+      toast.error('Failed to delete dataset.');
+      console.error(error);
+    }
+  };
 
   return (
     <header className="border-b border-border bg-card">
@@ -134,6 +169,33 @@ export function DatasetHeader({ dataset }: DatasetHeaderProps) {
                   <ExternalLink className="h-4 w-4" />
                   Dataset card
                 </Button>
+
+                {/* --- КНОПКА УДАЛЕНИЯ --- */}
+                {canDelete && (
+                   <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" className="gap-2">
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete the dataset
+                          <strong> {dataset.name}</strong> and all its associated images.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>
+                          Continue
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </>
             )}
           </div>
