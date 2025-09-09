@@ -86,3 +86,10 @@ This section provides a chronological summary of the work completed in each deve
     *   Implemented a UI for uploading CSV files on the `DatasetPage`, visible only to the dataset owner or an Administrator.
     *   Implemented the logic to fetch and display dataset images in a table on the `DatasetPage`, including a pagination component to navigate through large sets of images.
     *   Updated the `DatasetListItem` component to make the entire card a clickable link to the dataset's detail page.
+
+### Session 3: Data Integrity & Management Improvements
+
+*   **Objective**: Enhance data lifecycle management to ensure integrity and provide a smoother user experience for updating datasets.
+*   **Backend Implementation**:
+    *   **Cascading Deletes**: Implemented `onDelete: 'CASCADE'` for the relationship between `Dataset` and `DatasetImage`. This ensures that when a dataset is deleted, all its associated image records are automatically and efficiently removed from the database, preventing orphaned data.
+    *   **Dataset Update (Overwrite) Logic**: Modified the `POST /api/datasets/:id/upload` endpoint. Instead of appending data, the endpoint now first deletes all existing image records for the specified dataset before inserting the new records from the uploaded CSV file. This changes the upload behavior from "append" to "overwrite," allowing users to easily update their datasets by uploading a new version of their CSV.

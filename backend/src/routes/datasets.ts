@@ -194,6 +194,10 @@ router.post('/:id/upload', [checkJwt, upload.single('file')], async (req, res) =
         if (role !== UserRole.ADMIN && dataset.userId !== userId) {
             return res.status(403).send('Forbidden');
         }
+
+        // --- Overwrite Logic ---
+        // Delete all existing images for this dataset before uploading new ones.
+        await datasetImageRepository.delete({ dataset: { id: dataset.id } });
         
         const images: DatasetImage[] = [];
         let row_number = 0;
