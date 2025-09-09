@@ -1,6 +1,7 @@
 export interface User {
     id: string;
     username: string;
+    email: string; // This was missing and caused the crash
 }
 
 export interface Dataset {
