@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from './User';
+import { DatasetImage } from './DatasetImage';
 
 @Entity('datasets')
 export class Dataset {
@@ -15,8 +16,15 @@ export class Dataset {
   @Column({ default: true })
   isPublic!: boolean;
 
-  @ManyToOne(() => User, { eager: true })
-  owner!: User;
+  @ManyToOne(() => User, (user) => user.datasets)
+  @JoinColumn({ name: "userId" })
+  user: User;
+
+  @Column()
+  userId: string;
+
+  @OneToMany(() => DatasetImage, (image) => image.dataset)
+  images: DatasetImage[];
 
   @CreateDateColumn()
   createdAt!: Date;

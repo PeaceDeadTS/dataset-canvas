@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { Dataset } from './Dataset';
 
 export enum UserRole {
   ADMIN = 'Administrator',
@@ -11,6 +12,9 @@ export enum UserRole {
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  @OneToMany(() => Dataset, (dataset) => dataset.user)
+  datasets: Dataset[];
 
   @Column({ unique: true })
   username!: string;

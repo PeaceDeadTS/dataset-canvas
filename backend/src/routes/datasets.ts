@@ -4,8 +4,13 @@ import { Dataset } from '../entity/Dataset';
 import { User, UserRole } from '../entity/User';
 import { checkJwt, checkJwtOptional } from '../middleware/checkJwt';
 import { Brackets } from 'typeorm';
+import * as multer from 'multer';
+import * as csv from 'csv-parser';
+import { Readable } from 'stream';
+import { DatasetImage } from '../entity/DatasetImage';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Create a new dataset
 router.post('/', [checkJwt], async (req, res) => {
@@ -30,7 +35,7 @@ router.post('/', [checkJwt], async (req, res) => {
         dataset.name = name;
         dataset.description = description;
         dataset.isPublic = isPublic ?? true;
-        dataset.owner = owner;
+        dataset.user = owner;
 
         await datasetRepository.save(dataset);
 
@@ -47,7 +52,8 @@ router.get('/', [checkJwtOptional], async (req, res) => {
 
     try {
         const query = datasetRepository.createQueryBuilder('dataset')
-            .leftJoinAndSelect('dataset.owner', 'owner')
+            .leftJoinAndSelect('dataset.user', 'user')
+            .loadRelationCountAndMap('dataset.imageCount', 'dataset.images')
             .where('dataset.isPublic = :isPublic', { isPublic: true });
 
         if (userId) {
@@ -58,7 +64,7 @@ router.get('/', [checkJwtOptional], async (req, res) => {
                 query.orWhere(
                     new Brackets(qb => {
                         qb.where('dataset.isPublic = :isPrivate', { isPrivate: false })
-                          .andWhere('dataset.owner.id = :userId', { userId });
+                          .andWhere('dataset.userId = :userId', { userId });
                     })
                 );
             }
@@ -78,14 +84,18 @@ router.get('/:id', [checkJwtOptional], async (req, res) => {
     const datasetRepository = getRepository(Dataset);
 
     try {
-        const dataset = await datasetRepository.findOne(id);
+        const dataset = await datasetRepository.createQueryBuilder('dataset')
+            .leftJoinAndSelect('dataset.user', 'user')
+            .loadRelationCountAndMap('dataset.imageCount', 'dataset.images')
+            .where("dataset.id = :id", { id })
+            .getOne();
 
         if (!dataset) {
             return res.status(404).send('Dataset not found');
         }
 
         if (!dataset.isPublic) {
-            if (!userId || (role !== UserRole.ADMIN && dataset.owner.id !== userId)) {
+            if (!userId || (role !== UserRole.ADMIN && dataset.userId !== userId)) {
                 return res.status(403).send('Forbidden');
             }
         }
@@ -110,9 +120,9 @@ router.put('/:id', [checkJwt], async (req, res) => {
             return res.status(404).send('Dataset not found');
         }
 
-        if (role !== UserRole.ADMIN && dataset.owner.id !== userId) {
+        if (role !== UserRole.ADMIN && dataset.userId !== userId) {
             // Developers can only edit their own datasets
-            if (role === UserRole.DEVELOPER && dataset.owner.id !== userId) {
+            if (role === UserRole.DEVELOPER && dataset.userId !== userId) {
                 return res.status(403).send('Forbidden: Developers can only edit their own datasets');
             }
             // Other roles are implicitly forbidden if they are not the owner or an admin
@@ -145,8 +155,8 @@ router.delete('/:id', [checkJwt], async (req, res) => {
             return res.status(404).send('Dataset not found');
         }
 
-        if (role !== UserRole.ADMIN && dataset.owner.id !== userId) {
-             if (role === UserRole.DEVELOPER && dataset.owner.id !== userId) {
+        if (role !== UserRole.ADMIN && dataset.userId !== userId) {
+             if (role === UserRole.DEVELOPER && dataset.userId !== userId) {
                 return res.status(403).send('Forbidden: Developers can only delete their own datasets');
             }
              if (role !== UserRole.DEVELOPER) {
@@ -160,5 +170,114 @@ router.delete('/:id', [checkJwt], async (req, res) => {
         res.status(500).send('Error deleting dataset');
     }
 });
+
+// Upload images to a dataset
+router.post('/:id/upload', [checkJwt, upload.single('file')], async (req, res) => {
+    const { id } = req.params;
+    const { userId, role } = res.locals.jwtPayload;
+
+    if (!req.file) {
+        return res.status(400).send('No file uploaded.');
+    }
+
+    const datasetRepository = getRepository(Dataset);
+    const datasetImageRepository = getRepository(DatasetImage);
+
+    try {
+        const dataset = await datasetRepository.findOne(id);
+
+        if (!dataset) {
+            return res.status(404).send('Dataset not found');
+        }
+
+        // Authorization check
+        if (role !== UserRole.ADMIN && dataset.userId !== userId) {
+            return res.status(403).send('Forbidden');
+        }
+        
+        const images: DatasetImage[] = [];
+        let row_number = 0;
+
+        const readable = new Readable();
+        readable._read = () => {}; // _read is required but you can noop it
+        readable.push(req.file.buffer);
+        readable.push(null);
+
+        readable.pipe(csv())
+            .on('data', (data) => {
+                const { filename, url, width, height, prompt } = data;
+                if(filename && url && width && height && prompt) {
+                    const newImage = new DatasetImage();
+                    newImage.filename = filename;
+                    newImage.url = url;
+                    newImage.width = parseInt(width, 10);
+                    newImage.height = parseInt(height, 10);
+                    newImage.prompt = prompt;
+                    newImage.row_number = ++row_number;
+                    newImage.dataset = dataset;
+                    images.push(newImage);
+                }
+            })
+            .on('end', async () => {
+                try {
+                    await datasetImageRepository.save(images);
+                    res.status(201).send({ message: `Successfully uploaded ${images.length} images to dataset ${dataset.name}` });
+                } catch (dbError) {
+                    res.status(500).send('Error saving images to database');
+                }
+            })
+            .on('error', (err) => {
+                 res.status(500).send('Error processing CSV file');
+            });
+            
+    } catch (error) {
+        res.status(500).send('Error processing upload');
+    }
+});
+
+// Get images for a dataset with pagination
+router.get('/:id/images', [checkJwtOptional], async (req, res) => {
+    const { id } = req.params;
+    const { userId, role } = res.locals.jwtPayload || {};
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 50;
+    const skip = (page - 1) * limit;
+
+    const datasetRepository = getRepository(Dataset);
+    const datasetImageRepository = getRepository(DatasetImage);
+
+    try {
+        const dataset = await datasetRepository.findOne(id);
+
+        if (!dataset) {
+            return res.status(404).send('Dataset not found');
+        }
+
+        // Authorization check for private datasets
+        if (!dataset.isPublic) {
+            if (!userId || (role !== UserRole.ADMIN && dataset.userId !== userId)) {
+                return res.status(403).send('Forbidden');
+            }
+        }
+
+        const [images, total] = await datasetImageRepository.findAndCount({
+            where: { dataset: { id } },
+            order: { row_number: 'ASC' },
+            skip,
+            take: limit,
+        });
+
+        res.json({
+            data: images,
+            total,
+            page,
+            last_page: Math.ceil(total / limit)
+        });
+
+    } catch (error) {
+        res.status(500).send('Error fetching dataset images');
+    }
+});
+
 
 export default router;

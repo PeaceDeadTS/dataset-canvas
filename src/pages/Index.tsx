@@ -3,9 +3,13 @@ import axios from 'axios';
 import { DatasetHeader } from "@/components/DatasetHeader";
 import { DatasetListItem } from "@/components/DatasetListItem";
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
+import { CreateDatasetDialog } from '@/components/CreateDatasetDialog';
 
 // Re-using the types from DatasetListItem
-interface DatasetOwner {
+interface User {
     id: string;
     username: string;
 }
@@ -15,16 +19,22 @@ interface Dataset {
     name: string;
     description?: string;
     isPublic: boolean;
-    owner: DatasetOwner;
+    user: User;
     createdAt: string;
+    imageCount?: number;
 }
 
 const API_URL = 'http://localhost:5000/api';
 
 const Index = () => {
+    const { user } = useAuth();
     const [datasets, setDatasets] = useState<Dataset[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const handleDatasetCreated = (newDataset: Dataset) => {
+        setDatasets(prevDatasets => [newDataset, ...prevDatasets]);
+    };
 
     useEffect(() => {
         const fetchDatasets = async () => {
@@ -49,7 +59,12 @@ const Index = () => {
             <DatasetHeader />
             
             <main className="max-w-7xl mx-auto px-6 py-8">
-                <h1 className="text-3xl font-bold mb-6">Public Datasets</h1>
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-3xl font-bold">Public Datasets</h1>
+                    {user && (user.role === 'Administrator' || user.role === 'Developer') && (
+                       <CreateDatasetDialog onDatasetCreated={handleDatasetCreated} />
+                    )}
+                </div>
                 
                 {loading && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
