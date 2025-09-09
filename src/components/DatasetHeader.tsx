@@ -1,6 +1,7 @@
-import { Heart, UserPlus, Download, ExternalLink } from "lucide-react";
+import { Heart, UserPlus, Download, ExternalLink, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 export function DatasetHeader() {
   return (
@@ -30,6 +31,12 @@ export function DatasetHeader() {
           </div>
           
           <div className="flex items-center space-x-3">
+            <Link to="/auth">
+                <Button variant="outline" size="sm" className="gap-2">
+                    <LogIn className="h-4 w-4" />
+                    Login / Register
+                </Button>
+            </Link>
             <Button variant="outline" size="sm" className="gap-2">
               <Heart className="h-4 w-4" />
               Like
