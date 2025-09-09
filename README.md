@@ -1,73 +1,99 @@
-# Welcome to your Lovable project
+# Dataset Canvas
 
-## Project info
+Dataset Canvas is a web application inspired by Hugging Face's Data Studio, designed for easier dataset management and visualization. This project provides a custom solution for managing datasets, complete with user authentication, role-based access control, and a clean user interface.
 
-**URL**: https://lovable.dev/projects/bbcfdfe1-b63f-492e-8a7e-0807236db9b9
+## Features (Current)
 
-## How can I edit this code?
+- **User Authentication**: Secure user registration and login functionality.
+- **Role-Based Access Control**:
+  - **Administrator**: Full control over all datasets and users.
+  - **Developer**: Can create new datasets and manage their own, with read-only access to others.
+  - **User**: Can view and download public datasets.
+- **Dataset Management**:
+  - Create, read, update, and delete datasets (CRUD).
+  - Support for **public** and **private** datasets. Private datasets are only visible to their owner and administrators.
+- **Backend API**: A robust backend built with Node.js, Express, and TypeORM.
+- **Modern Frontend**: A responsive frontend built with React, Vite, TypeScript, and shadcn/ui.
 
-There are several ways of editing your application.
+## Getting Started
 
-**Use Lovable**
+Follow these instructions to get a local copy up and running for development and testing purposes.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/bbcfdfe1-b63f-492e-8a7e-0807236db9b9) and start prompting.
+### Prerequisites
 
-Changes made via Lovable will be committed automatically to this repo.
+- [Node.js](https://nodejs.org/) (v18 or newer recommended)
+- [npm](https://www.npmjs.com/)
+- A running [MariaDB](https://mariadb.org/) or MySQL database instance.
 
-**Use your preferred IDE**
+### Installation & Setup
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1.  **Clone the repository:**
+    ```sh
+    git clone <YOUR_GIT_REPOSITORY_URL>
+    cd dataset-canvas
+    ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+2.  **Setup the Backend:**
+    ```sh
+    # Navigate to the backend directory
+    cd backend
 
-Follow these steps:
+    # Install dependencies
+    npm install
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+    # Create an environment file
+    # You need to create a .env file in the `backend` directory.
+    # Copy the example below and fill in your database credentials.
+    ```
+    Create a file named `.env` in the `backend` folder with the following content:
+    ```env
+    DB_HOST=localhost
+    DB_PORT=3306
+    DB_USER=your_username
+    DB_PASSWORD=your_password
+    DB_DATABASE=your_database_name
+    JWT_SECRET=your_super_secret_jwt_key
+    ```
+    - The first user to register will automatically be granted the `Administrator` role.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+3.  **Setup the Frontend:**
+    ```sh
+    # Navigate back to the root directory
+    cd ..
 
-# Step 3: Install the necessary dependencies.
-npm i
+    # Install dependencies
+    npm install
+    ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+### Running the Application
 
-**Edit a file directly in GitHub**
+You need to run both the backend and frontend servers simultaneously in separate terminals.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1.  **Start the Backend Server:**
+    ```sh
+    # In the `backend` directory
+    npm start
+    ```
+    The backend server will start on `http://localhost:5000` by default.
 
-**Use GitHub Codespaces**
+2.  **Start the Frontend Development Server:**
+    ```sh
+    # In the root project directory
+    npm run dev
+    ```
+    The frontend application will be available at `http://localhost:5173` (or another port if 5173 is busy).
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Technology Stack
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/bbcfdfe1-b63f-492e-8a7e-0807236db9b9) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- **Backend**:
+  - Node.js
+  - Express.js
+  - TypeScript
+  - TypeORM (for MariaDB/MySQL)
+  - JWT for authentication
+- **Frontend**:
+  - Vite
+  - React
+  - TypeScript
+  - Tailwind CSS
+  - shadcn/ui
