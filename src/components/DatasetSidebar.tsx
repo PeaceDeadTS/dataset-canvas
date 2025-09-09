@@ -14,19 +14,19 @@ export function DatasetSidebar() {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">Rows:</span>
-              <div className="font-medium">3,354</div>
+              <div className="font-medium">{"{{num_rows}}"}</div>
             </div>
             <div>
               <span className="text-muted-foreground">Size:</span>
-              <div className="font-medium">4.2 GB</div>
+              <div className="font-medium">{"{{file_size}}"}</div>
             </div>
             <div>
               <span className="text-muted-foreground">Format:</span>
-              <div className="font-medium">Parquet</div>
+              <div className="font-medium">{"{{format}}"}</div>
             </div>
             <div>
               <span className="text-muted-foreground">License:</span>
-              <div className="font-medium">Apache 2.0</div>
+              <div className="font-medium">{"{{license}}"}</div>
             </div>
           </div>
           
@@ -50,15 +50,15 @@ export function DatasetSidebar() {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Avg. prompt length:</span>
-              <span className="font-medium">47 chars</span>
+              <span className="font-medium">{"{{avg_prompt_length}}"} chars</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Image resolution:</span>
-              <span className="font-medium">512x512</span>
+              <span className="font-medium">{"{{image_resolution}}"}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Data splits:</span>
-              <span className="font-medium">train</span>
+              <span className="font-medium">{"{{data_splits}}"}</span>
             </div>
           </div>
         </CardContent>
@@ -75,7 +75,7 @@ export function DatasetSidebar() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Fine-tuned models</span>
-              <Badge variant="secondary">12</Badge>
+              <Badge variant="secondary">{"{{models_count}}"}</Badge>
             </div>
             <Button variant="outline" size="sm" className="w-full gap-2">
               <ExternalLink className="h-4 w-4" />

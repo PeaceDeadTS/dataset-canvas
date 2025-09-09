@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ExternalLink, Copy, Eye } from "lucide-react";
+import { ExternalLink, Copy, Eye, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -29,6 +29,9 @@ export function DataTable({ data }: DataTableProps) {
   };
 
   const truncateText = (text: string, maxLength: number = 80) => {
+    if (text === "{{prompt_text}}") {
+      return "{{prompt_text}}...";
+    }
     return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
   };
 
@@ -70,14 +73,14 @@ export function DataTable({ data }: DataTableProps) {
                 >
                   {/* Row number */}
                   <td className="py-3 px-4 text-sm text-muted-foreground">
-                    {row.id.toLocaleString()}
+                    {"{{row_number}}"}
                   </td>
                   
                   {/* Image key */}
                   <td className="py-3 px-4">
                     <div className="flex items-center space-x-2">
                       <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
-                        {row.img_key}
+                        {"{{img_key}}"}
                       </code>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -99,14 +102,13 @@ export function DataTable({ data }: DataTableProps) {
                   <td className="py-3 px-4">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-muted-foreground truncate max-w-32">
-                        {new URL(row.url).hostname}
+                        {"{{url}}"}
                       </span>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => window.open(row.url, "_blank")}
                             className="h-6 w-6 p-0"
                           >
                             <ExternalLink className="h-3 w-3" />
@@ -117,36 +119,32 @@ export function DataTable({ data }: DataTableProps) {
                     </div>
                   </td>
                   
-                  {/* Thumbnail */}
+                  {/* Thumbnail placeholder */}
                   <td className="py-3 px-4">
                     <div className="relative group">
-                      <img
-                        src={row.thumbnail}
-                        alt="Dataset thumbnail"
-                        className="w-12 h-12 object-cover rounded border border-border"
-                      />
+                      <div className="w-12 h-12 bg-muted border border-border rounded flex items-center justify-center">
+                        <Image className="h-6 w-6 text-muted-foreground" />
+                      </div>
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
                         <Eye className="h-4 w-4 text-white" />
                       </div>
                     </div>
                   </td>
                   
-                  {/* Prompt */}
+                  {/* Prompt placeholder */}
                   <td className="py-3 px-4">
                     <div className="space-y-2">
                       <p className="text-sm text-foreground leading-relaxed">
-                        {expandedPrompts.has(row.id) ? row.prompt : truncateText(row.prompt)}
+                        {expandedPrompts.has(row.id) ? "{{prompt_text}}" : "{{prompt_text}}..."}
                       </p>
-                      {row.prompt.length > 80 && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => togglePrompt(row.id)}
-                          className="h-6 text-xs text-primary hover:text-primary-hover"
-                        >
-                          {expandedPrompts.has(row.id) ? "Show less" : "Show more"}
-                        </Button>
-                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => togglePrompt(row.id)}
+                        className="h-6 text-xs text-primary hover:text-primary-hover"
+                      >
+                        {expandedPrompts.has(row.id) ? "Show less" : "Show more"}
+                      </Button>
                     </div>
                   </td>
                 </tr>

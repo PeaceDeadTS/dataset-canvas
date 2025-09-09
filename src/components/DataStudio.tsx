@@ -6,49 +6,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "./DataTable";
 
-// Mock data structure
-const generateMockData = () => {
-  const mockEntries = [
-    {
-      id: 1468,
-      img_key: "d2f333683efdea33acc15f41c2024e05",
-      url: "https://i.pinimg.com/736x/f1/43a/46c/f143a46ce6c.jpg",
-      prompt: "a realistic photo of a sad old man with a beard and a turban",
-      thumbnail: "/api/placeholder/64/64"
-    },
-    {
-      id: 2738,
-      img_key: "ccd217a3140c09c1fec13e4412c05ef",
-      url: "https://i.imgur.com/GnBTZw.webp",
-      prompt: "a woman with blonde hair, wearing a light pink lace dress, she has a flower crown, she is wearing a pearl necklace, she has a delicate face, she has a soft and gentle look, she...",
-      thumbnail: "/api/placeholder/64/64"
-    },
-    {
-      id: 178,
-      img_key: "4b99182f8407826667780fcf51dc5685",
-      url: "https://pinterest.com/pin/480196110734552117/",
-      prompt: "interior of restaurant in Dubai, luxury, elegant, modern, arabic style, warm lighting, realistic",
-      thumbnail: "/api/placeholder/64/64"
-    },
-    {
-      id: 2689,
-      img_key: "ef7a9c29bdcc1ccf2514a0218653560e",
-      url: "https://i.imgur.com/3T3mdN.webp",
-      prompt: "A photo of a beautiful blonde girl, with long hair, wearing a white shirt, with a helmet, in the middle of a street, with some dirt and blood on her face and shirt, looking at th...",
-      thumbnail: "/api/placeholder/64/64"
-    },
-    {
-      id: 2118,
-      img_key: "a8d99dcfe899482e8c8a5fd47334dec2",
-      url: "https://i.pinimg.com/564x/57/38e/4a9979.jpg",
-      prompt: "red maple leaves on the ground, in the style of kodak ektachrome, hasselblad, 8k, detailed",
-      thumbnail: "/api/placeholder/64/64"
-    }
-  ];
-  
-  return Array.from({ length: 100 }, (_, i) => ({
-    ...mockEntries[i % mockEntries.length],
-    id: mockEntries[i % mockEntries.length].id + i * 1000
+// Placeholder data structure
+const generatePlaceholderData = () => {
+  return Array.from({ length: 50 }, (_, i) => ({
+    id: i + 1,
+    img_key: "{{img_key}}",
+    url: "{{url}}",
+    prompt: "{{prompt_text}}",
+    thumbnail: "{{thumbnail}}"
   }));
 };
 
@@ -58,7 +23,7 @@ export function DataStudio() {
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [selectedSplit, setSelectedSplit] = useState("train");
   
-  const allData = generateMockData();
+  const allData = generatePlaceholderData();
   const filteredData = allData.filter(item => 
     item.prompt.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.img_key.includes(searchQuery)
@@ -85,7 +50,7 @@ export function DataStudio() {
                 <SelectItem value="test">test</SelectItem>
               </SelectContent>
             </Select>
-            <Badge variant="secondary">3.35k rows</Badge>
+            <Badge variant="secondary">{"{{num_rows}}"} rows</Badge>
           </div>
         </div>
         
@@ -121,7 +86,7 @@ export function DataStudio() {
         
         <div className="flex items-center space-x-2">
           <span className="text-sm text-muted-foreground">
-            Showing {startIndex + 1}-{Math.min(startIndex + rowsPerPage, filteredData.length)} of {filteredData.length} results
+            Showing {startIndex + 1}-{Math.min(startIndex + rowsPerPage, filteredData.length)} of {"{{total_filtered_rows}}"} results
           </span>
           
           <div className="flex items-center space-x-1">
