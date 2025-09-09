@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { createConnection, getConnection, ConnectionOptions } from 'typeorm';
 import * as mysql from 'mysql2/promise';
 import * as dotenv from 'dotenv';
 import { User } from '../entity/User';
@@ -8,8 +8,6 @@ import { DatasetImage } from '../entity/DatasetImage';
 dotenv.config();
 
 const TEST_DB_NAME = 'dataset_canvas_test_safe';
-
-export let testDataSource: DataSource;
 
 const createDatabaseIfNotExists = async () => {
   const connectionConfig: mysql.ConnectionOptions = {
@@ -33,7 +31,7 @@ beforeAll(async () => {
   try {
     await createDatabaseIfNotExists();
 
-    const connectionConfig: any = {
+    const connectionConfig: ConnectionOptions = {
       type: 'mariadb',
       database: TEST_DB_NAME,
       username: process.env.DB_USER,
@@ -50,8 +48,7 @@ beforeAll(async () => {
       connectionConfig.port = Number(process.env.DB_PORT) || 3306;
     }
 
-    testDataSource = new DataSource(connectionConfig);
-    await testDataSource.initialize();
+    await createConnection(connectionConfig);
   } catch (error) {
     console.error('Error setting up test database:', error);
     process.exit(1);
@@ -59,12 +56,12 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (testDataSource) {
-    await testDataSource.destroy();
+  const connection = getConnection();
+  if (connection.isConnected) {
+    await connection.close();
   }
 });
 
 beforeEach(async () => {
-  // The dropSchema:true and synchronize:true combo handles cleanup,
-  // but if you need to re-seed data before each test, this is the place.
+  // The dropSchema:true and synchronize:true combo handles cleanup.
 });

@@ -1,14 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest'; // Changed from import * as request
 import * as jwt from 'jsonwebtoken';
-import { testDataSource } from '../test/test-setup'; // Import the test data source
+import { getManager } from 'typeorm';
 import app from '../index'; 
 import { User, UserRole } from '../entity/User';
 import { Dataset } from '../entity/Dataset';
 
 describe('POST /api/datasets', () => {
   it('should create a new dataset for a developer', async () => {
-    const userRepository = testDataSource.getRepository(User);
+    const manager = getManager();
+    const userRepository = manager.getRepository(User);
     
     // 1. Setup: Create a user and get a token
     let developer = userRepository.create({
@@ -48,7 +49,7 @@ describe('POST /api/datasets', () => {
     expect(response.body.user.id).toBe(developer.id);
 
     // 4. Assert: Check the database
-    const datasetRepository = testDataSource.getRepository(Dataset);
+    const datasetRepository = manager.getRepository(Dataset);
     const savedDataset = await datasetRepository.findOne({ 
         where: { name: datasetData.name },
         relations: ['user']
@@ -58,7 +59,7 @@ describe('POST /api/datasets', () => {
   });
 
   it('should return 403 Forbidden for a regular user', async () => {
-    const userRepository = testDataSource.getRepository(User);
+    const userRepository = getManager().getRepository(User);
 
     // 1. Setup: Create a regular user and get a token
     let regularUser = userRepository.create({
