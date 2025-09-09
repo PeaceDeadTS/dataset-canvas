@@ -47,12 +47,16 @@ Follow these instructions to get a local copy up and running for development and
     ```
     Create a file named `.env` in the `backend` folder with the following content:
     ```env
+    # For local development (using TCP/IP)
     DB_HOST=localhost
     DB_PORT=3306
     DB_USER=your_username
     DB_PASSWORD=your_password
-    DB_DATABASE=your_database_name
+    DB_NAME=dataset_canvas
     JWT_SECRET=your_super_secret_jwt_key
+
+    # For production/deployment (using a Unix socket - overrides host/port if set)
+    # DB_SOCKET_PATH=/var/run/mysqld/mysqld.sock
     ```
     - The first user to register will automatically be granted the `Administrator` role.
 

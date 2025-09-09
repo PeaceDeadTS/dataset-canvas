@@ -4,7 +4,7 @@ import { Dataset } from '../entity/Dataset';
 import { User, UserRole } from '../entity/User';
 import { checkJwt, checkJwtOptional } from '../middleware/checkJwt';
 import { Brackets } from 'typeorm';
-import * as multer from 'multer';
+import multer from 'multer';
 import * as csv from 'csv-parser';
 import { Readable } from 'stream';
 import { DatasetImage } from '../entity/DatasetImage';

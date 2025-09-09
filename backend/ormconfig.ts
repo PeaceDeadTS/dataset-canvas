@@ -8,10 +8,22 @@ dotenv.config();
 
 const isTest = process.env.NODE_ENV === 'test';
 
-const config: ConnectionOptions = {
-    type: "mariadb",
+// Base connection details, default to TCP/IP
+let connectionDetails: Partial<ConnectionOptions> = {
     host: process.env.DB_HOST || "localhost",
     port: Number(process.env.DB_PORT) || 3306,
+};
+
+// If a socket path is provided in the environment, use it instead
+if (process.env.DB_SOCKET_PATH) {
+    connectionDetails = {
+        socketPath: process.env.DB_SOCKET_PATH,
+    };
+}
+
+const config: ConnectionOptions = {
+    type: "mariadb",
+    ...connectionDetails, // Spread the appropriate connection details
     username: process.env.DB_USER || "root",
     password: process.env.DB_PASSWORD || "password",
     database: isTest 

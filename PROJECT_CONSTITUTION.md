@@ -147,3 +147,13 @@ This section provides a chronological summary of the work completed in each deve
 *   **Project Housekeeping**:
     *   Troubleshot and resolved several environment-specific issues related to running tests on both frontend and backend.
     *   Consolidated frontend test configuration into `vite.config.ts`.
+
+### Session 5: Pre-Deployment Testing & Fixes
+
+*   **Objective**: Ensure the application is ready for deployment by running the test suites and resolving any discovered issues.
+*   **Backend Implementation**:
+    *   Ran the backend test suite using Vitest.
+    *   Encountered and resolved module resolution errors (`TypeError: ... is not a function`) related to CommonJS modules (`express`, `cors`, `multer`) being imported into an environment that expected ES Modules.
+    *   Fixed the issues by changing star imports (`import * as ...`) to default imports (`import ... from ...`) in `src/index.ts` and `src/routes/datasets.ts`.
+    *   Identified that backend tests require a running MariaDB instance for the test database connection.
+    *   **Flexible Database Connection**: Updated the TypeORM configuration (`ormconfig.ts`) to support connecting via a Unix socket (`DB_SOCKET_PATH`). This allows for a more secure and performant connection in production environments (like Debian), while retaining the standard TCP/IP connection for local development.

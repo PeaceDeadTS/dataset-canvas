@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-import * as express from 'express';
-import * as cors from 'cors';
+import express from 'express';
+import cors from 'cors';
 import { createConnection } from 'typeorm';
 import config from '../ormconfig';
 import * as dotenv from 'dotenv';
