@@ -19,7 +19,7 @@ The project is architected with a distinct frontend and backend.
 
 ### 2.1. Backend Architecture
 
-*   **Framework**: Express.js provides the routing and middleware structure.
+*   **Framework**: Express.js provides the routing and middleware structure with robust JWT authentication.
 *   **Database**: MariaDB is used as the relational database. The system supports connections via both TCP/IP and more secure Unix sockets.
 *   **ORM**: TypeORM manages database connections, entity definitions, and queries. The application relies on a **globally available database connection**, managed through a centralized `AppDataSource` instance (`src/data-source.ts`), ensuring consistency between the main application and command-line tools. The system consistently uses the `manager` property (e.g., `AppDataSource.manager`) to retrieve entity repositories. This architectural pattern is key to the testing strategy: the test setup script (`test-setup.ts`) establishes a global connection to an isolated test database *before* any tests run, allowing the application code to operate identically in both test and production environments without needing modification.
 *   **Database Schema Management (Migrations)**: To ensure safety and predictability, the project uses a robust **migration-based workflow** instead of automatic schema synchronization (`synchronize: true`).
@@ -41,18 +41,26 @@ The project is architected with a distinct frontend and backend.
 
 ### 2.2. Authentication & Authorization
 
-*   **Mechanism**: Authentication is handled via JWT. Upon successful login, the server issues a token containing the user's `id`, `username`, `email`, and `role`. The client stores this token in `localStorage` and includes it in the `Authorization` header for all subsequent API requests.
-*   **Role-Based Access Control (RBAC)**: The system defines three user roles:
-    1.  `Administrator`: Full control over all users and datasets.
-    2.  `Developer`: Can create datasets and manage their own.
-    3.  `User`: Can view public datasets.
+*   **Mechanism**: Authentication is handled via JWT with two middleware approaches:
+    *   **`checkJwt`**: Enforces authentication, returning 401 if no valid token is provided, sets `req.user` for authorized access
+    *   **`checkJwtOptional`**: Allows optional authentication, properly sets `req.user` for authenticated requests while allowing anonymous access, essential for private dataset visibility logic
+*   **Token Management**: Upon successful login, the server issues a token containing the user's `id`, `username`, `email`, and `role`. The client stores this token in `localStorage` and includes it in the `Authorization` header for all subsequent API requests.
+*   **Role-Based Access Control (RBAC)**: The system defines three user roles with dataset-specific permissions:
+    1.  `Administrator`: Full control over all users and datasets, including private datasets of other users
+    2.  `Developer`: Can create datasets and manage their own (both public and private)
+    3.  `User`: Can view public datasets only
+*   **Dataset Visibility Rules**:
+    *   **Public datasets**: Visible to all users (authenticated and anonymous)
+    *   **Private datasets**: Only visible to the dataset owner and administrators
+    *   **Anonymous users**: Can only see public datasets
+    *   **Authenticated users**: See all public datasets + their own private datasets
 *   **Special Rule**: The very first user to register in the system is automatically granted the `Administrator` role.
 
 ### 2.3. Frontend Architecture
 
 *   **Framework**: Built with React and Vite for a fast development experience.
 *   **Styling**: Utilizes Tailwind CSS for utility-first styling, with `shadcn/ui` for a pre-built, accessible component library.
-*   **State Management**: Global user state is managed via a custom `useAuth` hook that decodes the JWT. Component-level state is managed with `useState`.
+*   **State Management**: Global user state is managed via a custom `useAuth` hook that decodes the JWT with proper token validation and expiration handling. Component-level state is managed with `useState`. The auth state properly synchronizes with dataset visibility logic.
 *   **Routing**: `react-router-dom` is used for client-side routing.
 *   **Shared Types**: To ensure consistency and prevent data-related bugs, the frontend uses a centralized file for shared TypeScript types (`src/types/index.ts`). All major data structures, like `User` and `Dataset`, are defined here and imported throughout the application.
 
@@ -79,16 +87,44 @@ The project is architected with a distinct frontend and backend.
 
 ---
 
-## 4. Key Implemented Features
+## 4. Resolved Issues & Bug Fixes
+
+During development, several critical issues were identified and resolved:
+
+*   **Private Dataset Visibility Bug**: Initially, private datasets were not properly displayed to their owners due to incomplete user authentication in the `checkJwtOptional` middleware. This was resolved by ensuring `req.user` is properly set for authenticated requests.
+*   **Dataset Creation Response**: The dataset creation API was not returning complete user relationship data, causing frontend filtering issues. Fixed by explicitly loading the user relation in the response.
+*   **Dataset Page Loading Issues**: The dataset detail page had redundant data fetching and syntax errors that caused empty pages. Resolved by consolidating data loading logic and fixing component structure.
+*   **Authentication Context**: Fixed timing issues with user authentication state that caused inconsistent dataset visibility during page loads.
+*   **Type Safety**: Enhanced TypeScript type definitions to handle optional user relationships and prevent runtime errors.
+
+---
+
+## 5. Key Implemented Features
 
 This section provides a summary of the core features implemented in the application.
 
 *   **Full User Authentication**: Implemented complete user registration and login flow (`/api/auth/register`, `/api/auth/login`) using JWT and password hashing (`bcrypt`).
-*   **Role-Based Access Control (RBAC)**: Developed a full RBAC system (Administrator, Developer, User) that governs all API actions.
-*   **CRUD API for Datasets**: Built a full CRUD API (`/api/datasets`) that respects RBAC rules for creating, reading, updating, and deleting datasets.
-*   **Dataset List & Creation UI**: The frontend displays a list of visible datasets. Authenticated Admins and Developers have access to a "Create Dataset" dialog.
-*   **CSV Data Upload**: Implemented a `multer` and `csv-parser` pipeline on the backend (`POST /api/datasets/:id/upload`) to allow authorized users to upload image metadata via CSV files.
-*   **Dataset Details Page**: Created a dynamic route (`/datasets/:id`) and page that displays detailed information and all images for a selected dataset.
-*   **Image Pagination**: The dataset details page includes a pagination component to handle and navigate large numbers of images efficiently.
-*   **Client-Side Auth Handling**: A custom `useAuth` hook decodes the JWT stored in `localStorage` to provide a consistent user object (including `id`, `username`, `email`, and `role`) throughout the frontend application. This hook also provides a `logout` function.
-*   **Dynamic UI**: The user interface adapts based on the user's authentication status. For authenticated users, a user dropdown menu with a logout option is displayed. For anonymous users, a "Login / Register" button is shown.
+*   **Role-Based Access Control (RBAC)**: Developed a full RBAC system (Administrator, Developer, User) that governs all API actions with proper middleware implementation.
+*   **CRUD API for Datasets**: Built a full CRUD API (`/api/datasets`) that respects RBAC rules for creating, reading, updating, and deleting datasets. The API properly handles user relations and authorization for private datasets.
+*   **Private Dataset Support**: Full implementation of private dataset functionality with proper access control:
+    *   Private datasets are only visible to their owners and administrators
+    *   Public/private datasets are clearly distinguished in the UI with badges
+    *   The `checkJwtOptional` middleware correctly identifies authenticated users for private dataset access
+    *   Dataset creation API properly returns user relationship data for frontend processing
+*   **Dataset Management UI**: Complete dataset management interface with:
+    *   Separate sections for "My Private Datasets" and "Public Datasets" on the main page
+    *   Dataset management buttons (Settings, Delete) for dataset owners and administrators
+    *   Confirmation dialogs for destructive operations
+    *   Visual indicators for dataset privacy status
+*   **CSV Data Upload**: Implemented a `multer` and `csv-parser` pipeline on the backend (`POST /api/datasets/:id/upload`) to allow authorized users to upload image metadata via CSV files with proper authorization checks.
+*   **Dataset Details Page**: Created a robust dynamic route (`/datasets/:id`) and page that displays detailed information and all images for a selected dataset with:
+    *   Proper error handling for access denied and not found scenarios
+    *   Unified data loading that handles both dataset metadata and image pagination
+    *   Upload functionality for dataset owners and administrators
+*   **Image Pagination**: The dataset details page includes a pagination component to handle and navigate large numbers of images efficiently with proper state management.
+*   **Client-Side Auth Handling**: A custom `useAuth` hook decodes the JWT stored in `localStorage` to provide a consistent user object throughout the frontend application with proper token validation and expiration handling.
+*   **Dynamic UI**: The user interface adapts based on the user's authentication status and role:
+    *   Authenticated users see appropriate management options based on their permissions
+    *   Private dataset owners have full management capabilities
+    *   Administrators have management access to all datasets
+    *   Anonymous users see only public datasets with appropriate call-to-action buttons
