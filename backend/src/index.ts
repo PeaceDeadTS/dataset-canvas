@@ -19,6 +19,19 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/datasets', datasetsRoutes);
 
+// Глобальный обработчик ошибок (должен идти последним)
+app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  logger.error('Global unhandled error', {
+    errorMessage: error.message,
+    errorStack: error.stack,
+    error: error,
+    url: req.originalUrl,
+    method: req.method,
+    ip: req.ip,
+  });
+  res.status(500).send('Internal Server Error');
+});
+
 export async function startServer() {
   try {
     await AppDataSource.initialize(); // Используем AppDataSource
