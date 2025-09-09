@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
-import { User } from './User';
-import { DatasetImage } from './DatasetImage';
+import { User } from './User.entity';
+import { DatasetImage } from './DatasetImage.entity';
 
 @Entity('datasets')
 export class Dataset {

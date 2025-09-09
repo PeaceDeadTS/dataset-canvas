@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
 } from "typeorm";
-import { Dataset } from "./Dataset";
+import { Dataset } from "./Dataset.entity";
 
 @Entity()
 export class DatasetImage {

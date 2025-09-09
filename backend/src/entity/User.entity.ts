@@ -1,6 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { Dataset } from './Dataset';
+import { Dataset } from './Dataset.entity';
 
 export enum UserRole {
   ADMIN = 'Administrator',
