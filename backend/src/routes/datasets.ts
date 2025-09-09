@@ -1,200 +1,134 @@
-import { Router, Request, Response } from 'express';
-import { getManager } from 'typeorm';
+import { Router } from 'express';
+import { Brackets } from 'typeorm';
+import csv from 'csv-parser';
+import { Readable } from 'stream';
+import { AppDataSource } from '../data-source';
 import { Dataset } from '../entity/Dataset.entity';
 import { User, UserRole } from '../entity/User.entity';
 import { checkJwt, checkJwtOptional } from '../middleware/checkJwt';
-import { Brackets } from 'typeorm';
-import multer from 'multer';
-import csv from 'csv-parser';
-import { Readable } from 'stream';
+import upload from '../middleware/upload';
 import { DatasetImage } from '../entity/DatasetImage.entity';
 import logger from '../logger';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
+const datasetRepository = AppDataSource.getRepository(Dataset);
+const userRepository = AppDataSource.getRepository(User);
+const imageRepository = AppDataSource.getRepository(DatasetImage);
 
-// Create a new dataset
-router.post('/', [checkJwt], async (req: Request, res: Response) => {
-    const { name, description, isPublic } = req.body;
-    const userId = res.locals.jwtPayload.userId;
-    const userRole = res.locals.jwtPayload.role;
+// GET /api/datasets - Get all visible datasets
+router.get('/', checkJwtOptional, async (req, res) => {
+  const userId = req.user?.userId;
+  const userRole = req.user?.role;
 
-    if (userRole !== UserRole.ADMIN && userRole !== UserRole.DEVELOPER) {
-        return res.status(403).send('Forbidden');
+  try {
+    const query = datasetRepository
+      .createQueryBuilder('dataset')
+      .leftJoinAndSelect('dataset.user', 'user')
+      .select(['dataset.id', 'dataset.name', 'dataset.description', 'dataset.isPublic', 'user.username']);
+
+    if (userRole === UserRole.ADMIN) {
+      // Admin sees everything
+    } else if (userId) {
+      // Logged in user sees public datasets AND their own private datasets
+      query.where('dataset.isPublic = :isPublic', { isPublic: true })
+           .orWhere('dataset.userId = :userId', { userId });
+    } else {
+      // Anonymous user sees only public datasets
+      query.where('dataset.isPublic = :isPublic', { isPublic: true });
     }
 
-    if (!name) {
-        return res.status(400).send('Dataset name is required');
-    }
-
-    const manager = getManager();
-    const userRepository = manager.getRepository(User);
-    const datasetRepository = manager.getRepository(Dataset);
-
-    try {
-        const owner = await userRepository.findOne({ where: { id: userId } });
-        if (!owner) {
-            return res.status(404).send('Owner user not found');
-        }
-
-        const dataset = new Dataset();
-        dataset.name = name;
-        dataset.description = description;
-        dataset.isPublic = isPublic ?? true;
-        dataset.user = owner;
-
-        await datasetRepository.save(dataset);
-
-        res.status(201).json(dataset);
-    } catch (error) {
-        logger.error('Error creating dataset', { error, userId: res.locals.jwtPayload.userId, body: req.body });
-        res.status(500).send('Error creating dataset');
-    }
+    const datasets = await query.getMany();
+    res.json(datasets);
+  } catch (error) {
+    logger.error('Failed to get datasets', { error });
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-// Get all datasets
-router.get('/', [checkJwtOptional], async (req: Request, res: Response) => {
-    const userId = res.locals.jwtPayload?.userId;
-    const userRole = res.locals.jwtPayload?.role;
-    const datasetRepository = getManager().getRepository(Dataset);
+// GET /api/datasets/:id - Get a single dataset by ID
+router.get('/:id', checkJwtOptional, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user?.userId;
+  const userRole = req.user?.role;
+  const { page = 1, limit = 10 } = req.query;
 
-    try {
-        const query = datasetRepository.createQueryBuilder('dataset')
-            .leftJoinAndSelect('dataset.user', 'user')
-            .loadRelationCountAndMap('dataset.imageCount', 'dataset.images')
-            .where('dataset.isPublic = :isPublic', { isPublic: true });
+  try {
+    const dataset = await datasetRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
 
-        if (userId) {
-            if (userRole === UserRole.ADMIN) {
-                // Admin sees all datasets, so we remove the public constraint
-                query.where('1=1');
-            } else {
-                query.orWhere(
-                    new Brackets(qb => {
-                        qb.where('dataset.isPublic = :isPrivate', { isPrivate: false })
-                          .andWhere('dataset.userId = :userId', { userId });
-                    })
-                );
-            }
-        }
-
-        const datasets = await query.getMany();
-        res.json(datasets);
-    } catch (error) {
-        logger.error('Error fetching datasets', { error });
-        res.status(500).send('Error fetching datasets');
+    if (!dataset) {
+      return res.status(404).send('Dataset not found');
     }
+
+    const isOwner = dataset.user.id === userId;
+    const isAdmin = userRole === UserRole.ADMIN;
+
+    if (!dataset.isPublic && !isOwner && !isAdmin) {
+      return res.status(403).send('Access denied');
+    }
+    
+    const [images, total] = await imageRepository.findAndCount({
+      where: { dataset: { id } },
+      skip: (Number(page) - 1) * Number(limit),
+      take: Number(limit),
+    });
+
+    res.json({
+      ...dataset,
+      images: {
+        data: images,
+        total,
+        page: Number(page),
+        limit: Number(limit),
+      },
+    });
+  } catch (error) {
+    logger.error(`Failed to get dataset ${id}`, { error });
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-// Get a single dataset
-router.get('/:id', [checkJwtOptional], async (req: Request, res: Response) => {
+
+// POST /api/datasets - Create a new dataset
+router.post('/', checkJwt, async (req, res) => {
+  if (req.user.role !== UserRole.DEVELOPER && req.user.role !== UserRole.ADMIN) {
+    return res.status(403).send('Only developers and admins can create datasets');
+  }
+
+  const { name, description, isPublic } = req.body;
+  const userId = req.user.userId;
+
+  try {
+    const user = await userRepository.findOneBy({ id: userId });
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+
+    const dataset = datasetRepository.create({
+      name,
+      description,
+      isPublic,
+      user,
+    });
+
+    await datasetRepository.save(dataset);
+    res.status(201).json(dataset);
+  } catch (error) {
+    logger.error('Failed to create dataset', { error });
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// POST /api/datasets/:id/upload
+router.post('/:id/upload', checkJwt, upload.single('file'), async (req, res) => {
     const { id } = req.params;
-    const { userId, role } = res.locals.jwtPayload || {};
-    const datasetRepository = getManager().getRepository(Dataset);
-
-    try {
-        const dataset = await datasetRepository.createQueryBuilder('dataset')
-            .leftJoinAndSelect('dataset.user', 'user')
-            .loadRelationCountAndMap('dataset.imageCount', 'dataset.images')
-            .where("dataset.id = :id", { id })
-            .getOne();
-
-        if (!dataset) {
-            return res.status(404).send('Dataset not found');
-        }
-
-        if (!dataset.isPublic) {
-            if (!userId || (role !== UserRole.ADMIN && dataset.userId !== userId)) {
-                return res.status(403).send('Forbidden');
-            }
-        }
-
-        res.json(dataset);
-    } catch (error) {
-        logger.error('Error fetching dataset', { error, datasetId: id });
-        res.status(500).send('Error fetching dataset');
-    }
-});
-
-// Update a dataset
-router.put('/:id', [checkJwt], async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { name, description, isPublic } = req.body;
-    const { userId, role } = res.locals.jwtPayload;
-    const datasetRepository = getManager().getRepository(Dataset);
-
-    try {
-        const dataset = await datasetRepository.findOne({ where: { id } });
-
-        if (!dataset) {
-            return res.status(404).send('Dataset not found');
-        }
-
-        if (role !== UserRole.ADMIN && dataset.userId !== userId) {
-            // Developers can only edit their own datasets
-            if (role === UserRole.DEVELOPER && dataset.userId !== userId) {
-                return res.status(403).send('Forbidden: Developers can only edit their own datasets');
-            }
-            // Other roles are implicitly forbidden if they are not the owner or an admin
-            if (role !== UserRole.DEVELOPER) {
-                 return res.status(403).send('Forbidden');
-            }
-        }
-
-        dataset.name = name ?? dataset.name;
-        dataset.description = description ?? dataset.description;
-        dataset.isPublic = isPublic ?? dataset.isPublic;
-
-        await datasetRepository.save(dataset);
-        res.json(dataset);
-    } catch (error) {
-        logger.error('Error updating dataset', { error, datasetId: id, body: req.body });
-        res.status(500).send('Error updating dataset');
-    }
-});
-
-// Delete a dataset
-router.delete('/:id', [checkJwt], async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { userId, role } = res.locals.jwtPayload;
-    const datasetRepository = getManager().getRepository(Dataset);
-
-    try {
-        const dataset = await datasetRepository.findOne({ where: { id }});
-
-        if (!dataset) {
-            return res.status(404).send('Dataset not found');
-        }
-
-        if (role !== UserRole.ADMIN && dataset.userId !== userId) {
-             if (role === UserRole.DEVELOPER && dataset.userId !== userId) {
-                return res.status(403).send('Forbidden: Developers can only delete their own datasets');
-            }
-             if (role !== UserRole.DEVELOPER) {
-                 return res.status(403).send('Forbidden');
-            }
-        }
-
-        await datasetRepository.remove(dataset);
-        res.status(204).send();
-    } catch (error) {
-        logger.error('Error deleting dataset', { error, datasetId: id });
-        res.status(500).send('Error deleting dataset');
-    }
-});
-
-// Upload images to a dataset
-router.post('/:id/upload', [checkJwt, upload.single('file')], async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { userId, role } = res.locals.jwtPayload;
+    const userId = req.user?.userId;
 
     if (!req.file) {
         return res.status(400).send('No file uploaded.');
     }
-
-    const manager = getManager();
-    const datasetRepository = manager.getRepository(Dataset);
-    const datasetImageRepository = manager.getRepository(DatasetImage);
 
     try {
         const dataset = await datasetRepository.findOne({ where: { id } });
@@ -204,13 +138,13 @@ router.post('/:id/upload', [checkJwt, upload.single('file')], async (req: Reques
         }
 
         // Authorization check
-        if (role !== UserRole.ADMIN && dataset.userId !== userId) {
+        if (req.user.role !== UserRole.ADMIN && dataset.userId !== userId) {
             return res.status(403).send('Forbidden');
         }
 
         // --- Overwrite Logic ---
         // Delete all existing images for this dataset before uploading new ones.
-        await datasetImageRepository.delete({ dataset: { id: dataset.id } });
+        await imageRepository.delete({ dataset: { id: dataset.id } });
         
         const images: DatasetImage[] = [];
         let row_number = 0;
@@ -237,7 +171,7 @@ router.post('/:id/upload', [checkJwt, upload.single('file')], async (req: Reques
             })
             .on('end', async () => {
                 try {
-                    await datasetImageRepository.save(images);
+                    await imageRepository.save(images);
                     res.status(201).send({ message: `Successfully uploaded ${images.length} images to dataset ${dataset.name}` });
                 } catch (dbError) {
                     logger.error('Error saving images to database', { error: dbError, datasetId: id });

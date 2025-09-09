@@ -1,69 +1,75 @@
 import { Router } from 'express';
-import { getRepository } from 'typeorm';
-import { User, UserRole } from '../entity/User.entity';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { getManager } from 'typeorm';
+import { AppDataSource } from '../data-source'; // Импортируем AppDataSource
+import { User, UserRole } from '../entity/User.entity';
 import logger from '../logger';
 
 const router = Router();
 
-// Register
+// POST /api/auth/register
 router.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
+
   if (!username || !email || !password) {
     return res.status(400).send('Username, email, and password are required');
   }
 
-  const userRepository = getRepository(User);
-
   try {
+    const userRepository = AppDataSource.getRepository(User); // Используем AppDataSource
+
+    // Check if user already exists
     const existingUser = await userRepository.findOne({ where: [{ username }, { email }] });
     if (existingUser) {
-      return res.status(400).send('User with this username or email already exists');
+      return res.status(409).send('User with that username or email already exists');
     }
 
+    // Check if this is the first user
     const userCount = await userRepository.count();
+    const role = userCount === 0 ? UserRole.ADMIN : UserRole.USER;
 
     const user = new User();
     user.username = username;
     user.email = email;
     user.password = password;
-    if (userCount === 0) {
-      user.role = UserRole.ADMIN;
-    }
-    user.hashPassword();
+    user.role = role;
+    await user.hashPassword();
 
     await userRepository.save(user);
 
     res.status(201).send('User created successfully');
   } catch (error) {
-    res.status(500).send('Error creating user');
+    logger.error('Error during registration', { error });
+    res.status(500).send('Internal Server Error');
   }
 });
 
-// Login
+// POST /api/auth/login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
+
   if (!email || !password) {
     return res.status(400).send('Email and password are required');
   }
 
-  const userRepository = getRepository(User);
   try {
+    const userRepository = AppDataSource.getRepository(User); // Используем AppDataSource
     const user = await userRepository.findOne({ where: { email } });
+
     if (!user || !user.checkIfPasswordIsValid(password)) {
       return res.status(401).send('Invalid credentials');
     }
 
     const token = jwt.sign(
-        { userId: user.id, username: user.username, role: user.role },
-        process.env.JWT_SECRET || 'your_jwt_secret',
-        { expiresIn: '1h' }
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET || 'your_default_secret',
+      { expiresIn: '1h' }
     );
 
     res.json({ token });
   } catch (error) {
-    res.status(500).send('Error logging in');
+    logger.error('Error during login', { error });
+    res.status(500).send('Internal Server Error');
   }
 });
 
