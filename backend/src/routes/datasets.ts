@@ -24,28 +24,48 @@ router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   const userRole = req.user?.role;
 
+  logger.info('🔍 GET /api/datasets запрос', { 
+    userId, 
+    userRole,
+    hasUser: !!req.user 
+  });
+
   try {
     const query = datasetRepository
       .createQueryBuilder('dataset')
       .leftJoinAndSelect('dataset.user', 'user');
 
     if (userRole === UserRole.ADMIN) {
+      logger.info('👑 Администратор - показываем все датасеты');
       // Admin sees everything
     } else if (userId) {
+      logger.info('👤 Авторизованный пользователь - показываем публичные + свои приватные', { userId });
       // Logged in user sees public datasets AND their own private datasets
       query.where(new Brackets(qb => {
         qb.where('dataset.isPublic = :isPublic', { isPublic: true })
           .orWhere('dataset.userId = :userId', { userId });
       }));
     } else {
+      logger.info('👻 Анонимный пользователь - только публичные датасеты');
       // Anonymous user sees only public datasets
       query.where('dataset.isPublic = :isPublic', { isPublic: true });
     }
 
     const datasets = await query.getMany();
+    logger.info('📊 Найдено датасетов:', { 
+      count: datasets.length,
+      datasets: datasets.map(d => ({
+        id: d.id,
+        name: d.name,
+        isPublic: d.isPublic,
+        userId: d.userId,
+        username: d.user?.username
+      }))
+    });
+    
     res.json(datasets);
   } catch (error) {
-    logger.error('Failed to get datasets', { error });
+    logger.error('❌ Failed to get datasets', { error });
     res.status(500).send('Internal Server Error');
   }
 });
