@@ -8,8 +8,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { CreateDatasetDialog } from '@/components/CreateDatasetDialog';
 
-// This type is now coming from DatasetListItem, let's define it here
-// for clarity or move to a central types file.
+// This type should be shared, but for now we define it here to fix the crash
 interface User {
     id: string;
     username: string;
