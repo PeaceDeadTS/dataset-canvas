@@ -42,7 +42,7 @@ const Index = () => {
     const { publicDatasets, userPrivateDatasets } = useMemo(() => {
         const publicDatasets = datasets.filter(d => d.isPublic);
         const userPrivateDatasets = user 
-            ? datasets.filter(d => !d.isPublic && d.user?.username === user.username) 
+            ? datasets.filter(d => !d.isPublic && d.username === user.username) 
             : [];
         return { publicDatasets, userPrivateDatasets };
     }, [datasets, user]);

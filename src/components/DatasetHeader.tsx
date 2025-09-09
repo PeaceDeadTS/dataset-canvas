@@ -39,7 +39,7 @@ interface DatasetHeaderProps {
   dataset?: Dataset;
 }
 
-export function DatasetHeader({ dataset }: DatasetHeaderProps) {
+export function DatasetHeader() {
   const { user, logout } = useAuth();
   const navigate = useNavigate(); // Инициализируем хук
 
@@ -64,46 +64,15 @@ export function DatasetHeader({ dataset }: DatasetHeaderProps) {
   };
 
   return (
-    <header className="border-b border-border bg-card">
-      <div className="mx-auto max-w-7xl px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div>
-              {dataset ? (
-                <>
-                  <h1 className="text-2xl font-semibold text-foreground">
-                    <span className="text-muted-foreground">Datasets:</span>{" "}
-                    <Link
-                      to={`/users/${dataset.user.username}`}
-                      className="text-primary hover:underline"
-                    >
-                      {dataset.user.username}
-                    </Link>
-                    <span className="text-foreground"> / </span>
-                    <span className="text-primary">{dataset.name}</span>
-                  </h1>
-                  <div className="mt-2 flex items-center space-x-2">
-                    {dataset.modalities?.map((modality) => (
-                      <Badge key={modality} variant="secondary" className="text-xs">
-                        {modality}
-                      </Badge>
-                    ))}
-                    {dataset.rowCount && (
-                       <Badge variant="secondary" className="text-xs">
-                        {dataset.rowCount.toLocaleString()} rows
-                       </Badge>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <h1 className="text-2xl font-semibold text-foreground">
-                  Public Datasets
-                </h1>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-3">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
+        <a href="/" className="mr-6 flex items-center space-x-2">
+          <span className="font-bold sm:inline-block">
+            Dataset Canvas
+          </span>
+        </a>
+        
+        <div className="flex items-center gap-4">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -200,7 +169,6 @@ export function DatasetHeader({ dataset }: DatasetHeaderProps) {
             )}
           </div>
         </div>
-      </div>
-    </header>
+      </header>
   );
 }
