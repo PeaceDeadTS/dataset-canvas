@@ -23,7 +23,10 @@ export class Dataset {
   @Column()
   userId!: string;
 
-  @OneToMany(() => DatasetImage, (image) => image.dataset, { cascade: true })
+  @OneToMany(() => DatasetImage, (image) => image.dataset, { 
+    cascade: true, 
+    onDelete: 'CASCADE'
+  })
   images!: DatasetImage[];
 
   @CreateDateColumn()
