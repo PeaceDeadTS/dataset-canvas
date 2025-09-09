@@ -53,16 +53,16 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    const userRepository = AppDataSource.getRepository(User); // Используем AppDataSource
-    const user = await userRepository.findOne({ where: { email } });
+    const user = await AppDataSource.getManager().findOne(User, { where: { email: req.body.email }, select: ['id', 'email', 'role', 'password', 'username'] });
+    if (!user) return res.status(401).send('Invalid credentials');
 
-    if (!user || !user.checkIfPasswordIsValid(password)) {
-      return res.status(401).send('Invalid credentials');
-    }
+    const validPassword = await bcrypt.compare(req.body.password, user.password);
+    if (!validPassword) return res.status(401).send('Invalid credentials');
 
+    // Sign JWT
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || 'your_default_secret',
+      { userId: user.id, email: user.email, role: user.role, username: user.username },
+      process.env.JWT_SECRET!,
       { expiresIn: '1h' }
     );
 

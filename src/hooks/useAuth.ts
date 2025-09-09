@@ -1,39 +1,32 @@
 import { useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import { User } from '@/types';
 
 interface DecodedToken {
   userId: string;
   email: string;
   role: 'Administrator' | 'Developer' | 'User';
+  username: string;
   iat: number;
   exp: number;
 }
 
-// This interface should align with our global User type for consistency
-export interface AuthUser {
-  id: string;
-  email: string;
-  role: 'Administrator' | 'Developer' | 'User';
-}
-
 export function useAuth() {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const decodedToken = jwtDecode<DecodedToken>(token);
-        // Check if token is expired
         if (decodedToken.exp * 1000 > Date.now()) {
-          // Map userId to id for consistency across the app
           setUser({
             id: decodedToken.userId,
             email: decodedToken.email,
             role: decodedToken.role,
+            username: decodedToken.username,
           });
         } else {
-          // Token is expired, remove it
           localStorage.removeItem('token');
           setUser(null);
         }

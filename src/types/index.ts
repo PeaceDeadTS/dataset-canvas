@@ -2,6 +2,7 @@ export interface User {
     id: string;
     username: string;
     email: string; // This was missing and caused the crash
+    role: 'Administrator' | 'Developer' | 'User';
 }
 
 export interface Dataset {
