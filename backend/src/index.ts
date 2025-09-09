@@ -1,14 +1,12 @@
 import 'reflect-metadata';
 import express from 'express';
-import { DataSource } from 'typeorm';
 import cors from 'cors';
-import { connectionConfig } from './ormconfig';
+import { AppDataSource } from './data-source'; // Импортируем AppDataSource
 import authRoutes from './routes/auth';
 import datasetsRoutes from './routes/datasets';
 import logger from './logger';
 
 const app = express();
-let dataSource: DataSource;
 
 app.use(cors());
 app.use(express.json());
@@ -18,8 +16,7 @@ app.use('/api/datasets', datasetsRoutes);
 
 export async function startServer() {
   try {
-    dataSource = new DataSource(connectionConfig);
-    await dataSource.initialize();
+    await AppDataSource.initialize(); // Используем AppDataSource
     logger.info('Data Source has been initialized!');
 
     if (process.env.NODE_ENV !== 'test') {
@@ -39,4 +36,4 @@ if (require.main === module) {
   startServer();
 }
 
-export { app, dataSource };
+export { app }; // Экспортируем только app

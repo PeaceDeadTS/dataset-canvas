@@ -1,20 +1,27 @@
 import { DataSourceOptions } from 'typeorm';
-import { User } from './entity/User';
-import { Dataset } from './entity/Dataset';
-import { DatasetImage } from './entity/DatasetImage';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 
 dotenv.config();
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+let logging: DataSourceOptions['logging'];
+if (isProduction) {
+  logging = ['error'];
+} else {
+  logging = true;
+}
+
 const baseConfig = {
-  type: 'mariadb' as const, // Use `as const` to help TypeScript narrow the type
+  type: 'mariadb' as const,
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE || 'dataset_canvas',
-  synchronize: false,
-  logging: false,
-  entities: [User, Dataset, DatasetImage],
-  migrations: [],
+  synchronize: false, // Всегда false в правильном воркфлоу
+  logging, // Используем переменную
+  entities: [path.join(__dirname, '**', '*.entity.{ts,js}')],
+  migrations: [path.join(__dirname, 'migrations', '*.{ts,js}')],
   subscribers: [],
 };
 
