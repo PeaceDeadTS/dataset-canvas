@@ -27,14 +27,7 @@ router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
   try {
     const query = datasetRepository
       .createQueryBuilder('dataset')
-      .leftJoinAndSelect('dataset.user', 'user')
-      .select([
-        'dataset.id', 
-        'dataset.name', 
-        'dataset.description', 
-        'dataset.isPublic', 
-        'user.username'
-      ]);
+      .leftJoinAndSelect('dataset.user', 'user');
 
     if (userRole === UserRole.ADMIN) {
       // Admin sees everything
