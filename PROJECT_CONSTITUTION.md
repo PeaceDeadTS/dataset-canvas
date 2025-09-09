@@ -21,7 +21,7 @@ The project is architected with a distinct frontend and backend.
 
 *   **Framework**: Express.js provides the routing and middleware structure.
 *   **Database**: MariaDB is used as the relational database. The system supports connections via both TCP/IP and more secure Unix sockets.
-*   **ORM**: TypeORM manages database connections, entity definitions, and queries.
+*   **ORM**: TypeORM manages database connections, entity definitions, and queries. The application consistently uses the active connection manager (`getManager()`) to retrieve entity repositories. This pattern decouples the business logic from a global database connection state, which is crucial for enabling the isolated testing strategy.
 *   **Entities**:
     *   `User`: Stores user information, including `username`, `email`, hashed `password`, and `role`.
     *   `Dataset`: Represents a dataset "container," with properties like `name`, `description`, `isPublic`, and relationships to its owner (`user`) and its images.

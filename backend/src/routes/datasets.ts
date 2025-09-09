@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getRepository } from 'typeorm';
+import { getManager } from 'typeorm';
 import { Dataset } from '../entity/Dataset';
 import { User, UserRole } from '../entity/User';
 import { checkJwt, checkJwtOptional } from '../middleware/checkJwt';
@@ -26,11 +26,15 @@ router.post('/', [checkJwt], async (req, res) => {
         return res.status(400).send('Dataset name is required');
     }
 
-    const userRepository = getRepository(User);
-    const datasetRepository = getRepository(Dataset);
+    const manager = getManager();
+    const userRepository = manager.getRepository(User);
+    const datasetRepository = manager.getRepository(Dataset);
 
     try {
-        const owner = await userRepository.findOneOrFail(userId);
+        const owner = await userRepository.findOne({ where: { id: userId } });
+        if (!owner) {
+            return res.status(404).send('Owner user not found');
+        }
 
         const dataset = new Dataset();
         dataset.name = name;
@@ -50,7 +54,7 @@ router.post('/', [checkJwt], async (req, res) => {
 // Get all datasets
 router.get('/', [checkJwtOptional], async (req, res) => {
     const { userId, role } = res.locals.jwtPayload || {};
-    const datasetRepository = getRepository(Dataset);
+    const datasetRepository = getManager().getRepository(Dataset);
 
     try {
         const query = datasetRepository.createQueryBuilder('dataset')
@@ -84,7 +88,7 @@ router.get('/', [checkJwtOptional], async (req, res) => {
 router.get('/:id', [checkJwtOptional], async (req, res) => {
     const { id } = req.params;
     const { userId, role } = res.locals.jwtPayload || {};
-    const datasetRepository = getRepository(Dataset);
+    const datasetRepository = getManager().getRepository(Dataset);
 
     try {
         const dataset = await datasetRepository.createQueryBuilder('dataset')
@@ -115,10 +119,10 @@ router.put('/:id', [checkJwt], async (req, res) => {
     const { id } = req.params;
     const { name, description, isPublic } = req.body;
     const { userId, role } = res.locals.jwtPayload;
-    const datasetRepository = getRepository(Dataset);
+    const datasetRepository = getManager().getRepository(Dataset);
 
     try {
-        const dataset = await datasetRepository.findOne(id);
+        const dataset = await datasetRepository.findOne({ where: { id } });
 
         if (!dataset) {
             return res.status(404).send('Dataset not found');
@@ -151,10 +155,10 @@ router.put('/:id', [checkJwt], async (req, res) => {
 router.delete('/:id', [checkJwt], async (req, res) => {
     const { id } = req.params;
     const { userId, role } = res.locals.jwtPayload;
-    const datasetRepository = getRepository(Dataset);
+    const datasetRepository = getManager().getRepository(Dataset);
 
     try {
-        const dataset = await datasetRepository.findOne(id);
+        const dataset = await datasetRepository.findOne({ where: { id }});
 
         if (!dataset) {
             return res.status(404).send('Dataset not found');
@@ -186,11 +190,12 @@ router.post('/:id/upload', [checkJwt, upload.single('file')], async (req, res) =
         return res.status(400).send('No file uploaded.');
     }
 
-    const datasetRepository = getRepository(Dataset);
-    const datasetImageRepository = getRepository(DatasetImage);
+    const manager = getManager();
+    const datasetRepository = manager.getRepository(Dataset);
+    const datasetImageRepository = manager.getRepository(DatasetImage);
 
     try {
-        const dataset = await datasetRepository.findOne(id);
+        const dataset = await datasetRepository.findOne({ where: { id } });
 
         if (!dataset) {
             return res.status(404).send('Dataset not found');
@@ -256,11 +261,12 @@ router.get('/:id/images', [checkJwtOptional], async (req, res) => {
     const limit = parseInt(req.query.limit as string) || 50;
     const skip = (page - 1) * limit;
 
-    const datasetRepository = getRepository(Dataset);
-    const datasetImageRepository = getRepository(DatasetImage);
+    const manager = getManager();
+    const datasetRepository = manager.getRepository(Dataset);
+    const datasetImageRepository = manager.getRepository(DatasetImage);
 
     try {
-        const dataset = await datasetRepository.findOne(id);
+        const dataset = await datasetRepository.findOne({ where: { id } });
 
         if (!dataset) {
             return res.status(404).send('Dataset not found');
