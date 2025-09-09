@@ -36,7 +36,7 @@ The project is architected with a distinct frontend and backend.
 *   **Custom Type Definitions**: To ensure full type safety with Express middleware, the project uses custom type definition files (located in `backend/src/types`). For instance, `express.d.ts` extends the global Express `Request` type to include the `user` object that is attached by the JWT authentication middleware. This allows for static analysis and autocompletion in a TypeScript environment.
 *   **Production Deployment**: For production, the backend is designed to run as a `systemd` service. This provides robust, native process management, including automatic restarts on failure. The service is configured to use an `.env` file for environment variables, separating configuration from code.
 *   **Data Integrity**:
-    *   **Cascading Deletes**: The relationship between `Dataset` and `DatasetImage` is configured with `onDelete: 'CASCADE'`. This ensures that when a dataset is deleted, all its associated image records are automatically removed, preventing orphaned data.
+    *   **Cascading Deletes**: To maintain data integrity, the relationship between `Dataset` and `DatasetImage` is configured with `onDelete: 'CASCADE'` on the database level. This is defined in the `DatasetImage` entity on the `@ManyToOne` decorator. This configuration ensures that when a dataset is deleted, all its associated image records are automatically and efficiently removed by the database, preventing orphaned data.
     *   **Overwrite on Upload**: The CSV upload endpoint (`POST /api/datasets/:id/upload`) operates in an "overwrite" mode. It first deletes all existing images in a dataset before inserting the new records, simplifying data updates.
 
 ### 2.2. Authentication & Authorization

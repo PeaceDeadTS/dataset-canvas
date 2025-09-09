@@ -34,8 +34,10 @@ router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
       // Admin sees everything
     } else if (userId) {
       // Logged in user sees public datasets AND their own private datasets
-      query.where('dataset.isPublic = :isPublic', { isPublic: true })
-           .orWhere('dataset.userId = :userId', { userId });
+      query.where(new Brackets(qb => {
+        qb.where('dataset.isPublic = :isPublic', { isPublic: true })
+          .orWhere('dataset.userId = :userId', { userId });
+      }));
     } else {
       // Anonymous user sees only public datasets
       query.where('dataset.isPublic = :isPublic', { isPublic: true });
