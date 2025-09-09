@@ -3,6 +3,7 @@ import { Brackets } from 'typeorm';
 import csv from 'csv-parser';
 import { Readable } from 'stream';
 import multer from 'multer';
+import { randomUUID } from 'crypto';
 
 import { AppDataSource } from '../data-source';
 import { Dataset } from '../entity/Dataset.entity';
@@ -149,17 +150,21 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
         await imageRepository.delete({ dataset: { id: dataset.id } });
         
         const images: DatasetImage[] = [];
-        const readable = new Readable();
-        readable.push(req.file.buffer);
-        readable.push(null);
+        
+        if (!req.file || !req.file.buffer) {
+            return res.status(400).send('No file content.');
+        }
+
+        const readable = Readable.from(req.file.buffer);
+        let rowCounter = 1;
 
         readable
             .pipe(csv())
             .on('data', (row) => {
                 // Manually create and assign properties for type safety
                 const newImage = new DatasetImage();
-                newImage.img_key = row.img_key;
-                newImage.row_number = row.row_number ? parseInt(row.row_number, 10) : 0;
+                newImage.img_key = randomUUID();
+                newImage.row_number = rowCounter++;
                 newImage.filename = row.filename;
                 newImage.url = row.url;
                 newImage.width = row.width ? parseInt(row.width, 10) : 0;
