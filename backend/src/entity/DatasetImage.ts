@@ -16,19 +16,19 @@ export class DatasetImage {
   @Column({ type: "uuid", generated: "uuid" })
   img_key: string;
 
-  @Column()
+  @Column({ type: "int" })
   row_number: number;
 
-  @Column()
+  @Column({ type: "varchar" })
   filename: string;
 
-  @Column()
+  @Column({ type: "varchar" })
   url: string;
 
-  @Column()
+  @Column({ type: "int" })
   width: number;
 
-  @Column()
+  @Column({ type: "int" })
   height: number;
 
   @Column("text")

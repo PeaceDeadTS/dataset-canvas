@@ -8,6 +8,7 @@ import * as multer from 'multer';
 import * as csv from 'csv-parser';
 import { Readable } from 'stream';
 import { DatasetImage } from '../entity/DatasetImage';
+import logger from '../logger';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -41,6 +42,7 @@ router.post('/', [checkJwt], async (req, res) => {
 
         res.status(201).json(dataset);
     } catch (error) {
+        logger.error('Error creating dataset', { error, userId: res.locals.jwtPayload.userId, body: req.body });
         res.status(500).send('Error creating dataset');
     }
 });
@@ -73,6 +75,7 @@ router.get('/', [checkJwtOptional], async (req, res) => {
         const datasets = await query.getMany();
         res.json(datasets);
     } catch (error) {
+        logger.error('Error fetching datasets', { error });
         res.status(500).send('Error fetching datasets');
     }
 });
@@ -102,6 +105,7 @@ router.get('/:id', [checkJwtOptional], async (req, res) => {
 
         res.json(dataset);
     } catch (error) {
+        logger.error('Error fetching dataset', { error, datasetId: id });
         res.status(500).send('Error fetching dataset');
     }
 });
@@ -138,6 +142,7 @@ router.put('/:id', [checkJwt], async (req, res) => {
         await datasetRepository.save(dataset);
         res.json(dataset);
     } catch (error) {
+        logger.error('Error updating dataset', { error, datasetId: id, body: req.body });
         res.status(500).send('Error updating dataset');
     }
 });
@@ -167,6 +172,7 @@ router.delete('/:id', [checkJwt], async (req, res) => {
         await datasetRepository.remove(dataset);
         res.status(204).send();
     } catch (error) {
+        logger.error('Error deleting dataset', { error, datasetId: id });
         res.status(500).send('Error deleting dataset');
     }
 });
@@ -227,14 +233,17 @@ router.post('/:id/upload', [checkJwt, upload.single('file')], async (req, res) =
                     await datasetImageRepository.save(images);
                     res.status(201).send({ message: `Successfully uploaded ${images.length} images to dataset ${dataset.name}` });
                 } catch (dbError) {
+                    logger.error('Error saving images to database', { error: dbError, datasetId: id });
                     res.status(500).send('Error saving images to database');
                 }
             })
             .on('error', (err) => {
+                 logger.error('Error processing CSV file', { error: err, datasetId: id });
                  res.status(500).send('Error processing CSV file');
             });
             
     } catch (error) {
+        logger.error('Error processing upload', { error, datasetId: id });
         res.status(500).send('Error processing upload');
     }
 });
@@ -279,6 +288,7 @@ router.get('/:id/images', [checkJwtOptional], async (req, res) => {
         });
 
     } catch (error) {
+        logger.error('Error fetching dataset images', { error, datasetId: id });
         res.status(500).send('Error fetching dataset images');
     }
 });

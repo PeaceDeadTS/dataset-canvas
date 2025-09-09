@@ -16,13 +16,13 @@ export class User {
   @OneToMany(() => Dataset, (dataset) => dataset.user)
   datasets: Dataset[];
 
-  @Column({ unique: true })
+  @Column({ unique: true, type: 'varchar' })
   username!: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, type: 'varchar' })
   email!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   password!: string;
 
   @Column({

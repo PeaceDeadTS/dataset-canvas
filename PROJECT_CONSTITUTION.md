@@ -46,7 +46,45 @@ The project is architected with a distinct frontend and backend.
 
 ---
 
-## 3. Development Log
+## 4. Testing & Debugging Strategy
+
+To ensure the reliability and maintainability of the application, a multi-layered testing and debugging strategy has been implemented.
+
+### 4.1. Backend Testing
+
+*   **Framework**: **Vitest** is used as the primary test runner for its speed and modern feature set.
+*   **API (Integration) Testing**: **Supertest** is used to perform integration tests on the Express API endpoints. This allows us to simulate real HTTP requests and validate responses, database interactions, and authorization logic.
+*   **Test Environment**: Tests run against a **separate, isolated test database** (`dataset_canvas_test`) to prevent any impact on development data. A setup file (`src/test/test-setup.ts`) ensures the database is cleaned before each test run, guaranteeing test isolation.
+*   **Running Backend Tests**:
+    ```bash
+    cd backend
+    npm test
+    ```
+
+### 4.2. Frontend Testing
+
+*   **Framework**: **Vitest** is also used for the frontend, providing a consistent testing experience.
+*   **Component Testing**: **React Testing Library** is used to test React components. The focus is on testing component behavior from a user's perspective, ensuring that components render correctly and are interactive.
+*   **Test Environment**: **JSDOM** is used to simulate a browser environment, allowing component tests to run in a Node.js process without needing a real browser.
+*   **Running Frontend Tests**:
+    ```bash
+    # From the project root
+    npm test
+    npm run test:ui # For an interactive UI
+    ```
+
+### 4.3. Logging
+
+*   **Library**: **Winston** is used on the backend for robust, configurable logging.
+*   **Configuration**:
+    *   Logs are output to the console during development for immediate feedback.
+    *   Error-level logs are written to a dedicated `error.log` file.
+    *   In non-production environments, all logs are also written to `combined.log` for detailed analysis.
+    *   This setup ensures that in a production environment, we have a persistent record of errors for debugging, without cluttering the main logs.
+
+---
+
+## 5. Development Log
 
 This section provides a chronological summary of the work completed in each development session.
 
@@ -93,3 +131,19 @@ This section provides a chronological summary of the work completed in each deve
 *   **Backend Implementation**:
     *   **Cascading Deletes**: Implemented `onDelete: 'CASCADE'` for the relationship between `Dataset` and `DatasetImage`. This ensures that when a dataset is deleted, all its associated image records are automatically and efficiently removed from the database, preventing orphaned data.
     *   **Dataset Update (Overwrite) Logic**: Modified the `POST /api/datasets/:id/upload` endpoint. Instead of appending data, the endpoint now first deletes all existing image records for the specified dataset before inserting the new records from the uploaded CSV file. This changes the upload behavior from "append" to "overwrite," allowing users to easily update their datasets by uploading a new version of their CSV.
+
+### Session 4: Testing & Reliability
+
+*   **Objective**: Implement a comprehensive testing and logging system to improve application stability and developer confidence.
+*   **Backend Implementation**:
+    *   Set up the **Vitest** testing framework with **Supertest** for API integration testing.
+    *   Configured a separate test database to run tests in an isolated environment.
+    *   Wrote the first integration test for a critical endpoint (`POST /api/datasets`), covering both success scenarios and authorization rules.
+    *   Integrated the **Winston** library for structured, file-based logging, replacing all `console.log` and `console.error` calls.
+*   **Frontend Implementation**:
+    *   Set up the **Vitest** testing framework with **React Testing Library** for component testing.
+    *   Configured a `jsdom` environment to allow tests to run without a browser.
+    *   Wrote the first component test for `DatasetListItem`, verifying correct rendering of props and link generation.
+*   **Project Housekeeping**:
+    *   Troubleshot and resolved several environment-specific issues related to running tests on both frontend and backend.
+    *   Consolidated frontend test configuration into `vite.config.ts`.

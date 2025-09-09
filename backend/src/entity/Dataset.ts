@@ -7,20 +7,20 @@ export class Dataset {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   name!: string;
 
   @Column('text', { nullable: true })
   description?: string;
 
-  @Column({ default: true })
+  @Column({ type: 'boolean', default: true })
   isPublic!: boolean;
 
   @ManyToOne(() => User, (user) => user.datasets)
   @JoinColumn({ name: "userId" })
   user: User;
 
-  @Column()
+  @Column({ type: 'varchar' })
   userId: string;
 
   @OneToMany(() => DatasetImage, (image) => image.dataset, { onDelete: 'CASCADE' })
