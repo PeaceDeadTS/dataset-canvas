@@ -8,10 +8,10 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "test": "vitest run",
-    "typeorm": "typeorm-ts-node-commonjs",
-    "migration:generate": "npm run typeorm -- migration:generate -d src/data-source.ts",
-    "migration:create": "npm run typeorm -- migration:create -d src/data-source.ts",
-    "migration:run": "npm run typeorm -- migration:run -d src/data-source.ts"
+    "typeorm": "typeorm-ts-node-commonjs -d src/data-source.ts",
+    "migration:generate": "npm run typeorm -- migration:generate",
+    "migration:create": "npm run typeorm -- migration:create",
+    "migration:run": "npm run typeorm -- migration:run"
   },
   "keywords": [],
   "author": "",
