@@ -6,28 +6,31 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-// Base connection details, default to TCP/IP
-let connectionDetails: Partial<DataSourceOptions> = {
-  host: process.env.DB_HOST || 'localhost',
-  port: Number(process.env.DB_PORT) || 3306,
-};
-
-// If a socket path is provided in the environment, use it instead
-if (process.env.DB_SOCKET_PATH) {
-  connectionDetails = {
-    socketPath: process.env.DB_SOCKET_PATH,
-  };
-}
-
-export const connectionConfig: DataSourceOptions = {
-  type: 'mariadb',
-  ...connectionDetails, // Spread the appropriate connection details
+const baseConfig = {
+  type: 'mariadb' as const, // Use `as const` to help TypeScript narrow the type
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE || 'dataset_canvas',
-  synchronize: false, // Synchronization should not be enabled in production
+  synchronize: false,
   logging: false,
   entities: [User, Dataset, DatasetImage],
   migrations: [],
   subscribers: [],
 };
+
+let connectionConfig: DataSourceOptions;
+
+if (process.env.DB_SOCKET_PATH) {
+  connectionConfig = {
+    ...baseConfig,
+    socketPath: process.env.DB_SOCKET_PATH,
+  };
+} else {
+  connectionConfig = {
+    ...baseConfig,
+    host: process.env.DB_HOST || 'localhost',
+    port: Number(process.env.DB_PORT) || 3306,
+  };
+}
+
+export { connectionConfig };
