@@ -33,5 +33,11 @@ export function useAuth() {
     }
   }, []);
 
-  return { user };
+  const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    window.location.href = '/auth';
+  };
+
+  return { user, logout };
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +11,7 @@ import { toast } from 'sonner';
 const API_URL = '/api/auth'; // Используем относительный путь
 
 export function AuthPage() {
+  const [activeTab, setActiveTab] = useState('login');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [registerUsername, setRegisterUsername] = useState('');
@@ -27,7 +29,7 @@ export function AuthPage() {
       });
       localStorage.setItem('token', response.data.token);
       toast.success('Logged in successfully!');
-      // TODO: Redirect user or update UI
+      window.location.href = '/'; // Redirect user and refresh app state
     } catch (error: any) {
       toast.error(error.response?.data || 'Failed to login');
     } finally {
@@ -45,6 +47,11 @@ export function AuthPage() {
         password: registerPassword,
       });
       toast.success('Registered successfully! Please login.');
+      // Reset form and switch to login tab
+      setRegisterUsername('');
+      setRegisterEmail('');
+      setRegisterPassword('');
+      setActiveTab('login');
     } catch (error: any) {
       toast.error(error.response?.data || 'Failed to register');
     } finally {
@@ -53,8 +60,13 @@ export function AuthPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Tabs defaultValue="login" className="w-[400px]">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-gray-100">
+      <div className="absolute left-8 top-8">
+        <Button asChild variant="outline">
+          <Link to="/">&larr; Back to Home</Link>
+        </Button>
+      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="login" className="w-[400px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="login">Login</TabsTrigger>
           <TabsTrigger value="register">Register</TabsTrigger>

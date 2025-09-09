@@ -8,13 +8,14 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { CreateDatasetDialog } from '@/components/CreateDatasetDialog';
 
-// Re-using the types from DatasetListItem
+// This type is now coming from DatasetListItem, let's define it here
+// for clarity or move to a central types file.
 interface User {
     id: string;
     username: string;
 }
 
-interface Dataset {
+export interface Dataset {
     id: string;
     name: string;
     description?: string;
@@ -24,7 +25,8 @@ interface Dataset {
     imageCount?: number;
 }
 
-const API_URL = 'http://localhost:5000/api';
+
+const API_URL = '/api';
 
 const Index = () => {
     const { user } = useAuth();

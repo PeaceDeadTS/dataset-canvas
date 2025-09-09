@@ -12,7 +12,7 @@ import { Upload } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
-const API_URL = 'http://localhost:5000/api/datasets';
+const API_URL = '/api/datasets';
 
 interface DatasetImage {
   id: number;
@@ -128,9 +128,9 @@ const DatasetPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <DatasetHeader />
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {loading && <Skeleton className="h-8 w-1/2 mb-4" />}
+      <DatasetHeader dataset={dataset || undefined} />
+      <main className="mx-auto max-w-7xl px-6 py-8">
+        {loading && <Skeleton className="mb-4 h-8 w-1/2" />}
         {error && <p className="text-red-500">{error}</p>}
         {dataset && (
           <div>
