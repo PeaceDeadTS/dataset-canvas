@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import * as request from 'supertest';
+import request from 'supertest'; // Changed from import * as request
 import * as jwt from 'jsonwebtoken';
 import { testDataSource } from '../test/test-setup'; // Import the test data source
 import app from '../index'; 
