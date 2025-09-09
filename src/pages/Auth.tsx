@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
-const API_URL = 'http://localhost:5000/api/auth';
+const API_URL = '/api/auth'; // Используем относительный путь
 
 export function AuthPage() {
   const [loginEmail, setLoginEmail] = useState('');
