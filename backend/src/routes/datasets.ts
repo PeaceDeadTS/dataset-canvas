@@ -156,11 +156,17 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
         readable
             .pipe(csv())
             .on('data', (row) => {
-                const image = imageRepository.create({
-                    ...row,
-                    dataset,
-                });
-                images.push(image);
+                // Manually create and assign properties for type safety
+                const newImage = new DatasetImage();
+                newImage.img_key = row.img_key;
+                newImage.row_number = row.row_number ? parseInt(row.row_number, 10) : 0;
+                newImage.filename = row.filename;
+                newImage.url = row.url;
+                newImage.width = row.width ? parseInt(row.width, 10) : 0;
+                newImage.height = row.height ? parseInt(row.height, 10) : 0;
+                newImage.prompt = row.prompt;
+                newImage.dataset = dataset;
+                images.push(newImage);
             })
             .on('end', async () => {
                 try {
