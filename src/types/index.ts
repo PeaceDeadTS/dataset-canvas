@@ -10,7 +10,7 @@ export interface Dataset {
     name: string;
     description?: string;
     isPublic: boolean;
-    user: User;
+    user?: User; // Сделали опциональным для безопасности
     createdAt: string;
     imageCount?: number;
 
@@ -19,4 +19,12 @@ export interface Dataset {
     rowCount?: number;
     likesCount?: number;
     followersCount?: number;
+    
+    // Для страницы конкретного датасета с пагинацией изображений
+    images?: {
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+    };
 }

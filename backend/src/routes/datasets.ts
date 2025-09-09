@@ -121,7 +121,14 @@ router.post('/', checkJwt, async (req: Request, res: Response) => {
     });
 
     await datasetRepository.save(dataset);
-    res.status(201).json(dataset);
+    
+    // Важно: загружаем датасет с user relation для корректного ответа
+    const savedDataset = await datasetRepository.findOne({
+      where: { id: dataset.id },
+      relations: ['user'],
+    });
+    
+    res.status(201).json(savedDataset);
   } catch (error: any) {
     logger.error('Failed to create dataset', { 
       errorMessage: error.message, 

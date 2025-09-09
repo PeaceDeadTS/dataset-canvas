@@ -45,56 +45,42 @@ const DatasetPage = () => {
   const [imagesLoading, setImagesLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalImages, setTotalImages] = useState(0);
   const [selectedImage, setSelectedImage] = useState<DatasetImage | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
 
   useEffect(() => {
     const fetchDataset = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.get(`${API_URL}/${id}`, { headers });
-        setDataset(response.data);
-      } catch (err) {
-        setError('Failed to fetch dataset details.');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      // fetchDataset(); // This is now redundant, fetchImages does it all.
-    }
-  }, [id]);
-
-  useEffect(() => {
-    const fetchImages = async () => {
       if (!id) return;
-      setImagesLoading(true);
+      
       try {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const response = await axios.get(`${API_URL}/${id}?page=${currentPage}&limit=10`, { headers });
-        
-        // When just paginating, we only need to update images and totals
-        // The main dataset object should already be loaded.
-        if (!dataset) {
-            setDataset(response.data);
-        }
+        setDataset(response.data);
         setImages(response.data.images.data);
+        setTotalImages(response.data.images.total);
         setTotalPages(Math.ceil(response.data.images.total / response.data.images.limit));
-
-      } catch (err) {
-        toast.error('Failed to fetch images.');
+      } catch (err: any) {
+        if (err.response?.status === 403) {
+          setError('У вас нет прав для просмотра этого датасета.');
+        } else if (err.response?.status === 404) {
+          setError('Датасет не найден.');
+        } else {
+          setError('Не удалось загрузить датасет.');
+        }
         console.error(err);
       } finally {
+        setLoading(false);
         setImagesLoading(false);
       }
     };
-    fetchImages();
-  }, [id, currentPage, dataset]);
+
+    fetchDataset();
+  }, [id, currentPage]);
+
+  // Этот useEffect больше не нужен - загрузка данных объединена в первом useEffect
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -123,35 +109,8 @@ const DatasetPage = () => {
       });
       toast.success(response.data.message || 'File uploaded successfully!');
       
-      // --- УЛУЧШЕНИЕ ЛОГИКИ ОБНОВЛЕНИЯ ---
-      // Вместо перезагрузки страницы, мы вручную вызовем функцию 
-      // для повторной загрузки данных, чтобы обеспечить плавное обновление.
-      
-      // Обернем fetchImages в useCallback, чтобы избежать лишних ререндеров
-      // и иметь стабильную ссылку на функцию.
-      const fetchImagesAfterUpload = async () => {
-        if (!id) return;
-        setImagesLoading(true);
-        try {
-          const token = localStorage.getItem('token');
-          const headers = token ? { Authorization: `Bearer ${token}` } : {};
-          const response = await axios.get(`${API_URL}/${id}?page=1&limit=10`, { headers });
-          
-          if (!dataset) {
-              setDataset(response.data);
-          }
-          setImages(response.data.images.data);
-          setTotalPages(Math.ceil(response.data.images.total / response.data.images.limit));
-          setCurrentPage(1); // Сбрасываем на первую страницу
-
-        } catch (err) {
-          toast.error('Failed to refresh images after upload.');
-        } finally {
-          setImagesLoading(false);
-        }
-      };
-
-      fetchImagesAfterUpload();
+      // Обновляем данные после успешной загрузки
+      setCurrentPage(1); // Сбрасываем на первую страницу - это автоматически запустит перезагрузку данных
 
     } catch (err: any) {
       toast.error(err.response?.data?.message || err.response?.data || 'Failed to upload file.');
@@ -207,7 +166,7 @@ const DatasetPage = () => {
     return []; // Should not happen
   };
 
-  const canUpload = user && dataset && (user.role === 'Administrator' || user.id === dataset.user.id);
+  const canUpload = user && dataset && (user.role === 'Administrator' || (dataset.user && user.id === dataset.user.id));
 
   return (
     <div className="min-h-screen bg-background">
@@ -246,7 +205,7 @@ const DatasetPage = () => {
 
             {/* Image display */}
             <div className="mt-8">
-              <h2 className="text-xl font-semibold mb-4">Dataset Images ({dataset.images?.total || 0})</h2>
+              <h2 className="text-xl font-semibold mb-4">Dataset Images ({totalImages})</h2>
               {imagesLoading ? (
                 <Skeleton className="h-64 w-full" />
               ) : images.length > 0 ? (
