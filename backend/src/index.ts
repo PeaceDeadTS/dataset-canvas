@@ -8,7 +8,12 @@ import logger from './logger';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5173', // Явно указываем разрешенный источник
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Разрешаем все нужные методы
+  allowedHeaders: ['Content-Type', 'Authorization'], // Разрешаем необходимые заголовки
+  exposedHeaders: ['token'], // Указываем, что фронтенд может читать заголовок 'token'
+}));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
