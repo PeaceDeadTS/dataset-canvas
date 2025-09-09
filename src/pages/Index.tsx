@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
-import { DatasetHeader } from "@/components/DatasetHeader";
+import { AppHeader } from "@/components/AppHeader";
 import { DatasetListItem } from "@/components/DatasetListItem";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,7 +42,7 @@ const Index = () => {
     const { publicDatasets, userPrivateDatasets } = useMemo(() => {
         const publicDatasets = datasets.filter(d => d.isPublic);
         const userPrivateDatasets = user 
-            ? datasets.filter(d => !d.isPublic && d.username === user.username) 
+            ? datasets.filter(d => !d.isPublic && d.user?.username === user.username) 
             : [];
         return { publicDatasets, userPrivateDatasets };
     }, [datasets, user]);
@@ -50,7 +50,7 @@ const Index = () => {
 
     return (
         <div className="min-h-screen bg-background">
-            <DatasetHeader />
+            <AppHeader />
             
             <main className="max-w-7xl mx-auto px-6 py-8 space-y-12">
                 {user && userPrivateDatasets.length > 0 && (
