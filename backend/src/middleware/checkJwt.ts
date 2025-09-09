@@ -59,7 +59,7 @@ export const checkJwtOptional = (req: Request, res: Response, next: NextFunction
             expiresIn: '1h',
         });
         res.setHeader('token', newToken);
-    } catch (error) {
+    } catch (error: any) {
         logger.warn('🔍 checkJwtOptional: Недействительный токен, продолжаем как анонимный', { error: error.message });
         // If token is invalid, just proceed without user info
     }
