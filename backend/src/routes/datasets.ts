@@ -119,8 +119,12 @@ router.post('/', checkJwt, async (req: Request, res: Response) => {
 
     await datasetRepository.save(dataset);
     res.status(201).json(dataset);
-  } catch (error) {
-    logger.error('Failed to create dataset', { error });
+  } catch (error: any) {
+    logger.error('Failed to create dataset', { 
+      errorMessage: error.message, 
+      errorStack: error.stack,
+      error: error 
+    });
     res.status(500).send('Internal Server Error');
   }
 });
