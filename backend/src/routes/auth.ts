@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { getRepository } from 'typeorm';
-import { User, UserRole } from '../entity/User';
+import { User, UserRole } from '../entity/User.entity';
 import jwt from 'jsonwebtoken';
+import { getManager } from 'typeorm';
+import logger from '../logger';
 
 const router = Router();
 

@@ -1,88 +1,110 @@
 import request from 'supertest';
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { app, startServer, dataSource } from '../index'; // Use named import
-import { User, UserRole } from '../entity/User';
+import { describe, it, beforeAll, afterAll, expect } from 'vitest';
+import { app, startServer } from '../index'; // dataSource удален
+import { AppDataSource } from '../data-source'; // Импортируем AppDataSource
+import { User, UserRole } from '../entity/User.entity';
 import jwt from 'jsonwebtoken';
-import { Dataset } from '../entity/Dataset';
+import { Dataset } from '../entity/Dataset.entity';
 
-describe('Dataset Routes', () => {
-  let developerToken: string;
-  let userToken: string;
-  let developer: User;
-  let regularUser: User;
+let server;
+
+describe('Datasets API', () => {
+  let token: string;
+  let adminToken: string;
+  let userId: string;
+  let adminId: string;
 
   beforeAll(async () => {
-    await startServer(); // Ensure server and DB connection are up
-    const userRepository = dataSource.getRepository(User);
-    const datasetRepository = dataSource.getRepository(Dataset);
-
-    // Clean up database before tests
-    await datasetRepository.delete({});
-    await userRepository.delete({});
+    await startServer();
+    // Используем AppDataSource напрямую
+    await AppDataSource.synchronize(true); // Очищаем и создаем схему для теста
 
     // Create users and tokens
-    developer = userRepository.create({
+    const userRepo = AppDataSource.getRepository(User);
+    const datasetRepo = AppDataSource.getRepository(Dataset);
+
+    // Clean up database before tests
+    await datasetRepo.delete({});
+    await userRepo.delete({});
+
+    // Create users and tokens
+    const devUser = userRepo.create({
       username: 'dev',
       password: 'password',
       email: 'dev@test.com',
       role: UserRole.DEVELOPER,
     });
-    await developer.hashPassword();
-    await userRepository.save(developer);
+    await devUser.hashPassword();
+    await userRepo.save(devUser);
 
-    regularUser = userRepository.create({
-      username: 'user',
+    const adminUser = userRepo.create({
+      username: 'admin',
       password: 'password',
-      email: 'user@test.com',
-      role: UserRole.USER,
+      email: 'admin@test.com',
+      role: UserRole.ADMINISTRATOR,
     });
-    await regularUser.hashPassword();
-    await userRepository.save(regularUser);
+    await adminUser.hashPassword();
+    await userRepo.save(adminUser);
 
-    developerToken = jwt.sign(
-      { userId: developer.id, role: developer.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: '1h' }
-    );
-    userToken = jwt.sign(
-      { userId: regularUser.id, role: regularUser.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: '1h' }
-    );
+    userId = devUser.id;
+    adminId = adminUser.id;
+
+    token = jwt.sign({ userId, role: UserRole.DEVELOPER }, process.env.JWT_SECRET!, { expiresIn: '1h' });
+    adminToken = jwt.sign({ userId: adminId, role: UserRole.ADMINISTRATOR }, process.env.JWT_SECRET!, { expiresIn: '1h' });
   });
 
   afterAll(async () => {
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
+    await AppDataSource.destroy();
   });
 
-  describe('POST /api/datasets', () => {
-    it('should create a new dataset for a developer', async () => {
-      const res = await request(app)
-        .post('/api/datasets')
-        .set('Authorization', `Bearer ${developerToken}`)
-        .send({
-          name: 'Test Dataset',
-          description: 'A description for the test dataset.',
-          isPublic: true,
-        });
+  it('should create a dataset for an authenticated developer', async () => {
+    const response = await request(app)
+      .post('/api/datasets')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Test Dataset',
+        description: 'A description for the test dataset.',
+        isPublic: true,
+      });
 
-      expect(res.status).toBe(201);
-      expect(res.body).toHaveProperty('id');
-      expect(res.body.name).toBe('Test Dataset');
-      expect(res.body.userId).toBe(developer.id);
-    });
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty('id');
+    expect(response.body.name).toBe('Test Dataset');
 
-    it('should return 403 Forbidden for a regular user', async () => {
-      const res = await request(app)
-        .post('/api/datasets')
-        .set('Authorization', `Bearer ${userToken}`)
-        .send({
-          name: 'Forbidden Dataset',
-        });
+    const datasetRepo = AppDataSource.getRepository(Dataset);
+    const dataset = await datasetRepo.findOne({ where: { id: response.body.id } });
+    expect(dataset).not.toBeNull();
+  });
 
-      expect(res.status).toBe(403);
-    });
+  it('should return 403 Forbidden for a regular user', async () => {
+    const response = await request(app)
+      .post('/api/datasets')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Forbidden Dataset',
+      });
+
+    expect(response.status).toBe(403);
+  });
+
+  it('should return 403 Forbidden for an admin user', async () => {
+    const response = await request(app)
+      .post('/api/datasets')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        name: 'Forbidden Dataset',
+      });
+
+    expect(response.status).toBe(403);
+  });
+
+  it('should return 401 Unauthorized for unauthenticated requests', async () => {
+    const response = await request(app)
+      .post('/api/datasets')
+      .send({
+        name: 'Unauthorized Dataset',
+      });
+
+    expect(response.status).toBe(401);
   });
 });

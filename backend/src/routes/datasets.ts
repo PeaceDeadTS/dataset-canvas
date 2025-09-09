@@ -1,13 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { getManager } from 'typeorm';
-import { Dataset } from '../entity/Dataset';
-import { User, UserRole } from '../entity/User';
+import { Dataset } from '../entity/Dataset.entity';
+import { User, UserRole } from '../entity/User.entity';
 import { checkJwt, checkJwtOptional } from '../middleware/checkJwt';
 import { Brackets } from 'typeorm';
 import multer from 'multer';
 import csv from 'csv-parser';
 import { Readable } from 'stream';
-import { DatasetImage } from '../entity/DatasetImage';
+import { DatasetImage } from '../entity/DatasetImage.entity';
 import logger from '../logger';
 
 const router = Router();
