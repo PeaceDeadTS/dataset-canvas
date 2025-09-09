@@ -97,6 +97,8 @@ router.get('/:id', checkJwtOptional, async (req: Request, res: Response) => {
 
 // POST /api/datasets - Create a new dataset
 router.post('/', checkJwt, async (req: Request, res: Response) => {
+  logger.info('Create dataset endpoint hit', { body: req.body, user: req.user });
+
   if (!req.user || (req.user.role !== UserRole.DEVELOPER && req.user.role !== UserRole.ADMIN)) {
     return res.status(403).send('Only developers and admins can create datasets');
   }
