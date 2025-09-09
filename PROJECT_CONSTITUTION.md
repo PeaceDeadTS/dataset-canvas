@@ -27,6 +27,7 @@ The project is architected with a distinct frontend and backend.
     *   `Dataset`: Represents a dataset "container," with properties like `name`, `description`, `isPublic`, and relationships to its owner (`user`) and its images.
     *   `DatasetImage`: Stores metadata for each image within a dataset, including `url`, `filename`, and `prompt`.
 *   **API**: A RESTful API is exposed under `/api` for all frontend-backend communication.
+*   **Test-Safe Entry Point**: The main application entry point (`src/index.ts`) is structured to prevent side effects (like automatic database connections) during testing. The server startup and database connection logic are encapsulated in an exported function that is only called when the application is run directly, not when its modules are imported by test files.
 *   **Data Integrity**:
     *   **Cascading Deletes**: The relationship between `Dataset` and `DatasetImage` is configured with `onDelete: 'CASCADE'`. This ensures that when a dataset is deleted, all its associated image records are automatically removed, preventing orphaned data.
     *   **Overwrite on Upload**: The CSV upload endpoint (`POST /api/datasets/:id/upload`) operates in an "overwrite" mode. It first deletes all existing images in a dataset before inserting the new records, simplifying data updates.

@@ -3,33 +3,39 @@ import express from 'express';
 import cors from 'cors';
 import { createConnection } from 'typeorm';
 import config from '../ormconfig';
-import * as dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import datasetRoutes from './routes/datasets';
 import logger from './logger';
 
-dotenv.config();
-
 const app = express();
-const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-createConnection(config)
-    .then(async connection => {
-        logger.info('Database connected successfully');
-    }).catch(error => logger.error('TypeORM connection error: ', error));
-
-
 app.use('/api/auth', authRoutes);
 app.use('/api/datasets', datasetRoutes);
 
-if (process.env.NODE_ENV !== 'test') {
-    app.listen(port, () => {
+export const startServer = async () => {
+  try {
+    await createConnection(config);
+    logger.info('Database connected successfully');
+    
+    if (process.env.NODE_ENV !== 'test') {
+      const port = process.env.PORT || 5000;
+      app.listen(port, () => {
         logger.info(`Server running on http://localhost:${port}`);
-    });
-}
+      });
+    }
+  } catch (error) {
+    logger.error('TypeORM connection error: ', error);
+    // Exit process with failure
+    process.exit(1);
+  }
+};
 
+// Start the server only if this file is run directly
+if (require.main === module) {
+  startServer();
+}
 
 export default app;
