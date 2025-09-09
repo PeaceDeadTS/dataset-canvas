@@ -1,22 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-
-// Define the types based on our backend entities
-interface User {
-    id: string;
-    username: string;
-}
-
-export interface Dataset {
-    id: string;
-    name: string;
-    description?: string;
-    isPublic: boolean;
-    user: User;
-    createdAt: string;
-    imageCount?: number;
-}
+import { Dataset } from "@/types";
 
 interface DatasetListItemProps {
     dataset: Dataset;

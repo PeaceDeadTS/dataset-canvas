@@ -7,23 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { CreateDatasetDialog } from '@/components/CreateDatasetDialog';
-
-// This type should be shared, but for now we define it here to fix the crash
-interface User {
-    id: string;
-    username: string;
-}
-
-export interface Dataset {
-    id: string;
-    name: string;
-    description?: string;
-    isPublic: boolean;
-    user: User;
-    createdAt: string;
-    imageCount?: number;
-}
-
+import { Dataset } from "@/types";
 
 const API_URL = '/api';
 

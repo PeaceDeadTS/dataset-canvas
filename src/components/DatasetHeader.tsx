@@ -19,22 +19,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-// TODO: Move to a shared types file
-interface DatasetForHeader {
-  name: string;
-  user: {
-    username: string;
-  };
-  // These are illustrative; adapt to your actual data model
-  modalities?: string[];
-  rowCount?: number;
-  likesCount?: number;
-  followersCount?: number;
-}
+import { Dataset } from "@/types";
 
 interface DatasetHeaderProps {
-  dataset?: DatasetForHeader;
+  dataset?: Dataset;
 }
 
 export function DatasetHeader({ dataset }: DatasetHeaderProps) {
