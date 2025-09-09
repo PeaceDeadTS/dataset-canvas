@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { DatasetHeader } from "@/components/DatasetHeader";
 import { DatasetListItem } from "@/components/DatasetListItem";
@@ -39,45 +39,69 @@ const Index = () => {
         fetchDatasets();
     }, []);
 
+    const { publicDatasets, userPrivateDatasets } = useMemo(() => {
+        const publicDatasets = datasets.filter(d => d.isPublic);
+        const userPrivateDatasets = user 
+            ? datasets.filter(d => !d.isPublic && d.user?.username === user.username) 
+            : [];
+        return { publicDatasets, userPrivateDatasets };
+    }, [datasets, user]);
+
+
     return (
         <div className="min-h-screen bg-background">
             <DatasetHeader />
             
-            <main className="max-w-7xl mx-auto px-6 py-8">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold">Public Datasets</h1>
-                    {user && (user.role === 'Administrator' || user.role === 'Developer') && (
-                       <CreateDatasetDialog onDatasetCreated={handleDatasetCreated} />
-                    )}
-                </div>
-                
-                {loading && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                           <div key={i} className="flex flex-col space-y-3">
-                              <Skeleton className="h-[125px] w-full rounded-xl" />
-                              <div className="space-y-2">
-                                <Skeleton className="h-4 w-[250px]" />
-                                <Skeleton className="h-4 w-[200px]" />
-                              </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-                
-                {error && <p className="text-red-500">{error}</p>}
-
-                {!loading && !error && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {datasets.length > 0 ? (
-                            datasets.map(dataset => (
+            <main className="max-w-7xl mx-auto px-6 py-8 space-y-12">
+                {user && userPrivateDatasets.length > 0 && (
+                    <section>
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold">My Private Datasets</h1>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {userPrivateDatasets.map(dataset => (
                                 <DatasetListItem key={dataset.id} dataset={dataset} />
-                            ))
-                        ) : (
-                            <p>No datasets found.</p>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                <section>
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold">Public Datasets</h1>
+                        {user && (user.role === 'Administrator' || user.role === 'Developer') && (
+                           <CreateDatasetDialog onDatasetCreated={handleDatasetCreated} />
                         )}
                     </div>
-                )}
+                    
+                    {loading && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {Array.from({ length: 6 }).map((_, i) => (
+                               <div key={i} className="flex flex-col space-y-3">
+                                  <Skeleton className="h-[125px] w-full rounded-xl" />
+                                  <div className="space-y-2">
+                                    <Skeleton className="h-4 w-[250px]" />
+                                    <Skeleton className="h-4 w-[200px]" />
+                                  </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    
+                    {error && <p className="text-red-500">{error}</p>}
+
+                    {!loading && !error && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {publicDatasets.length > 0 ? (
+                                publicDatasets.map(dataset => (
+                                    <DatasetListItem key={dataset.id} dataset={dataset} />
+                                ))
+                            ) : (
+                                <p>No public datasets found.</p>
+                            )}
+                        </div>
+                    )}
+                </section>
             </main>
         </div>
     );
