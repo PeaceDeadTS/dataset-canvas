@@ -54,7 +54,7 @@ const DatasetPage = () => {
     };
 
     if (id) {
-      fetchDataset();
+      // fetchDataset(); // This is now redundant, fetchImages does it all.
     }
   }, [id]);
 
@@ -65,9 +65,16 @@ const DatasetPage = () => {
       try {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.get(`${API_URL}/${id}/images?page=${currentPage}&limit=10`, { headers });
-        setImages(response.data.data);
-        setTotalPages(response.data.last_page);
+        const response = await axios.get(`${API_URL}/${id}?page=${currentPage}&limit=10`, { headers });
+        
+        // When just paginating, we only need to update images and totals
+        // The main dataset object should already be loaded.
+        if (!dataset) {
+            setDataset(response.data);
+        }
+        setImages(response.data.images.data);
+        setTotalPages(Math.ceil(response.data.images.total / response.data.images.limit));
+
       } catch (err) {
         toast.error('Failed to fetch images.');
         console.error(err);
