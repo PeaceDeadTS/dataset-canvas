@@ -8,7 +8,7 @@ import multer from 'multer';
 import csv from 'csv-parser';
 import { Readable } from 'stream';
 import { DatasetImage } from '../entity/DatasetImage';
-import { logger } from '../logger';
+import logger from '../logger';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
