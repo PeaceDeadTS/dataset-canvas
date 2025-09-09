@@ -24,11 +24,11 @@ if (process.env.DB_SOCKET_PATH) {
 const config: ConnectionOptions = {
     type: "mariadb",
     ...connectionDetails, // Spread the appropriate connection details
-    username: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "password",
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
     database: isTest 
-        ? process.env.TEST_DB_NAME || "dataset_canvas_test" 
-        : process.env.DB_NAME || "dataset_canvas",
+        ? process.env.DB_DATABASE || "dataset_canvas_test" 
+        : process.env.DB_DATABASE || "dataset_canvas",
     synchronize: true,
     logging: false,
     entities: [
