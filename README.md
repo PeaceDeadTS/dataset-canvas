@@ -29,7 +29,7 @@ Follow these instructions to get a local copy up and running for development and
 
 1.  **Clone the repository:**
     ```sh
-    git clone <YOUR_GIT_REPOSITORY_URL>
+    git clone https://github.com/PeaceDeadTS/dataset-canvas.git
     cd dataset-canvas
     ```
 
