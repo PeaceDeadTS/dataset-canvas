@@ -6,8 +6,6 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const isTest = process.env.NODE_ENV === 'test';
-
 // Base connection details, default to TCP/IP
 let connectionDetails: Partial<ConnectionOptions> = {
     host: process.env.DB_HOST || "localhost",
@@ -26,10 +24,8 @@ const config: ConnectionOptions = {
     ...connectionDetails, // Spread the appropriate connection details
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: isTest 
-        ? process.env.DB_DATABASE || "dataset_canvas_test" 
-        : process.env.DB_DATABASE || "dataset_canvas",
-    synchronize: true,
+    database: process.env.DB_DATABASE || "dataset_canvas",
+    synchronize: false, // Synchronization should not be enabled in production
     logging: false,
     entities: [
         User,
