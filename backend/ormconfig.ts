@@ -3,11 +3,12 @@ import { User } from './src/entity/User';
 import { Dataset } from './src/entity/Dataset';
 import { DatasetImage } from './src/entity/DatasetImage';
 import * as dotenv from 'dotenv';
+import { MariaDbConnectionOptions } from 'typeorm/driver/mariadb/MariaDbConnectionOptions';
 
 dotenv.config();
 
 // Base connection details, default to TCP/IP
-let connectionDetails: Partial<DataSourceOptions> = {
+let connectionDetails: Partial<MariaDbConnectionOptions> = {
   host: process.env.DB_HOST || 'localhost',
   port: Number(process.env.DB_PORT) || 3306,
 };

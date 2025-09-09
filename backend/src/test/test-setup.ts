@@ -16,9 +16,10 @@ beforeAll(async () => {
   const testDbName = 'dataset_canvas_test_safe';
 
   // Use a separate connection to create the test database
+  const { database, ...initialConfig } = connectionConfig;
+
   const initialConnection = new DataSource({
-    ...connectionConfig,
-    database: undefined, // Connect without specifying a database first
+    ...initialConfig,
   });
   await initialConnection.initialize();
   await initialConnection.query(`CREATE DATABASE IF NOT EXISTS \`${testDbName}\``);
