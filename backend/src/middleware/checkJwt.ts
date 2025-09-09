@@ -1,23 +1,34 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import logger from '../logger';
 
 export const checkJwt = (req: Request, res: Response, next: NextFunction) => {
-  const token = <string>req.headers['authorization']?.split(' ')[1];
-  let jwtPayload;
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-  try {
-    jwtPayload = <any>jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
-    res.locals.jwtPayload = jwtPayload;
-  } catch (error) {
-    res.status(401).send('Unauthorized');
-    return;
+  if (!token) {
+    logger.warn('No token provided');
+    return res.status(401).send('Unauthorized: No token provided');
   }
 
-  const { userId, username, role } = jwtPayload;
-  const newToken = jwt.sign({ userId, username, role }, process.env.JWT_SECRET || 'your_jwt_secret', {
-    expiresIn: '1h',
-  });
-  res.setHeader('token', newToken);
+  let jwtPayload;
+  try {
+    jwtPayload = <any>jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    
+    // Важнейшее исправление: добавляем данные в req.user
+    const { userId, username, email, role } = jwtPayload;
+    req.user = { userId, username, email, role };
+
+    // Обновляем токен
+    const newToken = jwt.sign({ userId, username, email, role }, process.env.JWT_SECRET || 'your_jwt_secret', {
+      expiresIn: '1h',
+    });
+    res.setHeader('token', newToken);
+
+  } catch (error) {
+    logger.error('JWT Error', { error });
+    return res.status(401).send('Unauthorized: Invalid token');
+  }
 
   next();
 };
