@@ -12,6 +12,20 @@ import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Dataset } from "@/types";
 import { Badge } from "./ui/badge";
+import { Settings, Trash2 } from "lucide-react";
+import axios from 'axios';
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
 
 interface DatasetHeaderProps {
   dataset?: Dataset;
@@ -19,11 +33,34 @@ interface DatasetHeaderProps {
 
 export function DatasetHeader({ dataset }: DatasetHeaderProps) {
   const { user, logout } = useAuth();
-  const navigate = useNavigate(); // Инициализируем хук
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    navigate(0); // Перезагружаем страницу
+    navigate(0);
+  };
+
+  // Проверяем права на управление датасетом
+  const canManageDataset = dataset && user && (
+    user.role === 'Administrator' || 
+    (dataset.user && user.id === dataset.user.id)
+  );
+
+  const handleDeleteDataset = async () => {
+    if (!dataset) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/datasets/${dataset.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success('Датасет успешно удален');
+      navigate('/'); // Перенаправляем на главную страницу
+    } catch (error: any) {
+      toast.error(error.response?.data || 'Ошибка при удалении датасета');
+      console.error(error);
+    }
   };
 
   return (
@@ -31,27 +68,64 @@ export function DatasetHeader({ dataset }: DatasetHeaderProps) {
       <div className="mx-auto max-w-7xl px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div>
-              {dataset ? (
+            {dataset ? (
                 <>
-                  <h1 className="text-2xl font-semibold text-foreground">
-                    <span className="text-muted-foreground">Datasets:</span>{" "}
-                    <Link
-                      to={`/`}
-                      className="text-primary hover:underline"
-                    >
-                      {dataset.user.username}
-                    </Link>
-                    <span className="text-foreground"> / </span>
-                    <span className="text-primary">{dataset.name}</span>
-                  </h1>
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <h1 className="text-2xl font-semibold text-foreground">
+                        <span className="text-muted-foreground">Datasets:</span>{" "}
+                        <Link
+                          to={`/`}
+                          className="text-primary hover:underline"
+                        >
+                          {dataset.user?.username || 'Unknown'}
+                        </Link>
+                        <span className="text-foreground"> / </span>
+                        <span className="text-primary">{dataset.name}</span>
+                      </h1>
+                      {!dataset.isPublic && (
+                        <Badge variant="secondary">Private</Badge>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {canManageDataset && (
+                    <div className="flex items-center space-x-2">
+                      <Button variant="outline" size="sm">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Settings
+                      </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Это действие нельзя отменить. Датасет "{dataset.name}" и все связанные с ним изображения будут удалены навсегда.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Отмена</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteDataset} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Удалить
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  )}
                 </>
-              ) : (
-                <h1 className="text-2xl font-semibold text-foreground">
-                  Public Datasets
-                </h1>
-              )}
-            </div>
+            ) : (
+              <h1 className="text-2xl font-semibold text-foreground">
+                Dataset Canvas
+              </h1>
+            )}
           </div>
 
           <div className="flex items-center space-x-3">

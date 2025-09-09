@@ -20,7 +20,7 @@ export function DatasetListItem({ dataset }: DatasetListItemProps) {
                     <p className="text-sm text-muted-foreground line-clamp-2">{dataset.description || 'No description available.'}</p>
                 </CardContent>
                 <CardFooter className="flex justify-between text-xs text-muted-foreground">
-                    <span>by {dataset.user.username}</span>
+                    <span>by {dataset.user?.username || 'Unknown'}</span>
                     <span>{new Date(dataset.createdAt).toLocaleDateString()}</span>
                     <span>{dataset.imageCount || 0} items</span>
                 </CardFooter>

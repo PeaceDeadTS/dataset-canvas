@@ -21,52 +21,33 @@ const Index = () => {
         setDatasets(prevDatasets => [newDataset, ...prevDatasets]);
     };
 
+    const handleDatasetDeleted = (datasetId: string) => {
+        setDatasets(prevDatasets => prevDatasets.filter(d => d.id !== datasetId));
+    };
+
     useEffect(() => {
         const fetchDatasets = async () => {
             try {
                 const token = localStorage.getItem('token');
                 const headers = token ? { Authorization: `Bearer ${token}` } : {};
-                console.log('🔍 Отправляем запрос на /api/datasets с токеном:', !!token);
-                console.log('👤 Текущий пользователь:', user);
-                
                 const response = await axios.get(`${API_URL}/datasets`, { headers });
-                console.log('📊 Получены датасеты:', response.data);
                 setDatasets(response.data);
             } catch (err) {
                 setError('Failed to fetch datasets.');
-                console.error('❌ Ошибка при получении датасетов:', err);
+                console.error(err);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchDatasets();
-    }, [user]); // Добавляем user в зависимости
+    }, [user]);
 
     const { publicDatasets, userPrivateDatasets } = useMemo(() => {
-        console.log('🔄 Фильтруем датасеты. Всего датасетов:', datasets.length);
-        console.log('📊 Все датасеты:', datasets);
-        console.log('👤 Текущий пользователь для фильтрации:', user);
-        
         const publicDatasets = datasets.filter(d => d.isPublic);
-        console.log('🌍 Публичные датасеты:', publicDatasets.length, publicDatasets);
-        
         const userPrivateDatasets = user 
-            ? datasets.filter(d => {
-                const isPrivate = !d.isPublic;
-                const isOwner = d.user?.username === user.username;
-                console.log(`🔐 Проверяем датасет "${d.name}":`, {
-                    isPrivate,
-                    isOwner,
-                    datasetUser: d.user?.username,
-                    currentUser: user.username,
-                    match: isPrivate && isOwner
-                });
-                return isPrivate && isOwner;
-              })
+            ? datasets.filter(d => !d.isPublic && d.user?.username === user.username) 
             : [];
-            
-        console.log('🔐 Приватные датасеты пользователя:', userPrivateDatasets.length, userPrivateDatasets);
         return { publicDatasets, userPrivateDatasets };
     }, [datasets, user]);
 

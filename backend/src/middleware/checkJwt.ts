@@ -36,7 +36,6 @@ export const checkJwt = (req: Request, res: Response, next: NextFunction) => {
 export const checkJwtOptional = (req: Request, res: Response, next: NextFunction) => {
     const token = <string>req.headers['authorization']?.split(' ')[1];
     if (!token) {
-        logger.info('🔍 checkJwtOptional: Нет токена, продолжаем как анонимный пользователь');
         return next();
     }
 
@@ -48,19 +47,12 @@ export const checkJwtOptional = (req: Request, res: Response, next: NextFunction
         // ВАЖНО: Устанавливаем req.user для авторизованных пользователей
         const { userId, username, email, role } = jwtPayload;
         req.user = { userId, username, email, role };
-        
-        logger.info('🔍 checkJwtOptional: Пользователь авторизован', { 
-            userId, 
-            username, 
-            role 
-        });
 
         const newToken = jwt.sign({ userId, username, email, role }, process.env.JWT_SECRET || 'your_jwt_secret', {
             expiresIn: '1h',
         });
         res.setHeader('token', newToken);
     } catch (error: any) {
-        logger.warn('🔍 checkJwtOptional: Недействительный токен, продолжаем как анонимный', { error: error.message });
         // If token is invalid, just proceed without user info
     }
 
