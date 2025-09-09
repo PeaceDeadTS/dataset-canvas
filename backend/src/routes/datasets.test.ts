@@ -41,7 +41,7 @@ describe('Datasets API', () => {
       username: 'admin',
       password: 'password',
       email: 'admin@test.com',
-      role: UserRole.ADMINISTRATOR,
+      role: UserRole.ADMIN,
     });
     await adminUser.hashPassword();
     await userRepo.save(adminUser);
@@ -50,7 +50,7 @@ describe('Datasets API', () => {
     adminId = adminUser.id;
 
     token = jwt.sign({ userId, role: UserRole.DEVELOPER }, process.env.JWT_SECRET!, { expiresIn: '1h' });
-    adminToken = jwt.sign({ userId: adminId, role: UserRole.ADMINISTRATOR }, process.env.JWT_SECRET!, { expiresIn: '1h' });
+    adminToken = jwt.sign({ userId: adminId, role: UserRole.ADMIN }, process.env.JWT_SECRET!, { expiresIn: '1h' });
   });
 
   afterAll(async () => {
