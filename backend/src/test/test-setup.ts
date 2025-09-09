@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { connectionConfig as originalConnectionConfig } from '../../ormconfig'; // Import the original config
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -16,11 +16,12 @@ beforeAll(async () => {
   const testDbName = 'dataset_canvas_test_safe';
 
   // Use a separate connection to create the test database
-  const { database, ...initialConfig } = connectionConfig;
+  const { database, ...initialConfigWithoutDb } = connectionConfig;
 
   const initialConnection = new DataSource({
-    ...initialConfig,
-  });
+    ...initialConfigWithoutDb,
+    type: 'mariadb', // Explicitly set type to help TypeScript
+  } as DataSourceOptions);
   await initialConnection.initialize();
   await initialConnection.query(`CREATE DATABASE IF NOT EXISTS \`${testDbName}\``);
   await initialConnection.destroy();
