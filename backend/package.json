@@ -9,8 +9,7 @@
     "build": "tsc",
     "test": "vitest run",
     "typeorm": "typeorm-ts-node-commonjs -d src/data-source.ts",
-    "migration:generate": "npm run typeorm -- migration:generate",
-    "migration:create": "npm run typeorm -- migration:create",
+    "migration:generate": "npm run typeorm -- migration:generate src/migrations/initial",
     "migration:run": "npm run typeorm -- migration:run"
   },
   "keywords": [],

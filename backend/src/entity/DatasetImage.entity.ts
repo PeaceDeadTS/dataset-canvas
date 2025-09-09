@@ -34,7 +34,7 @@ export class DatasetImage {
   @Column('text')
   prompt!: string;
 
-  @ManyToOne(() => Dataset, (dataset) => dataset.images)
+  @ManyToOne(() => Dataset, (dataset) => dataset.images, { onDelete: 'CASCADE' })
   dataset!: Dataset;
 
   @CreateDateColumn()

@@ -24,8 +24,7 @@ export class Dataset {
   userId!: string;
 
   @OneToMany(() => DatasetImage, (image) => image.dataset, { 
-    cascade: true, 
-    onDelete: 'CASCADE'
+    cascade: true,
   })
   images!: DatasetImage[];
 
