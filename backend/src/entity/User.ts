@@ -14,7 +14,7 @@ export class User {
   id!: string;
 
   @OneToMany(() => Dataset, (dataset) => dataset.user)
-  datasets: Dataset[];
+  datasets!: Dataset[];
 
   @Column({ unique: true, type: 'varchar' })
   username!: string;
@@ -25,11 +25,7 @@ export class User {
   @Column({ type: 'varchar' })
   password!: string;
 
-  @Column({
-    type: 'enum',
-    enum: UserRole,
-    default: UserRole.USER,
-  })
+  @Column({ default: UserRole.USER })
   role!: UserRole;
 
   @CreateDateColumn()

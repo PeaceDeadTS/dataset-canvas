@@ -9,8 +9,9 @@
         "forceConsistentCasingInFileNames": true,
         "outDir": "./dist",
         "experimentalDecorators": true,
-        "emitDecoratorMetadata": true
+        "emitDecoratorMetadata": true,
+        "types": ["node", "vitest/globals"]
     },
-    "include": ["src/**/*.ts"],
+    "include": ["src/**/*", "ormconfig.ts"],
     "exclude": ["node_modules"]
 }

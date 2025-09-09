@@ -11,35 +11,35 @@ import { Dataset } from "./Dataset";
 @Entity()
 export class DatasetImage {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
-  @Column({ type: "uuid", generated: "uuid" })
-  img_key: string;
+  @Column()
+  img_key!: string;
 
-  @Column({ type: "int" })
-  row_number: number;
+  @Column()
+  row_number!: number;
 
-  @Column({ type: "varchar" })
-  filename: string;
+  @Column()
+  filename!: string;
 
-  @Column({ type: "varchar" })
-  url: string;
+  @Column()
+  url!: string;
 
-  @Column({ type: "int" })
-  width: number;
+  @Column()
+  width!: number;
 
-  @Column({ type: "int" })
-  height: number;
+  @Column()
+  height!: number;
 
-  @Column("text")
-  prompt: string;
+  @Column('text')
+  prompt!: string;
 
   @ManyToOne(() => Dataset, (dataset) => dataset.images)
-  dataset: Dataset;
+  dataset!: Dataset;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

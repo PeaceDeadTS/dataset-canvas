@@ -1,24 +1,25 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { getManager } from 'typeorm';
 import { Dataset } from '../entity/Dataset';
 import { User, UserRole } from '../entity/User';
 import { checkJwt, checkJwtOptional } from '../middleware/checkJwt';
 import { Brackets } from 'typeorm';
 import multer from 'multer';
-import * as csv from 'csv-parser';
+import csv from 'csv-parser';
 import { Readable } from 'stream';
 import { DatasetImage } from '../entity/DatasetImage';
-import logger from '../logger';
+import { logger } from '../logger';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Create a new dataset
-router.post('/', [checkJwt], async (req, res) => {
+router.post('/', [checkJwt], async (req: Request, res: Response) => {
     const { name, description, isPublic } = req.body;
-    const { userId, role } = res.locals.jwtPayload;
+    const userId = res.locals.jwtPayload.userId;
+    const userRole = res.locals.jwtPayload.role;
 
-    if (role !== UserRole.ADMIN && role !== UserRole.DEVELOPER) {
+    if (userRole !== UserRole.ADMIN && userRole !== UserRole.DEVELOPER) {
         return res.status(403).send('Forbidden');
     }
 
@@ -52,8 +53,9 @@ router.post('/', [checkJwt], async (req, res) => {
 });
 
 // Get all datasets
-router.get('/', [checkJwtOptional], async (req, res) => {
-    const { userId, role } = res.locals.jwtPayload || {};
+router.get('/', [checkJwtOptional], async (req: Request, res: Response) => {
+    const userId = res.locals.jwtPayload?.userId;
+    const userRole = res.locals.jwtPayload?.role;
     const datasetRepository = getManager().getRepository(Dataset);
 
     try {
@@ -63,7 +65,7 @@ router.get('/', [checkJwtOptional], async (req, res) => {
             .where('dataset.isPublic = :isPublic', { isPublic: true });
 
         if (userId) {
-            if (role === UserRole.ADMIN) {
+            if (userRole === UserRole.ADMIN) {
                 // Admin sees all datasets, so we remove the public constraint
                 query.where('1=1');
             } else {
@@ -85,7 +87,7 @@ router.get('/', [checkJwtOptional], async (req, res) => {
 });
 
 // Get a single dataset
-router.get('/:id', [checkJwtOptional], async (req, res) => {
+router.get('/:id', [checkJwtOptional], async (req: Request, res: Response) => {
     const { id } = req.params;
     const { userId, role } = res.locals.jwtPayload || {};
     const datasetRepository = getManager().getRepository(Dataset);
@@ -115,7 +117,7 @@ router.get('/:id', [checkJwtOptional], async (req, res) => {
 });
 
 // Update a dataset
-router.put('/:id', [checkJwt], async (req, res) => {
+router.put('/:id', [checkJwt], async (req: Request, res: Response) => {
     const { id } = req.params;
     const { name, description, isPublic } = req.body;
     const { userId, role } = res.locals.jwtPayload;
@@ -152,7 +154,7 @@ router.put('/:id', [checkJwt], async (req, res) => {
 });
 
 // Delete a dataset
-router.delete('/:id', [checkJwt], async (req, res) => {
+router.delete('/:id', [checkJwt], async (req: Request, res: Response) => {
     const { id } = req.params;
     const { userId, role } = res.locals.jwtPayload;
     const datasetRepository = getManager().getRepository(Dataset);
@@ -182,7 +184,7 @@ router.delete('/:id', [checkJwt], async (req, res) => {
 });
 
 // Upload images to a dataset
-router.post('/:id/upload', [checkJwt, upload.single('file')], async (req, res) => {
+router.post('/:id/upload', [checkJwt, upload.single('file')], async (req: Request, res: Response) => {
     const { id } = req.params;
     const { userId, role } = res.locals.jwtPayload;
 
@@ -219,7 +221,7 @@ router.post('/:id/upload', [checkJwt, upload.single('file')], async (req, res) =
         readable.push(null);
 
         readable.pipe(csv())
-            .on('data', (data) => {
+            .on('data', (data: any) => {
                 const { filename, url, width, height, prompt } = data;
                 if(filename && url && width && height && prompt) {
                     const newImage = new DatasetImage();
@@ -242,7 +244,7 @@ router.post('/:id/upload', [checkJwt, upload.single('file')], async (req, res) =
                     res.status(500).send('Error saving images to database');
                 }
             })
-            .on('error', (err) => {
+            .on('error', (err: any) => {
                  logger.error('Error processing CSV file', { error: err, datasetId: id });
                  res.status(500).send('Error processing CSV file');
             });
@@ -254,7 +256,7 @@ router.post('/:id/upload', [checkJwt, upload.single('file')], async (req, res) =
 });
 
 // Get images for a dataset with pagination
-router.get('/:id/images', [checkJwtOptional], async (req, res) => {
+router.get('/:id/images', [checkJwtOptional], async (req: Request, res: Response) => {
     const { id } = req.params;
     const { userId, role } = res.locals.jwtPayload || {};
     const page = parseInt(req.query.page as string) || 1;

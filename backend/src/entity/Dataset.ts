@@ -17,14 +17,14 @@ export class Dataset {
   isPublic!: boolean;
 
   @ManyToOne(() => User, (user) => user.datasets)
-  @JoinColumn({ name: "userId" })
-  user: User;
+  @JoinColumn({ name: 'userId' })
+  user!: User;
 
-  @Column({ type: 'varchar' })
-  userId: string;
+  @Column()
+  userId!: string;
 
-  @OneToMany(() => DatasetImage, (image) => image.dataset, { onDelete: 'CASCADE' })
-  images: DatasetImage[];
+  @OneToMany(() => DatasetImage, (image) => image.dataset, { cascade: true })
+  images!: DatasetImage[];
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -1,67 +1,72 @@
-import { createConnection, getConnection, ConnectionOptions } from 'typeorm';
-import * as mysql from 'mysql2/promise';
-import * as dotenv from 'dotenv';
-import { User } from '../entity/User';
-import { Dataset } from '../entity/Dataset';
-import { DatasetImage } from '../entity/DatasetImage';
+import { DataSource } from 'typeorm';
+import { connectionConfig as originalConnectionConfig } from '../../ormconfig'; // Import the original config
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { vi } from 'vitest';
 
-dotenv.config();
+const execAsync = promisify(exec);
 
-const TEST_DB_NAME = 'dataset_canvas_test_safe';
+let testDataSource: DataSource;
 
-const createDatabaseIfNotExists = async () => {
-  const connectionConfig: mysql.ConnectionOptions = {
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-  };
+// Create a mutable copy of the connection options
+const connectionConfig = { ...originalConnectionConfig };
 
-  if (process.env.DB_SOCKET_PATH) {
-    connectionConfig.socketPath = process.env.DB_SOCKET_PATH;
-  } else {
-    connectionConfig.host = process.env.DB_HOST || 'localhost';
-    connectionConfig.port = Number(process.env.DB_PORT) || 3306;
-  }
-
-  const connection = await mysql.createConnection(connectionConfig);
-  await connection.query(`CREATE DATABASE IF NOT EXISTS \`${TEST_DB_NAME}\`;`);
-  await connection.end();
-};
-
+// Setup a global test database before all tests run
 beforeAll(async () => {
-  try {
-    await createDatabaseIfNotExists();
+  const testDbName = 'dataset_canvas_test_safe';
 
-    const connectionConfig: ConnectionOptions = {
-      type: 'mariadb',
-      database: TEST_DB_NAME,
-      username: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      entities: [User, Dataset, DatasetImage],
-      synchronize: true,
-      dropSchema: true,
-    };
+  // Use a separate connection to create the test database
+  const initialConnection = new DataSource({
+    ...connectionConfig,
+    database: undefined, // Connect without specifying a database first
+  });
+  await initialConnection.initialize();
+  await initialConnection.query(`CREATE DATABASE IF NOT EXISTS \`${testDbName}\``);
+  await initialConnection.destroy();
 
-    if (process.env.DB_SOCKET_PATH) {
-      connectionConfig.socketPath = process.env.DB_SOCKET_PATH;
-    } else {
-      connectionConfig.host = process.env.DB_HOST || 'localhost';
-      connectionConfig.port = Number(process.env.DB_PORT) || 3306;
-    }
+  // Now, connect the main test DataSource to the newly created database
+  connectionConfig.database = testDbName;
 
-    await createConnection(connectionConfig);
-  } catch (error) {
-    console.error('Error setting up test database:', error);
-    process.exit(1);
+  // Override with environment variables if they exist (for CI/CD)
+  if (process.env.DB_SOCKET_PATH) {
+    (connectionConfig as any).socketPath = process.env.DB_SOCKET_PATH;
+    (connectionConfig as any).host = undefined;
+    (connectionConfig as any).port = undefined;
+  } else {
+    (connectionConfig as any).host = process.env.DB_HOST || 'localhost';
+    (connectionConfig as any).port = Number(process.env.DB_PORT) || 3306;
   }
+
+  testDataSource = new DataSource(connectionConfig);
+  await testDataSource.initialize();
+
+  // Make the data source globally available for tests
+  (global as any).testDataSource = testDataSource;
 });
 
+// Close the database connection after all tests run
 afterAll(async () => {
-  const connection = getConnection();
-  if (connection.isConnected) {
-    await connection.close();
+  if (testDataSource.isInitialized) {
+    await testDataSource.destroy();
   }
 });
 
+// Clear all data from tables before each test
 beforeEach(async () => {
-  // The dropSchema:true and synchronize:true combo handles cleanup.
+  const entities = testDataSource.entityMetadatas;
+  for (const entity of entities) {
+    const repository = testDataSource.getRepository(entity.name);
+    // Use delete instead of clear to handle tables without primary keys if any, and it's generally safer
+    await repository.query(`DELETE FROM \`${entity.tableName}\`;`);
+  }
 });
+
+// Mock logger to prevent it from writing to files during tests
+vi.mock('../logger', () => ({
+  logger: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
