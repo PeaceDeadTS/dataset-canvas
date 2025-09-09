@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { AppDataSource } from '../data-source'; // Импортируем AppDataSource
 import { User, UserRole } from '../entity/User.entity';
 import logger from '../logger';
+import { Request, Response } from 'express';
 
 const router = Router();
 
@@ -45,7 +46,7 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /api/auth/login
-router.post('/login', async (req, res) => {
+router.post('/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -53,7 +54,8 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    const user = await AppDataSource.getManager().findOne(User, { where: { email: req.body.email }, select: ['id', 'email', 'role', 'password', 'username'] });
+    // Check if user exists and password is correct
+    const user = await AppDataSource.manager.findOne(User, { where: { email: req.body.email }, select: ['id', 'email', 'role', 'password', 'username'] });
     if (!user) return res.status(401).send('Invalid credentials');
 
     const validPassword = await bcrypt.compare(req.body.password, user.password);
