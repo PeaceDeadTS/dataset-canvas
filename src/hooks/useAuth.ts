@@ -9,8 +9,15 @@ interface DecodedToken {
   exp: number;
 }
 
+// This interface should align with our global User type for consistency
+export interface AuthUser {
+  id: string;
+  email: string;
+  role: 'Administrator' | 'Developer' | 'User';
+}
+
 export function useAuth() {
-  const [user, setUser] = useState<DecodedToken | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -19,7 +26,12 @@ export function useAuth() {
         const decodedToken = jwtDecode<DecodedToken>(token);
         // Check if token is expired
         if (decodedToken.exp * 1000 > Date.now()) {
-          setUser(decodedToken);
+          // Map userId to id for consistency across the app
+          setUser({
+            id: decodedToken.userId,
+            email: decodedToken.email,
+            role: decodedToken.role,
+          });
         } else {
           // Token is expired, remove it
           localStorage.removeItem('token');

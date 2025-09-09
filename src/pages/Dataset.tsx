@@ -124,7 +124,7 @@ const DatasetPage = () => {
     }
   };
 
-  const canUpload = user && dataset && (user.role === 'Administrator' || user.userId === dataset.user.id);
+  const canUpload = user && dataset && (user.role === 'Administrator' || user.id === dataset.user.id);
 
   return (
     <div className="min-h-screen bg-background">
