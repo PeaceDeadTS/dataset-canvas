@@ -1,5 +1,5 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { connectionConfig as originalConnectionConfig } from '../../ormconfig'; // Import the original config
+import { connectionConfig as originalConnectionConfig } from '../ormconfig'; // Import the original config
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { vi } from 'vitest';

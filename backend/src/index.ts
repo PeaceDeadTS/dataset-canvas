@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import express from 'express';
 import { DataSource } from 'typeorm';
 import cors from 'cors';
-import { connectionConfig } from '../ormconfig';
+import { connectionConfig } from './ormconfig';
 import authRoutes from './routes/auth';
 import datasetsRoutes from './routes/datasets';
 import logger from './logger';
