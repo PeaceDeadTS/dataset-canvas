@@ -1,23 +1,18 @@
 ---
-description: React coding standards and best practices for the LabelStudio clientside application
-globs: **/*.jsx,**/*.tsx
+description: React coding standards and best practices for the Dataset Canvas application
+globs: "**/*.jsx,**/*.tsx"
 ---
 
 # React Best Practices
 
 ## Project Structure
-- All frontend code lives in the `web` directory
-- Main application code is in `web/apps/labelstudio`
-- Shared libraries are in `web/libs`
-- Follow the established directory structure:
+- The frontend application code lives in the `src` directory.
+- The backend application code lives in the `backend` directory.
+- Follow a standard directory structure:
   - `components/`: Reusable UI components
   - `pages/`: Top-level page components
-  - `utils/`: Utility functions
+  - `lib/`: Utility functions
   - `hooks/`: Custom React hooks
-  - `atoms/`: Jotai atom state definitions
-  - `providers/`: Context providers
-  - `services/`: API and other services
-  - `types/`: TypeScript type definitions
   - `assets/`: Static assets
 
 ## Component Structure
@@ -46,13 +41,10 @@ globs: **/*.jsx,**/*.tsx
 - Avoid nested hooks
 
 ## State Management
-- Use useState for local component state
-- Use Jotai atoms and not the Context API for shared state
-- Implement atomWithReducer for complex state logic
-- Implement atomWithQuery for any API requests for data
-- Keep state as close to where it's used as possible
-- Avoid prop drilling through proper state management
-- Only use Jotai as the single source of truth of global state management
+- Use `useState` for local component state.
+- For complex global state, consider libraries like Zustand or Redux Toolkit, but start with simpler solutions like React Context when appropriate.
+- Keep state as close to where it's used as possible to avoid unnecessary re-renders.
+- Avoid prop drilling through proper state management.
 
 ## Performance
 - Implement proper memoization (useMemo, useCallback)
@@ -102,27 +94,17 @@ globs: **/*.jsx,**/*.tsx
 - Provide proper alt text for images
 
 ## Code Organization
-- Use proper file naming conventions which is kebab-case ie. ListItem -> `list-item.tsx`
-- Prefer one component per folder, but group related components together when necessary, and ensure there is only one component per file.
-- Component folders should have a SCSS `.module.scss` with the name of the component kebab-case ie. ListItem -> `list-item.module.scss`
-- Implement proper directory structure
-- UI components live within `web/libs/ui`
-- Application components that are shared across applications such as certain page-level blocks live within `web/libs/app-common`
-- Code in `web/apps` can only import code from `web/libs` and `web/libs` cannot import from `web/apps`
-- Code in `web/libs/app-common` can only import code from other `web/libs` or `web/apps`. No other `web/libs` can import from `web/libs/app-common`
-- Keep atoms in a global atoms folder with the name of the file matching the entity or intent of state
-- Add all components and their states to Storybook by co-locating the story file next to the component file ie. `list-item.stories.tsx`
-- Use the `@humansignal/ui` package for UI components
-- Use the `@humansignal/icons` package for icons
-- Use the `@humansignal/core` package for core utilities/functions
-- Use the `@humansignal/app-common` package for application components
+- Use kebab-case for file names (e.g., `list-item.tsx`).
+- Prefer one component per file. Group related components in the same folder.
+- Co-locate component-specific assets (like CSS modules or tests) with the component file.
+- Implement a clear and consistent directory structure.
 
 ## Best Practices
-- No cyclic imports
-- Use proper imports/exports
-- Follow established import ordering
-- Compose components rather than extending them
-- Keep components focused on a single responsibility
-- Document complex logic with clear comments
-- Follow the project's folder structure and naming conventions
+- Avoid cyclic imports.
+- Use proper imports/exports (`index.ts` barrels can be useful but use them judiciously).
+- Follow established import ordering (e.g., React, external libraries, internal components, assets).
+- Compose components rather than extending them.
+- Keep components focused on a single responsibility.
+- Document complex logic with clear comments.
+- Follow the project's folder structure and naming conventions.
 - Prefer controlled components over uncontrolled ones 

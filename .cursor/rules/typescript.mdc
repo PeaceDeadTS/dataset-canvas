@@ -1,6 +1,6 @@
 ---
-description: TypeScript coding standards and best practices for the LabelStudio clientside application
-globs: **/*.ts,**/*.tsx,**/*.d.ts
+description: TypeScript coding standards and best practices for the Dataset Canvas application
+globs: "**/*.ts,**/*.tsx,**/*.d.ts"
 ---
 
 # TypeScript Best Practices
