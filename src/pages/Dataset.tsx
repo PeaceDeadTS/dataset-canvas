@@ -358,14 +358,14 @@ const DatasetPage = () => {
                 ) : images.length > 0 ? (
                   <div className="overflow-x-auto py-4">
                     <Table className="table-auto w-full">
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 z-10 bg-background">
                       <TableRow>
-                        <TableHead className="w-10">Row</TableHead>
-                        <TableHead className="min-w-[18rem] max-w-[30rem]">Image Key</TableHead>
-                        <TableHead className="min-w-[18rem] max-w-[80rem]">Filename</TableHead>
-                        <TableHead className="min-w-[20rem] max-w-[80rem]">Image</TableHead>
-                        <TableHead className="w-20">Dimensions</TableHead>
-                        <TableHead className="min-w-[44rem]">Prompt</TableHead>
+                        <TableHead className="w-10 bg-background">Row</TableHead>
+                        <TableHead className="min-w-[18rem] max-w-[30rem] bg-background">Image Key</TableHead>
+                        <TableHead className="min-w-[18rem] max-w-[80rem] bg-background">Filename</TableHead>
+                        <TableHead className="min-w-[20rem] max-w-[80rem] bg-background">Image</TableHead>
+                        <TableHead className="w-20 bg-background">Dimensions</TableHead>
+                        <TableHead className="min-w-[44rem] bg-background">Prompt</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
