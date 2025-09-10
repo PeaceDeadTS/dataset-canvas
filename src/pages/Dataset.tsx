@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { DatasetHeader } from '@/components/DatasetHeader';
@@ -64,6 +64,28 @@ const DatasetPage = () => {
   const [totalImages, setTotalImages] = useState(0);
   const [selectedImage, setSelectedImage] = useState<DatasetImage | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  // Refs для синхронизации ширин колонок
+  const stickyHeaderRef = useRef<HTMLDivElement>(null);
+  const mainTableRef = useRef<HTMLTableElement>(null);
+
+  // Функция для синхронизации ширин колонок
+  const syncColumnWidths = () => {
+    if (!stickyHeaderRef.current || !mainTableRef.current) return;
+    
+    const mainTableHeaders = mainTableRef.current.querySelectorAll('thead th');
+    const stickyHeaders = stickyHeaderRef.current.querySelectorAll('div');
+    
+    if (mainTableHeaders.length === stickyHeaders.length) {
+      mainTableHeaders.forEach((header, index) => {
+        const width = (header as HTMLElement).offsetWidth;
+        const stickyHeader = stickyHeaders[index] as HTMLElement;
+        if (stickyHeader) {
+          stickyHeader.style.width = `${width}px`;
+        }
+      });
+    }
+  };
 
   // Функция для обновления страницы с синхронизацией URL
   const updateCurrentPage = (page: number) => {
@@ -179,6 +201,25 @@ const DatasetPage = () => {
       setSelectedFile(null);
     }
   };
+
+  // Синхронизация ширин колонок при изменении данных или размера окна
+  useEffect(() => {
+    const handleResize = () => {
+      setTimeout(syncColumnWidths, 100); // Небольшая задержка для завершения рендера
+    };
+
+    // Синхронизируем при загрузке изображений
+    if (!imagesLoading && images.length > 0) {
+      setTimeout(syncColumnWidths, 100);
+    }
+
+    // Отслеживаем изменение размера окна
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [images, imagesLoading]);
 
   const openLightbox = (image: DatasetImage) => {
     setSelectedImage(image);
@@ -349,7 +390,25 @@ const DatasetPage = () => {
               </div>
             </div>
             
-            <div className="flex-1 overflow-auto relative">
+            {/* Sticky Table Header - вынесенный за пределы прокручиваемой области */}
+            {!imagesLoading && images.length > 0 && (
+              <div className="sticky top-0 z-10 bg-background shadow-sm border-b">
+                <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+                  <div className="overflow-x-auto">
+                    <div ref={stickyHeaderRef} className="flex py-3 text-left text-sm font-medium text-muted-foreground">
+                      <div className="px-4">Row</div>
+                      <div className="px-4">Image Key</div>
+                      <div className="px-4">Filename</div>
+                      <div className="px-4">Image</div>
+                      <div className="px-4">Dimensions</div>
+                      <div className="px-4">Prompt</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex-1 overflow-auto">
               <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
                 {imagesLoading ? (
                   <div className="py-8">
@@ -357,15 +416,16 @@ const DatasetPage = () => {
                   </div>
                 ) : images.length > 0 ? (
                   <div className="overflow-x-auto py-4">
-                    <Table className="table-auto w-full">
-                      <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
-                        <TableRow className="border-b">
-                          <TableHead className="w-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Row</TableHead>
-                          <TableHead className="min-w-[18rem] max-w-[30rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image Key</TableHead>
-                          <TableHead className="min-w-[18rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Filename</TableHead>
-                          <TableHead className="min-w-[20rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image</TableHead>
-                          <TableHead className="w-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Dimensions</TableHead>
-                          <TableHead className="min-w-[44rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Prompt</TableHead>
+                    <Table ref={mainTableRef} className="table-auto w-full">
+                      {/* Скрытый TableHeader для измерения ширин колонок */}
+                      <TableHeader className="opacity-0 pointer-events-none absolute">
+                        <TableRow>
+                          <TableHead className="w-10">Row</TableHead>
+                          <TableHead className="min-w-[18rem] max-w-[30rem]">Image Key</TableHead>
+                          <TableHead className="min-w-[18rem] max-w-[80rem]">Filename</TableHead>
+                          <TableHead className="min-w-[20rem] max-w-[80rem]">Image</TableHead>
+                          <TableHead className="w-20">Dimensions</TableHead>
+                          <TableHead className="min-w-[44rem]">Prompt</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
