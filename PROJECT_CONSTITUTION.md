@@ -102,6 +102,7 @@ During development, several critical issues were identified and resolved:
 *   **Image Modal Scrolling Issues**: Modal dialogs for image details had internal scrollbars due to improper size constraints. Fixed by implementing proper responsive sizing with viewport-relative constraints.
 *   **Navigation UX**: Users had no easy way to return to the main page from dataset details. Implemented breadcrumb navigation with clickable "Datasets" link.
 *   **Limited Dataset Viewing Area**: Dataset working area had excessive padding, wasting screen space. Expanded layout to utilize nearly full screen width while maintaining responsive design.
+*   **Fixed Layout Structure**: Improved dataset page layout by implementing a sticky header/footer design where the DatasetHeader, dataset card, and pagination remain fixed while only the image table scrolls. This provides better navigation control and constant access to pagination without scrolling.
 
 ---
 
@@ -130,6 +131,7 @@ This section provides a summary of the core features implemented in the applicat
     *   **Advanced Pagination System**: Enhanced pagination with URL parameter support (`?p=22`) and configurable items per page (10/25/50/100), allowing direct navigation to specific pages and customizable viewing experience
     *   **Breadcrumb Navigation**: Implemented intuitive breadcrumb navigation with clickable "Datasets" link returning to the main page
     *   **Optimized Layout**: Expanded dataset working area to utilize nearly full screen width for better data visualization, similar to Hugging Face's Data Studio design
+    *   **Fixed Layout Structure**: Sticky header/footer design with DatasetHeader, dataset card, and pagination always visible while the image table scrolls independently, improving navigation control and user experience
 *   **Enhanced Dataset Listing**: Improved dataset cards display with:
     *   **Accurate Image Count**: Fixed dataset item counter to show real number of uploaded images using TypeORM's `loadRelationCountAndMap` functionality
     *   Proper data fetching with image count from backend API
