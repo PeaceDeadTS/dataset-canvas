@@ -190,10 +190,26 @@ const DatasetPage = () => {
     setSelectedImage(null);
   };
 
-  // Функция для получения расширения файла
-  const getFileExtension = (filename: string): string => {
-    const parts = filename.split('.');
-    return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : 'Unknown';
+  // Функция для получения расширения файла из URL
+  const getFileExtension = (url: string): string => {
+    try {
+      // Убираем query параметры, если есть
+      const cleanUrl = url.split('?')[0];
+      const parts = cleanUrl.split('.');
+      return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : 'Unknown';
+    } catch {
+      return 'Unknown';
+    }
+  };
+
+  // Функция для вычисления НОД (наибольший общий делитель)
+  const gcd = (a: number, b: number): number => {
+    while (b !== 0) {
+      const temp = b;
+      b = a % b;
+      a = temp;
+    }
+    return a;
   };
 
   // Функция для форматирования aspect ratio в понятном виде
@@ -212,6 +228,8 @@ const DatasetPage = () => {
       { ratio: 2/3, label: '2:3' },
       { ratio: 3/4, label: '3:4' },
       { ratio: 4/5, label: '4:5' },
+      { ratio: 8/5, label: '8:5' },
+      { ratio: 5/3, label: '5:3' },
     ];
 
     // Ищем ближайшее стандартное соотношение
@@ -226,13 +244,22 @@ const DatasetPage = () => {
       }
     }
 
-    // Если разница меньше 0.05, используем стандартное обозначение
-    if (minDifference < 0.05) {
+    // Если разница меньше 0.03, используем стандартное обозначение
+    if (minDifference < 0.03) {
       return closest.label;
     }
 
-    // Иначе показываем точное соотношение
-    return `${width}:${height}`;
+    // Упрощаем дробь с помощью НОД
+    const divisor = gcd(width, height);
+    const simplifiedWidth = width / divisor;
+    const simplifiedHeight = height / divisor;
+
+    // Если упрощенные числа получились большими (больше 50), округляем к ближайшему стандарту
+    if (simplifiedWidth > 50 || simplifiedHeight > 50) {
+      return closest.label;
+    }
+
+    return `${simplifiedWidth}:${simplifiedHeight}`;
   };
 
   const getPaginationGroup = () => {
@@ -320,7 +347,7 @@ const DatasetPage = () => {
                         <TableHead className="w-[80px]">Row</TableHead>
                         <TableHead className="w-[280px]">Image Key</TableHead>
                         <TableHead>Filename</TableHead>
-                        <TableHead className="w-[100px]">Image</TableHead>
+                        <TableHead className="w-[120px]">Image</TableHead>
                         <TableHead className="w-[120px]">Dimensions</TableHead>
                         <TableHead>Prompt</TableHead>
                       </TableRow>
@@ -330,14 +357,19 @@ const DatasetPage = () => {
                         <Dialog key={image.id}>
                           <DialogTrigger asChild>
                             <TableRow className="cursor-pointer">
-                              <TableCell>{image.row_number}</TableCell>
-                              <TableCell className="font-mono text-xs">{image.img_key}</TableCell>
-                              <TableCell>{image.filename}</TableCell>
-                              <TableCell onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
-                                <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded" />
+                              <TableCell className="py-4">{image.row_number}</TableCell>
+                              <TableCell className="font-mono text-xs py-4">{image.img_key}</TableCell>
+                              <TableCell className="py-4">{image.filename}</TableCell>
+                              <TableCell className="py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
+                                <div className="flex flex-col items-center gap-2">
+                                  <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded" />
+                                  <div className="text-xs text-muted-foreground truncate max-w-[100px]" title={image.url}>
+                                    {new URL(image.url).pathname.split('/').pop()}
+                                  </div>
+                                </div>
                               </TableCell>
-                              <TableCell>{`${image.width}x${image.height}`}</TableCell>
-                              <TableCell className="max-w-xs truncate">{image.prompt}</TableCell>
+                              <TableCell className="py-4">{`${image.width}x${image.height}`}</TableCell>
+                              <TableCell className="max-w-xs truncate py-4">{image.prompt}</TableCell>
                             </TableRow>
                           </DialogTrigger>
                           <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
@@ -357,9 +389,13 @@ const DatasetPage = () => {
                                </div>
                                <div className="text-sm space-y-2 min-w-0">
                                 <p><strong>Filename:</strong> {image.filename}</p>
-                                <p><strong>File extension:</strong> {getFileExtension(image.filename)}</p>
+                                <p><strong>File extension:</strong> {getFileExtension(image.url)}</p>
                                 <p><strong>Dimensions:</strong> {image.width} × {image.height} pixels</p>
                                 <p><strong>Aspect ratio:</strong> {formatAspectRatio(image.width, image.height)}</p>
+                                <div>
+                                  <p><strong>URL:</strong></p>
+                                  <p className="text-muted-foreground break-all max-w-full text-xs">{image.url}</p>
+                                </div>
                                 <div>
                                   <p><strong>Prompt:</strong></p>
                                   <p className="text-muted-foreground break-words max-w-full">{image.prompt}</p>
