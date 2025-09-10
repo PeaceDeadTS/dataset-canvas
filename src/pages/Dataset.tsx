@@ -347,7 +347,7 @@ const DatasetPage = () => {
                         <TableHead className="w-[80px]">Row</TableHead>
                         <TableHead className="w-[280px]">Image Key</TableHead>
                         <TableHead>Filename</TableHead>
-                        <TableHead className="w-[120px]">Image</TableHead>
+                        <TableHead className="w-[160px]">Image</TableHead>
                         <TableHead className="w-[120px]">Dimensions</TableHead>
                         <TableHead>Prompt</TableHead>
                       </TableRow>
@@ -361,11 +361,18 @@ const DatasetPage = () => {
                               <TableCell className="font-mono text-xs py-4">{image.img_key}</TableCell>
                               <TableCell className="py-4">{image.filename}</TableCell>
                               <TableCell className="py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
-                                <div className="flex flex-col items-center gap-2">
+                                <div className="flex flex-col items-center gap-2 w-full">
                                   <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded" />
-                                  <div className="text-xs text-muted-foreground truncate max-w-[100px]" title={image.url}>
+                                  <a 
+                                    href={image.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="text-xs text-muted-foreground hover:text-primary truncate max-w-[140px] underline"
+                                    title={image.url}
+                                  >
                                     {new URL(image.url).pathname.split('/').pop()}
-                                  </div>
+                                  </a>
                                 </div>
                               </TableCell>
                               <TableCell className="py-4">{`${image.width}x${image.height}`}</TableCell>
@@ -394,7 +401,14 @@ const DatasetPage = () => {
                                 <p><strong>Aspect ratio:</strong> {formatAspectRatio(image.width, image.height)}</p>
                                 <div>
                                   <p><strong>URL:</strong></p>
-                                  <p className="text-muted-foreground break-all max-w-full text-xs">{image.url}</p>
+                                  <a 
+                                    href={image.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-muted-foreground hover:text-primary break-all max-w-full text-xs underline"
+                                  >
+                                    {image.url}
+                                  </a>
                                 </div>
                                 <div>
                                   <p><strong>Prompt:</strong></p>
@@ -422,7 +436,7 @@ const DatasetPage = () => {
                       />
                     </div>
                   )}
-                  <div className="flex justify-between items-center mt-4">
+                  <div className="flex flex-col items-center gap-4 mt-6">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">Items per page:</span>
                       <Select value={limit.toString()} onValueChange={(value) => updateLimit(parseInt(value, 10))}>

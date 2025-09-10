@@ -28,8 +28,8 @@ The project is architected with a distinct frontend and backend.
     *   **Deployment**: During deployment, the `npm run migration:run` command is executed on the production server. This command applies any pending migrations, bringing the database schema up to date with the application code. This process is safe, repeatable, and eliminates the risk of accidental data loss.
 *   **Entities**:
     *   `User`: Stores user information, including `username`, `email`, hashed `password`, and `role`.
-    *   `Dataset`: Represents a dataset "container," with properties like `name`, `description`, `isPublic`, and relationships to its owner (`user`) and its images.
-    *   `DatasetImage`: Stores metadata for each image within a dataset, including `url`, `filename`, and `prompt`.
+    *   `Dataset`: Represents a dataset "container," with properties like `name`, `description`, `isPublic`, and relationships to its owner (`user`) and its images. Includes a computed `imageCount` field populated via TypeORM's `loadRelationCountAndMap` for efficient display of total image counts.
+    *   `DatasetImage`: Stores metadata for each image within a dataset, including `url`, `filename`, `width`, `height`, and `prompt`.
 *   **API**: A RESTful API is exposed under `/api` for all frontend-backend communication.
 *   **Testable Entry Point**: The main application entry point (`src/index.ts`) is architected to be test-friendly. It exports the Express `app` instance separately from the server startup logic. This allows integration tests (like those using Supertest) to import and test the `app` directly without actually listening on a network port, ensuring tests are fast and isolated.
 *   **Build Process**: The backend is written in TypeScript and must be compiled into JavaScript before running in production. The `npm run build` command handles this, outputting the final JavaScript files to the `dist` directory. To ensure a clean build process where compiled files have a flat structure, all source files, including the TypeORM configuration (`ormconfig.ts`), are located within the `src` directory, which is defined as the `rootDir` in `tsconfig.json`. The TypeScript configuration (`tsconfig.json`) is specifically set up to **exclude all test files** from the production build, preventing test-specific code and dependencies from ending up on the server.
@@ -96,6 +96,12 @@ During development, several critical issues were identified and resolved:
 *   **Dataset Page Loading Issues**: The dataset detail page had redundant data fetching and syntax errors that caused empty pages. Resolved by consolidating data loading logic and fixing component structure.
 *   **Authentication Context**: Fixed timing issues with user authentication state that caused inconsistent dataset visibility during page loads.
 *   **Type Safety**: Enhanced TypeScript type definitions to handle optional user relationships and prevent runtime errors.
+*   **Dataset Image Count Display**: The dataset cards on the main page showed "0 items" regardless of actual image count. Fixed by implementing proper image count calculation in the backend API using TypeORM's `loadRelationCountAndMap` functionality.
+*   **File Extension Detection**: File extension was incorrectly extracted from filename instead of URL, causing "Unknown" extensions for many files. Resolved by implementing URL-based extension extraction.
+*   **Aspect Ratio Calculation**: Aspect ratios displayed as confusing decimal values (e.g., 0.71). Implemented intelligent calculation using Greatest Common Divisor (GCD) for simplified fractions and automatic detection of standard ratios (16:9, 4:3, etc.).
+*   **Image Modal Scrolling Issues**: Modal dialogs for image details had internal scrollbars due to improper size constraints. Fixed by implementing proper responsive sizing with viewport-relative constraints.
+*   **Navigation UX**: Users had no easy way to return to the main page from dataset details. Implemented breadcrumb navigation with clickable "Datasets" link.
+*   **Limited Dataset Viewing Area**: Dataset working area had excessive padding, wasting screen space. Expanded layout to utilize nearly full screen width while maintaining responsive design.
 
 ---
 
@@ -121,7 +127,19 @@ This section provides a summary of the core features implemented in the applicat
     *   Proper error handling for access denied and not found scenarios
     *   Unified data loading that handles both dataset metadata and image pagination
     *   Upload functionality for dataset owners and administrators
-*   **Image Pagination**: The dataset details page includes a pagination component to handle and navigate large numbers of images efficiently with proper state management.
+    *   **Advanced Pagination System**: Enhanced pagination with URL parameter support (`?p=22`) and configurable items per page (10/25/50/100), allowing direct navigation to specific pages and customizable viewing experience
+    *   **Breadcrumb Navigation**: Implemented intuitive breadcrumb navigation with clickable "Datasets" link returning to the main page
+    *   **Optimized Layout**: Expanded dataset working area to utilize nearly full screen width for better data visualization, similar to Hugging Face's Data Studio design
+*   **Enhanced Dataset Listing**: Improved dataset cards display with:
+    *   **Accurate Image Count**: Fixed dataset item counter to show real number of uploaded images using TypeORM's `loadRelationCountAndMap` functionality
+    *   Proper data fetching with image count from backend API
+*   **Advanced Image Data Display**: Comprehensive image metadata presentation with:
+    *   **Smart Column Organization**: Optimized table layout (Row → Image Key → Filename → Image → Dimensions → Prompt) for better data accessibility
+    *   **Interactive Image Previews**: Click-to-expand modal dialogs with detailed image information
+    *   **Smart Aspect Ratio Calculation**: Intelligent aspect ratio display using GCD (Greatest Common Divisor) for simplified fractions, with automatic detection of standard ratios (16:9, 4:3, etc.) and fallback to closest standard when appropriate
+    *   **File Extension Detection**: Automatic file extension extraction from image URLs for proper file type identification
+    *   **Clickable URLs**: Direct links to image sources both in table previews and detail modals
+    *   **Responsive Modal Design**: Adaptive image detail modals that properly scale to different screen sizes and image dimensions
 *   **Client-Side Auth Handling**: A custom `useAuth` hook decodes the JWT stored in `localStorage` to provide a consistent user object throughout the frontend application with proper token validation and expiration handling.
 *   **Dynamic UI**: The user interface adapts based on the user's authentication status and role:
     *   Authenticated users see appropriate management options based on their permissions
