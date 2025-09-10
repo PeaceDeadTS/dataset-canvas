@@ -342,32 +342,33 @@ const DatasetPage = () => {
       {/* Scrollable Main Content */}
       {dataset && (
         <>
-          <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 flex flex-col min-h-0">
             <div className="px-4 py-2 bg-background border-b">
               <div className="container mx-auto" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
                 <h2 className="text-xl font-semibold">Dataset Images ({totalImages})</h2>
               </div>
             </div>
             
-            <div className="flex-1 overflow-auto relative">
+            <div className="flex-1 overflow-auto">
               <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
                 {imagesLoading ? (
                   <div className="py-8">
                     <Skeleton className="h-64 w-full" />
                   </div>
                 ) : images.length > 0 ? (
-                  <div className="overflow-x-auto py-4">
-                    <Table className="table-auto w-full">
-                      <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
-                        <TableRow className="border-b">
-                          <TableHead className="w-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Row</TableHead>
-                          <TableHead className="min-w-[18rem] max-w-[30rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image Key</TableHead>
-                          <TableHead className="min-w-[18rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Filename</TableHead>
-                          <TableHead className="min-w-[20rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image</TableHead>
-                          <TableHead className="w-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Dimensions</TableHead>
-                          <TableHead className="min-w-[44rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Prompt</TableHead>
-                        </TableRow>
-                      </TableHeader>
+                  <div className="py-4">
+                    <div className="overflow-x-auto">
+                      <Table className="table-auto w-full">
+                        <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+                          <TableRow className="border-b">
+                            <TableHead className="w-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Row</TableHead>
+                            <TableHead className="min-w-[18rem] max-w-[30rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image Key</TableHead>
+                            <TableHead className="min-w-[18rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Filename</TableHead>
+                            <TableHead className="min-w-[20rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image</TableHead>
+                            <TableHead className="w-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Dimensions</TableHead>
+                            <TableHead className="min-w-[44rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Prompt</TableHead>
+                          </TableRow>
+                        </TableHeader>
                       <TableBody>
                         {images.map((image) => (
                           <Dialog key={image.id}>
