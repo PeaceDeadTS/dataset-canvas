@@ -8,10 +8,11 @@ The project is architected with a distinct frontend and backend.
 
 ### Technology Stack
 
-*   **Frontend**: React, Vite, TypeScript, Tailwind CSS, shadcn/ui, Axios, `react-router-dom`.
-*   **Backend**: Node.js, Express, TypeScript, TypeORM, MariaDB.
-*   **Authentication**: JSON Web Tokens (JWT).
-*   **Development**: Bun (as a runtime/package manager), ESLint, Vitest.
+*   **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, Axios, React Router DOM with URL parameter management.
+*   **Backend**: Node.js, Express.js, TypeScript, TypeORM with migration system, MariaDB/MySQL.
+*   **Authentication**: JSON Web Tokens (JWT) with bcrypt password hashing.
+*   **Development & Build**: Bun (primary runtime/package manager), ESLint with TypeScript rules, Vitest for testing.
+*   **Additional Tools**: Winston logging, Multer + CSV-parser for file processing, Supertest for API testing, React Testing Library with JSDOM.
 
 ---
 
@@ -58,11 +59,25 @@ The project is architected with a distinct frontend and backend.
 
 ### 2.3. Frontend Architecture
 
-*   **Framework**: Built with React and Vite for a fast development experience.
-*   **Styling**: Utilizes Tailwind CSS for utility-first styling, with `shadcn/ui` for a pre-built, accessible component library.
-*   **State Management**: Global user state is managed via a custom `useAuth` hook that decodes the JWT with proper token validation and expiration handling. Component-level state is managed with `useState`. The auth state properly synchronizes with dataset visibility logic.
-*   **Routing**: `react-router-dom` is used for client-side routing.
+*   **Framework**: Built with React 18 and Vite for a fast development experience with optimized builds and hot module replacement.
+*   **Styling**: Utilizes Tailwind CSS for utility-first styling, with `shadcn/ui` for a pre-built, accessible component library. Implements responsive design patterns and modern CSS layout techniques (Flexbox, Grid).
+*   **State Management**: Global user state is managed via a custom `useAuth` hook that decodes the JWT with proper token validation and expiration handling. Component-level state is managed with `useState` and `useEffect`. The auth state properly synchronizes with dataset visibility logic. URL state management through React Router for pagination and filtering.
+*   **Routing**: React Router DOM v6 is used for client-side routing with URL parameter management, enabling deep linking to specific pages and states (e.g., `?p=22&limit=50`).
+*   **HTTP Client**: Axios with interceptors for JWT token management and consistent API communication patterns.
+*   **User Experience**: Modern sticky layout system with fixed header/footer, intuitive breadcrumb navigation, loading states, error boundaries, and responsive modal dialogs.
 *   **Shared Types**: To ensure consistency and prevent data-related bugs, the frontend uses a centralized file for shared TypeScript types (`src/types/index.ts`). All major data structures, like `User` and `Dataset`, are defined here and imported throughout the application.
+
+### 2.4. User Experience & Interface Design
+
+*   **Modern Layout Architecture**: Implemented a revolutionary sticky interface system that maximizes usability:
+    *   **Fixed Header**: Dataset information, breadcrumb navigation, and dataset card remain accessible at all times
+    *   **Scrollable Content Area**: Only the data table scrolls, providing focused interaction with large datasets
+    *   **Sticky Footer**: Pagination controls and items-per-page selection always remain visible for easy navigation
+*   **Responsive Design**: Full mobile and desktop responsiveness with adaptive layouts and touch-friendly interactions.
+*   **Professional Data Visualization**: Clean, organized table layout optimized for data exploration with proper column sizing and overflow handling.
+*   **Interactive Elements**: Hover states, loading indicators, smooth transitions, and click-to-expand functionality for detailed image inspection.
+*   **Navigation Excellence**: Intuitive breadcrumb system, deep linking support with URL parameters, and consistent navigation patterns throughout the application.
+*   **Accessibility Considerations**: Proper semantic HTML structure, keyboard navigation support, and ARIA attributes where appropriate.
 
 ---
 
@@ -102,6 +117,7 @@ During development, several critical issues were identified and resolved:
 *   **Image Modal Scrolling Issues**: Modal dialogs for image details had internal scrollbars due to improper size constraints. Fixed by implementing proper responsive sizing with viewport-relative constraints.
 *   **Navigation UX**: Users had no easy way to return to the main page from dataset details. Implemented breadcrumb navigation with clickable "Datasets" link.
 *   **Limited Dataset Viewing Area**: Dataset working area had excessive padding, wasting screen space. Expanded layout to utilize nearly full screen width while maintaining responsive design.
+*   **Sticky Interface Layout**: Implemented a modern sticky layout system where the dataset header (including Dataset Card) remains fixed at the top and pagination controls stay anchored at the bottom. This allows users to scroll through large datasets while maintaining constant access to dataset information and navigation controls, significantly improving the user experience for data exploration.
 
 ---
 
@@ -130,6 +146,7 @@ This section provides a summary of the core features implemented in the applicat
     *   **Advanced Pagination System**: Enhanced pagination with URL parameter support (`?p=22`) and configurable items per page (10/25/50/100), allowing direct navigation to specific pages and customizable viewing experience
     *   **Breadcrumb Navigation**: Implemented intuitive breadcrumb navigation with clickable "Datasets" link returning to the main page
     *   **Optimized Layout**: Expanded dataset working area to utilize nearly full screen width for better data visualization, similar to Hugging Face's Data Studio design
+    *   **Modern Sticky Interface**: Revolutionary sticky layout system with fixed header and footer sections that remain visible during scrolling, providing constant access to dataset information and pagination controls while maximizing the scrollable area for image data exploration
 *   **Enhanced Dataset Listing**: Improved dataset cards display with:
     *   **Accurate Image Count**: Fixed dataset item counter to show real number of uploaded images using TypeORM's `loadRelationCountAndMap` functionality
     *   Proper data fetching with image count from backend API
@@ -146,3 +163,15 @@ This section provides a summary of the core features implemented in the applicat
     *   Private dataset owners have full management capabilities
     *   Administrators have management access to all datasets
     *   Anonymous users see only public datasets with appropriate call-to-action buttons
+*   **Modern Interface Enhancements**: Revolutionary sticky layout design that provides professional-grade user experience:
+    *   Fixed header with persistent dataset information and navigation
+    *   Optimized scrolling area focused on data exploration
+    *   Persistent footer with always-accessible pagination controls
+    *   Responsive design that maximizes screen real estate utilization
+    *   Enhanced data visualization with professional table layout and interactive elements
+
+---
+
+## Document Version History
+
+*Latest Update: December 2024 - Added Modern Interface Enhancements including sticky layout system and improved UX patterns*
