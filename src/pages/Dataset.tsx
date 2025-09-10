@@ -345,12 +345,12 @@ const DatasetPage = () => {
                     <Table className="table-auto w-full">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-16">Row</TableHead>
-                        <TableHead className="min-w-[16rem] max-w-[20rem]">Image Key</TableHead>
-                        <TableHead className="min-w-[8rem]">Filename</TableHead>
-                        <TableHead className="min-w-[12rem] max-w-[24rem]">Image</TableHead>
-                        <TableHead className="w-24">Dimensions</TableHead>
-                        <TableHead className="min-w-[12rem]">Prompt</TableHead>
+                        <TableHead className="w-12">Row</TableHead>
+                        <TableHead className="min-w-[18rem] max-w-[22rem] w-1/4">Image Key</TableHead>
+                        <TableHead className="min-w-[10rem] max-w-[16rem] w-1/6">Filename</TableHead>
+                        <TableHead className="min-w-[12rem] max-w-[20rem] w-1/6">Image</TableHead>
+                        <TableHead className="w-20">Dimensions</TableHead>
+                        <TableHead className="min-w-[15rem] max-w-[25rem] w-1/3">Prompt</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
