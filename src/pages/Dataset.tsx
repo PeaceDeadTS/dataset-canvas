@@ -341,15 +341,16 @@ const DatasetPage = () => {
                 <Skeleton className="h-64 w-full" />
               ) : images.length > 0 ? (
                 <>
-                  <Table>
+                  <div className="overflow-x-auto">
+                    <Table className="table-auto w-full">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[80px]">Row</TableHead>
-                        <TableHead className="w-[280px]">Image Key</TableHead>
-                        <TableHead>Filename</TableHead>
-                        <TableHead className="w-[220px]">Image</TableHead>
-                        <TableHead className="w-[120px]">Dimensions</TableHead>
-                        <TableHead>Prompt</TableHead>
+                        <TableHead className="w-16">Row</TableHead>
+                        <TableHead className="min-w-[16rem] max-w-[20rem]">Image Key</TableHead>
+                        <TableHead className="min-w-[8rem]">Filename</TableHead>
+                        <TableHead className="min-w-[12rem] max-w-[24rem]">Image</TableHead>
+                        <TableHead className="w-24">Dimensions</TableHead>
+                        <TableHead className="min-w-[12rem]">Prompt</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -357,26 +358,26 @@ const DatasetPage = () => {
                         <Dialog key={image.id}>
                           <DialogTrigger asChild>
                             <TableRow className="cursor-pointer">
-                              <TableCell className="py-4">{image.row_number}</TableCell>
-                              <TableCell className="font-mono text-xs py-4">{image.img_key}</TableCell>
-                              <TableCell className="py-4">{image.filename}</TableCell>
+                              <TableCell className="py-4 text-center">{image.row_number}</TableCell>
+                              <TableCell className="font-mono text-xs py-4 overflow-hidden text-ellipsis">{image.img_key}</TableCell>
+                              <TableCell className="py-4 overflow-hidden text-ellipsis">{image.filename}</TableCell>
                               <TableCell className="py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
-                                <div className="flex flex-col items-center gap-2 w-full">
-                                  <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded" />
+                                <div className="flex flex-col items-center gap-2 w-full min-w-0">
+                                  <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded flex-shrink-0" />
                                   <a 
                                     href={image.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
-                                    className="text-xs text-muted-foreground hover:text-primary truncate max-w-[190px] underline"
+                                    className="text-xs text-muted-foreground hover:text-primary underline w-full text-center overflow-hidden text-ellipsis whitespace-nowrap"
                                     title={image.url}
                                   >
                                     {new URL(image.url).pathname.split('/').pop()}
                                   </a>
                                 </div>
                               </TableCell>
-                              <TableCell className="py-4">{`${image.width}x${image.height}`}</TableCell>
-                              <TableCell className="max-w-xs truncate py-4">{image.prompt}</TableCell>
+                              <TableCell className="py-4 text-center whitespace-nowrap">{`${image.width}x${image.height}`}</TableCell>
+                              <TableCell className="py-4 overflow-hidden text-ellipsis">{image.prompt}</TableCell>
                             </TableRow>
                           </DialogTrigger>
                           <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
@@ -421,7 +422,8 @@ const DatasetPage = () => {
                         </Dialog>
                       ))}
                     </TableBody>
-                  </Table>
+                    </Table>
+                  </div>
                   {/* Lightbox for single image view */}
                   {isLightboxOpen && selectedImage && (
                     <div 
