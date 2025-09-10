@@ -80,9 +80,12 @@ export function DatasetHeader({ dataset }: DatasetHeaderProps) {
                           Datasets
                         </Link>
                         <span className="text-muted-foreground"> / </span>
-                        <span className="text-primary hover:underline">
+                        <Link
+                          to={dataset.user?.username ? `/users/${dataset.user.username}` : '#'}
+                          className="text-primary hover:underline"
+                        >
                           {dataset.user?.username || 'Unknown'}
-                        </span>
+                        </Link>
                         <span className="text-muted-foreground"> / </span>
                         <span className="text-foreground">{dataset.name}</span>
                       </h1>
