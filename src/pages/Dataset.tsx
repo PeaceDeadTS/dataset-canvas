@@ -300,240 +300,214 @@ const DatasetPage = () => {
   const canUpload = user && dataset && (user.role === 'Administrator' || (dataset.user && user.id === dataset.user.id));
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background">
       <DatasetHeader dataset={dataset || undefined} />
-      
-      {loading && (
-        <div className="container mx-auto px-4 py-8">
-          <Skeleton className="mb-4 h-8 w-1/2" />
-        </div>
-      )}
-      {error && (
-        <div className="container mx-auto px-4 py-8">
-          <p className="text-red-500">{error}</p>
-        </div>
-      )}
-      
-      {dataset && (
-        <div className="flex flex-col flex-1 min-h-0">
-          {/* Fixed Header Section with Dataset Card */}
-          <div className="bg-background border-b border-border px-4 py-4 flex-shrink-0">
-            <div className="container mx-auto" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
-              <h1 className="text-3xl font-bold mb-4">{dataset.name}</h1>
-              
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="item-1">
-                  <AccordionTrigger>Dataset Card</AccordionTrigger>
-                  <AccordionContent>
-                    <p className="text-muted-foreground mb-6">{dataset.description}</p>
-                    {canUpload && (
-                      <div className="my-6 p-4 border rounded-lg">
-                        <h2 className="text-lg font-semibold mb-2">Upload Data</h2>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Upload a CSV file with columns: filename, url, width, height, prompt.
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Input type="file" accept=".csv" onChange={handleFileChange} className="max-w-xs" />
-                          <Button onClick={handleUpload} disabled={!selectedFile || uploading}>
-                            <Upload className="mr-2 h-4 w-4" />
-                            {uploading ? 'Uploading...' : 'Upload'}
-                          </Button>
-                        </div>
+      <main className="container mx-auto px-4 py-8" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+        {loading && <Skeleton className="mb-4 h-8 w-1/2" />}
+        {error && <p className="text-red-500">{error}</p>}
+        {dataset && (
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{dataset.name}</h1>
+            
+            <Accordion type="single" collapsible className="w-full mb-6">
+              <AccordionItem value="item-1">
+                <AccordionTrigger>Dataset Card</AccordionTrigger>
+                <AccordionContent>
+                  <p className="text-muted-foreground mb-6">{dataset.description}</p>
+                   {canUpload && (
+                    <div className="my-6 p-4 border rounded-lg">
+                      <h2 className="text-lg font-semibold mb-2">Upload Data</h2>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Upload a CSV file with columns: filename, url, width, height, prompt.
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Input type="file" accept=".csv" onChange={handleFileChange} className="max-w-xs" />
+                        <Button onClick={handleUpload} disabled={!selectedFile || uploading}>
+                          <Upload className="mr-2 h-4 w-4" />
+                          {uploading ? 'Uploading...' : 'Upload'}
+                        </Button>
                       </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
-          </div>
+                    </div>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
-          {/* Scrollable Content Section with Images Table */}
-          <div className="flex-1 min-h-0 px-4">
-            <div className="container mx-auto h-full flex flex-col" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
-              <div className="py-4 flex-shrink-0">
-                <h2 className="text-xl font-semibold">Dataset Images ({totalImages})</h2>
-              </div>
-              
-              <div className="flex-1 min-h-0 overflow-auto">
-                {imagesLoading ? (
-                  <Skeleton className="h-64 w-full" />
-                ) : images.length > 0 ? (
+
+            {/* Image display */}
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-4">Dataset Images ({totalImages})</h2>
+              {imagesLoading ? (
+                <Skeleton className="h-64 w-full" />
+              ) : images.length > 0 ? (
+                <>
                   <div className="overflow-x-auto">
                     <Table className="table-auto w-full">
-                      <TableHeader className="sticky top-0 bg-background z-10">
-                        <TableRow>
-                          <TableHead className="w-10">Row</TableHead>
-                          <TableHead className="min-w-[18rem] max-w-[30rem]">Image Key</TableHead>
-                          <TableHead className="min-w-[18rem] max-w-[80rem]">Filename</TableHead>
-                          <TableHead className="min-w-[20rem] max-w-[80rem]">Image</TableHead>
-                          <TableHead className="w-20">Dimensions</TableHead>
-                          <TableHead className="min-w-[44rem]">Prompt</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {images.map((image) => (
-                          <Dialog key={image.id}>
-                            <DialogTrigger asChild>
-                              <TableRow className="cursor-pointer">
-                                <TableCell className="py-4 text-center">{image.row_number}</TableCell>
-                                <TableCell className="font-mono text-xs py-4 overflow-hidden text-ellipsis">{image.img_key}</TableCell>
-                                <TableCell className="py-4 overflow-hidden text-ellipsis">{image.filename}</TableCell>
-                                <TableCell className="py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
-                                  <div className="flex flex-col items-center gap-2 w-full min-w-0">
-                                    <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded flex-shrink-0" />
-                                    <a 
-                                      href={image.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      onClick={(e) => e.stopPropagation()}
-                                      className="text-xs text-muted-foreground hover:text-primary underline w-full text-center overflow-hidden text-ellipsis whitespace-nowrap"
-                                      title={image.url}
-                                    >
-                                      {new URL(image.url).pathname.split('/').pop()}
-                                    </a>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="py-4 text-center whitespace-nowrap">{`${image.width}x${image.height}`}</TableCell>
-                                <TableCell className="py-4 overflow-hidden text-ellipsis">{image.prompt}</TableCell>
-                              </TableRow>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
-                              <DialogHeader>
-                                <DialogTitle>{image.filename}</DialogTitle>
-                                <DialogDescription>
-                                  Image details
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="grid gap-4 py-4 max-h-[calc(90vh-8rem)] overflow-y-auto">
-                                 <div className="flex justify-center">
-                                   <img 
-                                     src={image.url} 
-                                     alt={image.filename} 
-                                     className="max-w-full max-h-[50vh] object-contain rounded-md" 
-                                   />
-                                 </div>
-                                 <div className="text-sm space-y-2 min-w-0">
-                                  <p><strong>Filename:</strong> {image.filename}</p>
-                                  <p><strong>File extension:</strong> {getFileExtension(image.url)}</p>
-                                  <p><strong>Dimensions:</strong> {image.width} × {image.height} pixels</p>
-                                  <p><strong>Aspect ratio:</strong> {formatAspectRatio(image.width, image.height)}</p>
-                                  <div>
-                                    <p><strong>URL:</strong></p>
-                                    <a 
-                                      href={image.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-muted-foreground hover:text-primary break-all max-w-full text-xs underline"
-                                    >
-                                      {image.url}
-                                    </a>
-                                  </div>
-                                  <div>
-                                    <p><strong>Prompt:</strong></p>
-                                    <p className="text-muted-foreground break-words max-w-full">{image.prompt}</p>
-                                  </div>
-                                  <p className="font-mono text-xs break-all"><strong>Key:</strong> {image.img_key}</p>
-                                 </div>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                        ))}
-                      </TableBody>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-10">Row</TableHead>
+                        <TableHead className="min-w-[18rem] max-w-[30rem]">Image Key</TableHead>
+                        <TableHead className="min-w-[18rem] max-w-[80rem]">Filename</TableHead>
+                        <TableHead className="min-w-[20rem] max-w-[80rem]">Image</TableHead>
+                        <TableHead className="w-20">Dimensions</TableHead>
+                        <TableHead className="min-w-[44rem]">Prompt</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {images.map((image) => (
+                        <Dialog key={image.id}>
+                          <DialogTrigger asChild>
+                            <TableRow className="cursor-pointer">
+                              <TableCell className="py-4 text-center">{image.row_number}</TableCell>
+                              <TableCell className="font-mono text-xs py-4 overflow-hidden text-ellipsis">{image.img_key}</TableCell>
+                              <TableCell className="py-4 overflow-hidden text-ellipsis">{image.filename}</TableCell>
+                              <TableCell className="py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
+                                <div className="flex flex-col items-center gap-2 w-full min-w-0">
+                                  <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded flex-shrink-0" />
+                                  <a 
+                                    href={image.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="text-xs text-muted-foreground hover:text-primary underline w-full text-center overflow-hidden text-ellipsis whitespace-nowrap"
+                                    title={image.url}
+                                  >
+                                    {new URL(image.url).pathname.split('/').pop()}
+                                  </a>
+                                </div>
+                              </TableCell>
+                              <TableCell className="py-4 text-center whitespace-nowrap">{`${image.width}x${image.height}`}</TableCell>
+                              <TableCell className="py-4 overflow-hidden text-ellipsis">{image.prompt}</TableCell>
+                            </TableRow>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
+                            <DialogHeader>
+                              <DialogTitle>{image.filename}</DialogTitle>
+                              <DialogDescription>
+                                Image details
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4 max-h-[calc(90vh-8rem)] overflow-y-auto">
+                               <div className="flex justify-center">
+                                 <img 
+                                   src={image.url} 
+                                   alt={image.filename} 
+                                   className="max-w-full max-h-[50vh] object-contain rounded-md" 
+                                 />
+                               </div>
+                               <div className="text-sm space-y-2 min-w-0">
+                                <p><strong>Filename:</strong> {image.filename}</p>
+                                <p><strong>File extension:</strong> {getFileExtension(image.url)}</p>
+                                <p><strong>Dimensions:</strong> {image.width} × {image.height} pixels</p>
+                                <p><strong>Aspect ratio:</strong> {formatAspectRatio(image.width, image.height)}</p>
+                                <div>
+                                  <p><strong>URL:</strong></p>
+                                  <a 
+                                    href={image.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-muted-foreground hover:text-primary break-all max-w-full text-xs underline"
+                                  >
+                                    {image.url}
+                                  </a>
+                                </div>
+                                <div>
+                                  <p><strong>Prompt:</strong></p>
+                                  <p className="text-muted-foreground break-words max-w-full">{image.prompt}</p>
+                                </div>
+                                <p className="font-mono text-xs break-all"><strong>Key:</strong> {image.img_key}</p>
+                               </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      ))}
+                    </TableBody>
                     </Table>
                   </div>
-                ) : (
-                  <p>No images found in this dataset.</p>
-                )}
-              </div>
+                  {/* Lightbox for single image view */}
+                  {isLightboxOpen && selectedImage && (
+                    <div 
+                      className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center"
+                      onClick={closeLightbox}
+                    >
+                      <img 
+                        src={selectedImage.url} 
+                        alt={selectedImage.filename} 
+                        className="max-w-[90vw] max-h-[90vh] object-contain"
+                        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on the image itself
+                      />
+                    </div>
+                  )}
+                  <div className="flex flex-col items-center gap-4 mt-6">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Items per page:</span>
+                      <Select value={limit.toString()} onValueChange={(value) => updateLimit(parseInt(value, 10))}>
+                        <SelectTrigger className="w-[70px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="25">25</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                     <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              updateCurrentPage(Math.max(currentPage - 1, 1));
+                            }}
+                            className={currentPage === 1 ? 'pointer-events-none text-muted-foreground' : ''}
+                          />
+                        </PaginationItem>
+
+                        {getPaginationGroup().map((item, index) => (
+                          <PaginationItem key={index}>
+                            {item === '...' ? (
+                              <span className="px-4 py-2">...</span>
+                            ) : (
+                              <PaginationLink
+                                href="#"
+                                isActive={currentPage === item}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  updateCurrentPage(item as number);
+                                }}
+                              >
+                                {item}
+                              </PaginationLink>
+                            )}
+                          </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              updateCurrentPage(Math.min(currentPage + 1, totalPages));
+                            }}
+                            className={currentPage === totalPages ? 'pointer-events-none text-muted-foreground' : ''}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p>No images found in this dataset.</p>
+              )}
             </div>
           </div>
-
-          {/* Fixed Footer Section with Pagination */}
-          {!imagesLoading && images.length > 0 && (
-            <div className="bg-background border-t border-border px-4 py-4 flex-shrink-0">
-              <div className="container mx-auto" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
-                <div className="flex flex-col items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Items per page:</span>
-                    <Select value={limit.toString()} onValueChange={(value) => updateLimit(parseInt(value, 10))}>
-                      <SelectTrigger className="w-[70px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="10">10</SelectItem>
-                        <SelectItem value="25">25</SelectItem>
-                        <SelectItem value="50">50</SelectItem>
-                        <SelectItem value="100">100</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                   <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            updateCurrentPage(Math.max(currentPage - 1, 1));
-                          }}
-                          className={currentPage === 1 ? 'pointer-events-none text-muted-foreground' : ''}
-                        />
-                      </PaginationItem>
-
-                      {getPaginationGroup().map((item, index) => (
-                        <PaginationItem key={index}>
-                          {item === '...' ? (
-                            <span className="px-4 py-2">...</span>
-                          ) : (
-                            <PaginationLink
-                              href="#"
-                              isActive={currentPage === item}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                updateCurrentPage(item as number);
-                              }}
-                            >
-                              {item}
-                            </PaginationLink>
-                          )}
-                        </PaginationItem>
-                      ))}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            updateCurrentPage(Math.min(currentPage + 1, totalPages));
-                          }}
-                          className={currentPage === totalPages ? 'pointer-events-none text-muted-foreground' : ''}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Lightbox for single image view */}
-          {isLightboxOpen && selectedImage && (
-            <div 
-              className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center"
-              onClick={closeLightbox}
-            >
-              <img 
-                src={selectedImage.url} 
-                alt={selectedImage.filename} 
-                className="max-w-[90vw] max-h-[90vh] object-contain"
-                onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on the image itself
-              />
-            </div>
-          )}
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 };
