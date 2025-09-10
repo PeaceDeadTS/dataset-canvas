@@ -346,9 +346,9 @@ const DatasetPage = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-10">Row</TableHead>
-                        <TableHead className="min-w-[10rem] max-w-[32rem]">Image Key</TableHead>
-                        <TableHead className="min-w-[10rem] max-w-[44rem]">Filename</TableHead>
-                        <TableHead className="min-w-[10rem] max-w-[44rem]">Image</TableHead>
+                        <TableHead className="min-w-[30rem] max-w-[60rem]">Image Key</TableHead>
+                        <TableHead className="min-w-[20rem] max-w-[60rem]">Filename</TableHead>
+                        <TableHead className="min-w-[20rem] max-w-[60rem]">Image</TableHead>
                         <TableHead className="w-20">Dimensions</TableHead>
                         <TableHead className="min-w-[20rem]">Prompt</TableHead>
                       </TableRow>
