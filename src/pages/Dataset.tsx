@@ -349,7 +349,27 @@ const DatasetPage = () => {
               </div>
             </div>
             
-            <div className="flex-1 overflow-auto relative">
+            {/* Sticky Table Header - вынесенный за пределы прокручиваемой области */}
+            <div className="sticky top-0 z-10 bg-background shadow-sm border-b">
+              <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+                <div className="overflow-x-auto">
+                  <Table className="table-auto w-full">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-10">Row</TableHead>
+                        <TableHead className="min-w-[18rem] max-w-[30rem]">Image Key</TableHead>
+                        <TableHead className="min-w-[18rem] max-w-[80rem]">Filename</TableHead>
+                        <TableHead className="min-w-[20rem] max-w-[80rem]">Image</TableHead>
+                        <TableHead className="w-20">Dimensions</TableHead>
+                        <TableHead className="min-w-[44rem]">Prompt</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                  </Table>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-auto">
               <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
                 {imagesLoading ? (
                   <div className="py-8">
@@ -358,16 +378,7 @@ const DatasetPage = () => {
                 ) : images.length > 0 ? (
                   <div className="overflow-x-auto py-4">
                     <Table className="table-auto w-full">
-                      <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
-                        <TableRow className="border-b">
-                          <TableHead className="w-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Row</TableHead>
-                          <TableHead className="min-w-[18rem] max-w-[30rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image Key</TableHead>
-                          <TableHead className="min-w-[18rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Filename</TableHead>
-                          <TableHead className="min-w-[20rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image</TableHead>
-                          <TableHead className="w-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Dimensions</TableHead>
-                          <TableHead className="min-w-[44rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Prompt</TableHead>
-                        </TableRow>
-                      </TableHeader>
+                      {/* Убираем TableHeader, так как он теперь отдельно выше */}
                       <TableBody>
                         {images.map((image) => (
                           <Dialog key={image.id}>
