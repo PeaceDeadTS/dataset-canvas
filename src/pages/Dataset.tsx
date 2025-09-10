@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -348,7 +349,7 @@ const DatasetPage = () => {
               </div>
             </div>
             
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-auto relative">
               <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
                 {imagesLoading ? (
                   <div className="py-8">
@@ -356,86 +357,87 @@ const DatasetPage = () => {
                   </div>
                 ) : images.length > 0 ? (
                   <div className="overflow-x-auto py-4">
-                    <div className="min-w-full" style={{ display: 'grid', gridTemplateColumns: 'minmax(40px, 40px) minmax(288px, 480px) minmax(288px, 1280px) minmax(320px, 1280px) minmax(80px, 80px) minmax(704px, 1fr)' }}>
-                      {/* Sticky Header Row */}
-                      <div className="sticky top-0 bg-background z-20 contents">
-                        <div className="px-4 py-3 text-left text-sm font-medium text-muted-foreground border-b bg-background">Row</div>
-                        <div className="px-4 py-3 text-left text-sm font-medium text-muted-foreground border-b bg-background">Image Key</div>
-                        <div className="px-4 py-3 text-left text-sm font-medium text-muted-foreground border-b bg-background">Filename</div>
-                        <div className="px-4 py-3 text-left text-sm font-medium text-muted-foreground border-b bg-background">Image</div>
-                        <div className="px-4 py-3 text-left text-sm font-medium text-muted-foreground border-b bg-background">Dimensions</div>
-                        <div className="px-4 py-3 text-left text-sm font-medium text-muted-foreground border-b bg-background">Prompt</div>
-                      </div>
-                      
-                      {/* Data Rows */}
-                      {images.map((image) => (
-                        <Dialog key={image.id}>
-                          <DialogTrigger asChild>
-                            <div className="contents cursor-pointer hover:bg-muted/50 group">
-                              <div className="px-4 py-4 text-center border-b group-hover:border-border">{image.row_number}</div>
-                              <div className="px-4 py-4 font-mono text-xs border-b overflow-hidden text-ellipsis group-hover:border-border">{image.img_key}</div>
-                              <div className="px-4 py-4 border-b overflow-hidden text-ellipsis group-hover:border-border">{image.filename}</div>
-                              <div className="px-4 py-4 border-b group-hover:border-border" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
-                                <div className="flex flex-col items-center gap-2 w-full min-w-0">
-                                  <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded flex-shrink-0" />
-                                  <a 
-                                    href={image.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="text-xs text-muted-foreground hover:text-primary underline w-full text-center overflow-hidden text-ellipsis whitespace-nowrap"
-                                    title={image.url}
-                                  >
-                                    {new URL(image.url).pathname.split('/').pop()}
-                                  </a>
-                                </div>
+                    <Table className="table-auto w-full">
+                      <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+                        <TableRow className="border-b">
+                          <TableHead className="w-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Row</TableHead>
+                          <TableHead className="min-w-[18rem] max-w-[30rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image Key</TableHead>
+                          <TableHead className="min-w-[18rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Filename</TableHead>
+                          <TableHead className="min-w-[20rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image</TableHead>
+                          <TableHead className="w-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Dimensions</TableHead>
+                          <TableHead className="min-w-[44rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Prompt</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {images.map((image) => (
+                          <Dialog key={image.id}>
+                            <DialogTrigger asChild>
+                              <TableRow className="cursor-pointer">
+                                <TableCell className="py-4 text-center">{image.row_number}</TableCell>
+                                <TableCell className="font-mono text-xs py-4 overflow-hidden text-ellipsis">{image.img_key}</TableCell>
+                                <TableCell className="py-4 overflow-hidden text-ellipsis">{image.filename}</TableCell>
+                                <TableCell className="py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
+                                  <div className="flex flex-col items-center gap-2 w-full min-w-0">
+                                    <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded flex-shrink-0" />
+                                    <a 
+                                      href={image.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="text-xs text-muted-foreground hover:text-primary underline w-full text-center overflow-hidden text-ellipsis whitespace-nowrap"
+                                      title={image.url}
+                                    >
+                                      {new URL(image.url).pathname.split('/').pop()}
+                                    </a>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="py-4 text-center whitespace-nowrap">{`${image.width}x${image.height}`}</TableCell>
+                                <TableCell className="py-4 overflow-hidden text-ellipsis">{image.prompt}</TableCell>
+                              </TableRow>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
+                              <DialogHeader>
+                                <DialogTitle>{image.filename}</DialogTitle>
+                                <DialogDescription>
+                                  Image details
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="grid gap-4 py-4 max-h-[calc(90vh-8rem)] overflow-y-auto">
+                                 <div className="flex justify-center">
+                                   <img 
+                                     src={image.url} 
+                                     alt={image.filename} 
+                                     className="max-w-full max-h-[50vh] object-contain rounded-md" 
+                                   />
+                                 </div>
+                                 <div className="text-sm space-y-2 min-w-0">
+                                  <p><strong>Filename:</strong> {image.filename}</p>
+                                  <p><strong>File extension:</strong> {getFileExtension(image.url)}</p>
+                                  <p><strong>Dimensions:</strong> {image.width} × {image.height} pixels</p>
+                                  <p><strong>Aspect ratio:</strong> {formatAspectRatio(image.width, image.height)}</p>
+                                  <div>
+                                    <p><strong>URL:</strong></p>
+                                    <a 
+                                      href={image.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-muted-foreground hover:text-primary break-all max-w-full text-xs underline"
+                                    >
+                                      {image.url}
+                                    </a>
+                                  </div>
+                                  <div>
+                                    <p><strong>Prompt:</strong></p>
+                                    <p className="text-muted-foreground break-words max-w-full">{image.prompt}</p>
+                                  </div>
+                                  <p className="font-mono text-xs break-all"><strong>Key:</strong> {image.img_key}</p>
+                                 </div>
                               </div>
-                              <div className="px-4 py-4 text-center whitespace-nowrap border-b group-hover:border-border">{`${image.width}x${image.height}`}</div>
-                              <div className="px-4 py-4 border-b overflow-hidden text-ellipsis group-hover:border-border">{image.prompt}</div>
-                            </div>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
-                            <DialogHeader>
-                              <DialogTitle>{image.filename}</DialogTitle>
-                              <DialogDescription>
-                                Image details
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="grid gap-4 py-4 max-h-[calc(90vh-8rem)] overflow-y-auto">
-                               <div className="flex justify-center">
-                                 <img 
-                                   src={image.url} 
-                                   alt={image.filename} 
-                                   className="max-w-full max-h-[50vh] object-contain rounded-md" 
-                                 />
-                               </div>
-                               <div className="text-sm space-y-2 min-w-0">
-                                <p><strong>Filename:</strong> {image.filename}</p>
-                                <p><strong>File extension:</strong> {getFileExtension(image.url)}</p>
-                                <p><strong>Dimensions:</strong> {image.width} × {image.height} pixels</p>
-                                <p><strong>Aspect ratio:</strong> {formatAspectRatio(image.width, image.height)}</p>
-                                <div>
-                                  <p><strong>URL:</strong></p>
-                                  <a 
-                                    href={image.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-muted-foreground hover:text-primary break-all max-w-full text-xs underline"
-                                  >
-                                    {image.url}
-                                  </a>
-                                </div>
-                                <div>
-                                  <p><strong>Prompt:</strong></p>
-                                  <p className="text-muted-foreground break-words max-w-full">{image.prompt}</p>
-                                </div>
-                                <p className="font-mono text-xs break-all"><strong>Key:</strong> {image.img_key}</p>
-                               </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      ))}
-                    </div>
+                            </DialogContent>
+                          </Dialog>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 ) : (
                   <div className="py-8">
