@@ -27,7 +27,8 @@ router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
   try {
     const query = datasetRepository
       .createQueryBuilder('dataset')
-      .leftJoinAndSelect('dataset.user', 'user');
+      .leftJoinAndSelect('dataset.user', 'user')
+      .loadRelationCountAndMap('dataset.imageCount', 'dataset.images');
 
     if (userRole === UserRole.ADMIN) {
       // Admin sees everything

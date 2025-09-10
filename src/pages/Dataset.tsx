@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { DatasetHeader } from '@/components/DatasetHeader';
 import { Dataset } from '@/types';
@@ -36,6 +36,7 @@ interface DatasetImage {
 const DatasetPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,12 +44,38 @@ const DatasetPage = () => {
   const [uploading, setUploading] = useState(false);
   const [images, setImages] = useState<DatasetImage[]>([]);
   const [imagesLoading, setImagesLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Инициализация currentPage из URL параметра
+  const [currentPage, setCurrentPage] = useState(() => {
+    const pageParam = searchParams.get('p');
+    return pageParam ? parseInt(pageParam, 10) : 1;
+  });
+  
   const [totalPages, setTotalPages] = useState(1);
   const [totalImages, setTotalImages] = useState(0);
   const [selectedImage, setSelectedImage] = useState<DatasetImage | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
+  // Функция для обновления страницы с синхронизацией URL
+  const updateCurrentPage = (page: number) => {
+    setCurrentPage(page);
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (page === 1) {
+      newSearchParams.delete('p');
+    } else {
+      newSearchParams.set('p', page.toString());
+    }
+    setSearchParams(newSearchParams);
+  };
+
+  // useEffect для обновления currentPage из URL
+  useEffect(() => {
+    const pageParam = searchParams.get('p');
+    const newPage = pageParam ? parseInt(pageParam, 10) : 1;
+    if (newPage !== currentPage) {
+      setCurrentPage(newPage);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchDataset = async () => {
@@ -110,7 +137,7 @@ const DatasetPage = () => {
       toast.success(response.data.message || 'File uploaded successfully!');
       
       // Обновляем данные после успешной загрузки
-      setCurrentPage(1); // Сбрасываем на первую страницу - это автоматически запустит перезагрузку данных
+      updateCurrentPage(1); // Сбрасываем на первую страницу - это автоматически запустит перезагрузку данных
 
     } catch (err: any) {
       toast.error(err.response?.data?.message || err.response?.data || 'Failed to upload file.');
@@ -134,8 +161,8 @@ const DatasetPage = () => {
   const getPaginationGroup = () => {
     const pageCount = totalPages;
     const currentPageLocal = currentPage;
-    const siblings = 1;
-    const totalPageNumbers = siblings * 2 + 3; // a.k.a 5: first, last, current, two siblings
+    const siblings = 2; // Расширено с 1 до 2 для показа большего количества страниц
+    const totalPageNumbers = siblings * 2 + 3; // a.k.a 7: first, last, current, four siblings
 
     if (pageCount <= totalPageNumbers) {
       return Array.from({ length: pageCount }, (_, i) => i + 1);
@@ -171,7 +198,7 @@ const DatasetPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <DatasetHeader dataset={dataset || undefined} />
-      <main className="mx-auto max-w-7xl px-6 py-8">
+      <main className="container mx-auto px-4 py-8" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
         {loading && <Skeleton className="mb-4 h-8 w-1/2" />}
         {error && <p className="text-red-500">{error}</p>}
         {dataset && (
@@ -236,19 +263,31 @@ const DatasetPage = () => {
                               <TableCell className="font-mono text-xs">{image.img_key}</TableCell>
                             </TableRow>
                           </DialogTrigger>
-                          <DialogContent className="sm:max-w-[600px]">
+                          <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto">
                             <DialogHeader>
                               <DialogTitle>{image.filename}</DialogTitle>
                               <DialogDescription>
                                 Image details
                               </DialogDescription>
                             </DialogHeader>
-                            <div className="grid gap-4 py-4">
-                               <img src={image.url} alt={image.filename} className="w-full h-auto object-contain rounded-md" />
-                               <div className="text-sm space-y-2">
-                                <p><strong>Dimensions:</strong> {image.width}x{image.height}</p>
-                                <p><strong>Prompt:</strong> {image.prompt}</p>
-                                <p className="font-mono text-xs"><strong>Key:</strong> {image.img_key}</p>
+                            <div className="grid gap-4 py-4 overflow-auto">
+                               <div className="flex justify-center">
+                                 <img 
+                                   src={image.url} 
+                                   alt={image.filename} 
+                                   className="max-w-full max-h-[60vh] object-contain rounded-md" 
+                                 />
+                               </div>
+                               <div className="text-sm space-y-2 min-w-0">
+                                <p><strong>Filename:</strong> {image.filename}</p>
+                                <p><strong>File extension:</strong> {image.filename.split('.').pop()?.toUpperCase() || 'Unknown'}</p>
+                                <p><strong>Dimensions:</strong> {image.width} × {image.height} pixels</p>
+                                <p><strong>Aspect ratio:</strong> {(image.width / image.height).toFixed(2)}</p>
+                                <div>
+                                  <p><strong>Prompt:</strong></p>
+                                  <p className="text-muted-foreground break-words max-w-full">{image.prompt}</p>
+                                </div>
+                                <p className="font-mono text-xs break-all"><strong>Key:</strong> {image.img_key}</p>
                                </div>
                             </div>
                           </DialogContent>
@@ -278,7 +317,7 @@ const DatasetPage = () => {
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
-                              setCurrentPage((prev) => Math.max(prev - 1, 1));
+                              updateCurrentPage(Math.max(currentPage - 1, 1));
                             }}
                             className={currentPage === 1 ? 'pointer-events-none text-muted-foreground' : ''}
                           />
@@ -294,7 +333,7 @@ const DatasetPage = () => {
                                 isActive={currentPage === item}
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  setCurrentPage(item as number);
+                                  updateCurrentPage(item as number);
                                 }}
                               >
                                 {item}
@@ -308,7 +347,7 @@ const DatasetPage = () => {
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
-                              setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+                              updateCurrentPage(Math.min(currentPage + 1, totalPages));
                             }}
                             className={currentPage === totalPages ? 'pointer-events-none text-muted-foreground' : ''}
                           />

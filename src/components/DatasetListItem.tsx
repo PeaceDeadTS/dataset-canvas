@@ -22,7 +22,7 @@ export function DatasetListItem({ dataset }: DatasetListItemProps) {
                 <CardFooter className="flex justify-between text-xs text-muted-foreground">
                     <span>by {dataset.user?.username || 'Unknown'}</span>
                     <span>{new Date(dataset.createdAt).toLocaleDateString()}</span>
-                    <span>{dataset.imageCount || 0} items</span>
+                    <span>{dataset.imageCount} items</span>
                 </CardFooter>
             </Card>
         </Link>

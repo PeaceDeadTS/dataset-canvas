@@ -65,7 +65,7 @@ export function DatasetHeader({ dataset }: DatasetHeaderProps) {
 
   return (
     <header className="border-b border-border bg-card">
-      <div className="mx-auto max-w-7xl px-6 py-4">
+      <div className="container mx-auto px-4 py-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             {dataset ? (
@@ -73,15 +73,18 @@ export function DatasetHeader({ dataset }: DatasetHeaderProps) {
                   <div>
                     <div className="flex items-center space-x-2">
                       <h1 className="text-2xl font-semibold text-foreground">
-                        <span className="text-muted-foreground">Datasets:</span>{" "}
                         <Link
-                          to={`/`}
-                          className="text-primary hover:underline"
+                          to="/"
+                          className="text-muted-foreground hover:underline"
                         >
-                          {dataset.user?.username || 'Unknown'}
+                          Datasets
                         </Link>
-                        <span className="text-foreground"> / </span>
-                        <span className="text-primary">{dataset.name}</span>
+                        <span className="text-muted-foreground"> / </span>
+                        <span className="text-primary hover:underline">
+                          {dataset.user?.username || 'Unknown'}
+                        </span>
+                        <span className="text-muted-foreground"> / </span>
+                        <span className="text-foreground">{dataset.name}</span>
                       </h1>
                       {!dataset.isPublic && (
                         <Badge variant="secondary">Private</Badge>

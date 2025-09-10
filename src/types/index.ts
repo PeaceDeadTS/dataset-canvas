@@ -12,7 +12,7 @@ export interface Dataset {
     isPublic: boolean;
     user?: User; // Сделали опциональным для безопасности
     createdAt: string;
-    imageCount?: number;
+    imageCount: number;
 
     // Properties for the detailed dataset view
     modalities?: string[];
