@@ -300,48 +300,63 @@ const DatasetPage = () => {
   const canUpload = user && dataset && (user.role === 'Administrator' || (dataset.user && user.id === dataset.user.id));
 
   return (
-    <div className="min-h-screen bg-background">
-      <DatasetHeader dataset={dataset || undefined} />
-      <main className="container mx-auto px-4 py-8" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
-        {loading && <Skeleton className="mb-4 h-8 w-1/2" />}
-        {error && <p className="text-red-500">{error}</p>}
-        {dataset && (
-          <div>
-            <h1 className="text-3xl font-bold mb-2">{dataset.name}</h1>
-            
-            <Accordion type="single" collapsible className="w-full mb-6">
-              <AccordionItem value="item-1">
-                <AccordionTrigger>Dataset Card</AccordionTrigger>
-                <AccordionContent>
-                  <p className="text-muted-foreground mb-6">{dataset.description}</p>
-                   {canUpload && (
-                    <div className="my-6 p-4 border rounded-lg">
-                      <h2 className="text-lg font-semibold mb-2">Upload Data</h2>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Upload a CSV file with columns: filename, url, width, height, prompt.
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Input type="file" accept=".csv" onChange={handleFileChange} className="max-w-xs" />
-                        <Button onClick={handleUpload} disabled={!selectedFile || uploading}>
-                          <Upload className="mr-2 h-4 w-4" />
-                          {uploading ? 'Uploading...' : 'Upload'}
-                        </Button>
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
+      {/* Sticky Header */}
+      <div className="flex-none bg-background border-b">
+        <DatasetHeader dataset={dataset || undefined} />
+        <div className="container mx-auto px-4 py-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+          {loading && <Skeleton className="mb-4 h-8 w-1/2" />}
+          {error && <p className="text-red-500">{error}</p>}
+          {dataset && (
+            <div>
+              <h1 className="text-3xl font-bold mb-2">{dataset.name}</h1>
+              
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="item-1">
+                  <AccordionTrigger>Dataset Card</AccordionTrigger>
+                  <AccordionContent>
+                    <p className="text-muted-foreground mb-6">{dataset.description}</p>
+                     {canUpload && (
+                      <div className="my-6 p-4 border rounded-lg">
+                        <h2 className="text-lg font-semibold mb-2">Upload Data</h2>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Upload a CSV file with columns: filename, url, width, height, prompt.
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Input type="file" accept=".csv" onChange={handleFileChange} className="max-w-xs" />
+                          <Button onClick={handleUpload} disabled={!selectedFile || uploading}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            {uploading ? 'Uploading...' : 'Upload'}
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+          )}
+        </div>
+      </div>
 
-
-            {/* Image display */}
-            <div className="mt-8">
-              <h2 className="text-xl font-semibold mb-4">Dataset Images ({totalImages})</h2>
-              {imagesLoading ? (
-                <Skeleton className="h-64 w-full" />
-              ) : images.length > 0 ? (
-                <>
-                  <div className="overflow-x-auto">
+      {/* Scrollable Main Content */}
+      {dataset && (
+        <>
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="px-4 py-2 bg-background border-b">
+              <div className="container mx-auto" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+                <h2 className="text-xl font-semibold">Dataset Images ({totalImages})</h2>
+              </div>
+            </div>
+            
+            <div className="flex-1 overflow-auto">
+              <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+                {imagesLoading ? (
+                  <div className="py-8">
+                    <Skeleton className="h-64 w-full" />
+                  </div>
+                ) : images.length > 0 ? (
+                  <div className="overflow-x-auto py-4">
                     <Table className="table-auto w-full">
                     <TableHeader>
                       <TableRow>
@@ -424,90 +439,101 @@ const DatasetPage = () => {
                     </TableBody>
                     </Table>
                   </div>
-                  {/* Lightbox for single image view */}
-                  {isLightboxOpen && selectedImage && (
-                    <div 
-                      className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center"
-                      onClick={closeLightbox}
-                    >
-                      <img 
-                        src={selectedImage.url} 
-                        alt={selectedImage.filename} 
-                        className="max-w-[90vw] max-h-[90vh] object-contain"
-                        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on the image itself
-                      />
-                    </div>
-                  )}
-                  <div className="flex flex-col items-center gap-4 mt-6">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Items per page:</span>
-                      <Select value={limit.toString()} onValueChange={(value) => updateLimit(parseInt(value, 10))}>
-                        <SelectTrigger className="w-[70px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="10">10</SelectItem>
-                          <SelectItem value="25">25</SelectItem>
-                          <SelectItem value="50">50</SelectItem>
-                          <SelectItem value="100">100</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                     <Pagination>
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              updateCurrentPage(Math.max(currentPage - 1, 1));
-                            }}
-                            className={currentPage === 1 ? 'pointer-events-none text-muted-foreground' : ''}
-                          />
-                        </PaginationItem>
-
-                        {getPaginationGroup().map((item, index) => (
-                          <PaginationItem key={index}>
-                            {item === '...' ? (
-                              <span className="px-4 py-2">...</span>
-                            ) : (
-                              <PaginationLink
-                                href="#"
-                                isActive={currentPage === item}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  updateCurrentPage(item as number);
-                                }}
-                              >
-                                {item}
-                              </PaginationLink>
-                            )}
-                          </PaginationItem>
-                        ))}
-
-                        <PaginationItem>
-                          <PaginationNext
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              updateCurrentPage(Math.min(currentPage + 1, totalPages));
-                            }}
-                            className={currentPage === totalPages ? 'pointer-events-none text-muted-foreground' : ''}
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                    </div>
+                ) : (
+                  <div className="py-8">
+                    <p>No images found in this dataset.</p>
                   </div>
-                </>
-              ) : (
-                <p>No images found in this dataset.</p>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        )}
-      </main>
+
+          {/* Sticky Footer - Pagination */}
+          {images.length > 0 && (
+            <div className="flex-none bg-background border-t">
+              <div className="container mx-auto px-4 py-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Items per page:</span>
+                    <Select value={limit.toString()} onValueChange={(value) => updateLimit(parseInt(value, 10))}>
+                      <SelectTrigger className="w-[70px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="25">25</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                   <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            updateCurrentPage(Math.max(currentPage - 1, 1));
+                          }}
+                          className={currentPage === 1 ? 'pointer-events-none text-muted-foreground' : ''}
+                        />
+                      </PaginationItem>
+
+                      {getPaginationGroup().map((item, index) => (
+                        <PaginationItem key={index}>
+                          {item === '...' ? (
+                            <span className="px-4 py-2">...</span>
+                          ) : (
+                            <PaginationLink
+                              href="#"
+                              isActive={currentPage === item}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                updateCurrentPage(item as number);
+                              }}
+                            >
+                              {item}
+                            </PaginationLink>
+                          )}
+                        </PaginationItem>
+                      ))}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            updateCurrentPage(Math.min(currentPage + 1, totalPages));
+                          }}
+                          className={currentPage === totalPages ? 'pointer-events-none text-muted-foreground' : ''}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Lightbox for single image view */}
+      {isLightboxOpen && selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center"
+          onClick={closeLightbox}
+        >
+          <img 
+            src={selectedImage.url} 
+            alt={selectedImage.filename} 
+            className="max-w-[90vw] max-h-[90vh] object-contain"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on the image itself
+          />
+        </div>
+      )}
     </div>
   );
 };
