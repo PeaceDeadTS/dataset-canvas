@@ -347,7 +347,7 @@ const DatasetPage = () => {
                         <TableHead className="w-[80px]">Row</TableHead>
                         <TableHead className="w-[280px]">Image Key</TableHead>
                         <TableHead>Filename</TableHead>
-                        <TableHead className="w-[160px]">Image</TableHead>
+                        <TableHead className="w-[220px]">Image</TableHead>
                         <TableHead className="w-[120px]">Dimensions</TableHead>
                         <TableHead>Prompt</TableHead>
                       </TableRow>
@@ -368,7 +368,7 @@ const DatasetPage = () => {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
-                                    className="text-xs text-muted-foreground hover:text-primary truncate max-w-[140px] underline"
+                                    className="text-xs text-muted-foreground hover:text-primary truncate max-w-[190px] underline"
                                     title={image.url}
                                   >
                                     {new URL(image.url).pathname.split('/').pop()}
