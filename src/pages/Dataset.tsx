@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -349,26 +348,6 @@ const DatasetPage = () => {
               </div>
             </div>
             
-            {/* Sticky Table Header */}
-            <div className="px-4 py-2 bg-background border-b sticky top-0 z-20">
-              <div className="container mx-auto" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
-                <div className="overflow-x-auto">
-                  <Table className="table-auto w-full">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-10">Row</TableHead>
-                        <TableHead className="min-w-[18rem] max-w-[30rem]">Image Key</TableHead>
-                        <TableHead className="min-w-[18rem] max-w-[80rem]">Filename</TableHead>
-                        <TableHead className="min-w-[20rem] max-w-[80rem]">Image</TableHead>
-                        <TableHead className="w-20">Dimensions</TableHead>
-                        <TableHead className="min-w-[44rem]">Prompt</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                  </Table>
-                </div>
-              </div>
-            </div>
-
             <div className="flex-1 overflow-auto">
               <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
                 {imagesLoading ? (
@@ -376,17 +355,27 @@ const DatasetPage = () => {
                     <Skeleton className="h-64 w-full" />
                   </div>
                 ) : images.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <Table className="table-auto w-full">
-                    <TableBody>
+                  <div className="overflow-x-auto py-4">
+                    <div className="min-w-full" style={{ display: 'grid', gridTemplateColumns: 'minmax(40px, 40px) minmax(288px, 480px) minmax(288px, 1280px) minmax(320px, 1280px) minmax(80px, 80px) minmax(704px, 1fr)' }}>
+                      {/* Sticky Header Row */}
+                      <div className="sticky top-0 bg-background z-20 contents">
+                        <div className="px-4 py-3 text-left text-sm font-medium text-muted-foreground border-b bg-background">Row</div>
+                        <div className="px-4 py-3 text-left text-sm font-medium text-muted-foreground border-b bg-background">Image Key</div>
+                        <div className="px-4 py-3 text-left text-sm font-medium text-muted-foreground border-b bg-background">Filename</div>
+                        <div className="px-4 py-3 text-left text-sm font-medium text-muted-foreground border-b bg-background">Image</div>
+                        <div className="px-4 py-3 text-left text-sm font-medium text-muted-foreground border-b bg-background">Dimensions</div>
+                        <div className="px-4 py-3 text-left text-sm font-medium text-muted-foreground border-b bg-background">Prompt</div>
+                      </div>
+                      
+                      {/* Data Rows */}
                       {images.map((image) => (
                         <Dialog key={image.id}>
                           <DialogTrigger asChild>
-                            <TableRow className="cursor-pointer">
-                              <TableCell className="w-10 py-4 text-center">{image.row_number}</TableCell>
-                              <TableCell className="min-w-[18rem] max-w-[30rem] font-mono text-xs py-4 overflow-hidden text-ellipsis">{image.img_key}</TableCell>
-                              <TableCell className="min-w-[18rem] max-w-[80rem] py-4 overflow-hidden text-ellipsis">{image.filename}</TableCell>
-                              <TableCell className="min-w-[20rem] max-w-[80rem] py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
+                            <div className="contents cursor-pointer hover:bg-muted/50 group">
+                              <div className="px-4 py-4 text-center border-b group-hover:border-border">{image.row_number}</div>
+                              <div className="px-4 py-4 font-mono text-xs border-b overflow-hidden text-ellipsis group-hover:border-border">{image.img_key}</div>
+                              <div className="px-4 py-4 border-b overflow-hidden text-ellipsis group-hover:border-border">{image.filename}</div>
+                              <div className="px-4 py-4 border-b group-hover:border-border" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
                                 <div className="flex flex-col items-center gap-2 w-full min-w-0">
                                   <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded flex-shrink-0" />
                                   <a 
@@ -400,10 +389,10 @@ const DatasetPage = () => {
                                     {new URL(image.url).pathname.split('/').pop()}
                                   </a>
                                 </div>
-                              </TableCell>
-                              <TableCell className="w-20 py-4 text-center whitespace-nowrap">{`${image.width}x${image.height}`}</TableCell>
-                              <TableCell className="min-w-[44rem] py-4 overflow-hidden text-ellipsis">{image.prompt}</TableCell>
-                            </TableRow>
+                              </div>
+                              <div className="px-4 py-4 text-center whitespace-nowrap border-b group-hover:border-border">{`${image.width}x${image.height}`}</div>
+                              <div className="px-4 py-4 border-b overflow-hidden text-ellipsis group-hover:border-border">{image.prompt}</div>
+                            </div>
                           </DialogTrigger>
                           <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
                             <DialogHeader>
@@ -446,8 +435,7 @@ const DatasetPage = () => {
                           </DialogContent>
                         </Dialog>
                       ))}
-                    </TableBody>
-                    </Table>
+                    </div>
                   </div>
                 ) : (
                   <div className="py-8">
