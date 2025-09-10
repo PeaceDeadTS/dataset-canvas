@@ -12,6 +12,7 @@ import { Upload } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Accordion,
   AccordionContent,
@@ -50,6 +51,14 @@ const DatasetPage = () => {
     const pageParam = searchParams.get('p');
     return pageParam ? parseInt(pageParam, 10) : 1;
   });
+
+  // Инициализация limit из URL параметра
+  const [limit, setLimit] = useState(() => {
+    const limitParam = searchParams.get('limit');
+    const validLimits = [10, 25, 50, 100];
+    const parsedLimit = limitParam ? parseInt(limitParam, 10) : 10;
+    return validLimits.includes(parsedLimit) ? parsedLimit : 10;
+  });
   
   const [totalPages, setTotalPages] = useState(1);
   const [totalImages, setTotalImages] = useState(0);
@@ -68,12 +77,35 @@ const DatasetPage = () => {
     setSearchParams(newSearchParams);
   };
 
-  // useEffect для обновления currentPage из URL
+  // Функция для обновления лимита с синхронизацией URL
+  const updateLimit = (newLimit: number) => {
+    setLimit(newLimit);
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (newLimit === 10) {
+      newSearchParams.delete('limit');
+    } else {
+      newSearchParams.set('limit', newLimit.toString());
+    }
+    // При изменении лимита сбрасываем на первую страницу
+    newSearchParams.delete('p');
+    setCurrentPage(1);
+    setSearchParams(newSearchParams);
+  };
+
+  // useEffect для обновления currentPage и limit из URL
   useEffect(() => {
     const pageParam = searchParams.get('p');
+    const limitParam = searchParams.get('limit');
     const newPage = pageParam ? parseInt(pageParam, 10) : 1;
+    const validLimits = [10, 25, 50, 100];
+    const parsedLimit = limitParam ? parseInt(limitParam, 10) : 10;
+    const newLimit = validLimits.includes(parsedLimit) ? parsedLimit : 10;
+    
     if (newPage !== currentPage) {
       setCurrentPage(newPage);
+    }
+    if (newLimit !== limit) {
+      setLimit(newLimit);
     }
   }, [searchParams]);
 
@@ -84,7 +116,7 @@ const DatasetPage = () => {
       try {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.get(`${API_URL}/${id}?page=${currentPage}&limit=10`, { headers });
+        const response = await axios.get(`${API_URL}/${id}?page=${currentPage}&limit=${limit}`, { headers });
         setDataset(response.data);
         setImages(response.data.images.data);
         setTotalImages(response.data.images.total);
@@ -105,7 +137,7 @@ const DatasetPage = () => {
     };
 
     fetchDataset();
-  }, [id, currentPage]);
+  }, [id, currentPage, limit]);
 
   // Этот useEffect больше не нужен - загрузка данных объединена в первом useEffect
 
@@ -156,6 +188,51 @@ const DatasetPage = () => {
   const closeLightbox = () => {
     setIsLightboxOpen(false);
     setSelectedImage(null);
+  };
+
+  // Функция для получения расширения файла
+  const getFileExtension = (filename: string): string => {
+    const parts = filename.split('.');
+    return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : 'Unknown';
+  };
+
+  // Функция для форматирования aspect ratio в понятном виде
+  const formatAspectRatio = (width: number, height: number): string => {
+    const ratio = width / height;
+    
+    // Список популярных соотношений сторон
+    const commonRatios = [
+      { ratio: 16/9, label: '16:9' },
+      { ratio: 4/3, label: '4:3' },
+      { ratio: 3/2, label: '3:2' },
+      { ratio: 1/1, label: '1:1' },
+      { ratio: 5/4, label: '5:4' },
+      { ratio: 21/9, label: '21:9' },
+      { ratio: 9/16, label: '9:16' },
+      { ratio: 2/3, label: '2:3' },
+      { ratio: 3/4, label: '3:4' },
+      { ratio: 4/5, label: '4:5' },
+    ];
+
+    // Ищем ближайшее стандартное соотношение
+    let closest = commonRatios[0];
+    let minDifference = Math.abs(ratio - closest.ratio);
+
+    for (const common of commonRatios) {
+      const difference = Math.abs(ratio - common.ratio);
+      if (difference < minDifference) {
+        minDifference = difference;
+        closest = common;
+      }
+    }
+
+    // Если разница меньше 0.05, используем стандартное обозначение
+    if (minDifference < 0.05) {
+      return closest.label;
+    }
+
+    // Иначе показываем точное соотношение
+    return `${width}:${height}`;
   };
 
   const getPaginationGroup = () => {
@@ -241,11 +318,11 @@ const DatasetPage = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[80px]">Row</TableHead>
-                        <TableHead>Image</TableHead>
-                        <TableHead>Filename</TableHead>
-                        <TableHead>Dimensions</TableHead>
-                        <TableHead>Prompt</TableHead>
                         <TableHead className="w-[280px]">Image Key</TableHead>
+                        <TableHead>Filename</TableHead>
+                        <TableHead className="w-[100px]">Image</TableHead>
+                        <TableHead className="w-[120px]">Dimensions</TableHead>
+                        <TableHead>Prompt</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -254,35 +331,35 @@ const DatasetPage = () => {
                           <DialogTrigger asChild>
                             <TableRow className="cursor-pointer">
                               <TableCell>{image.row_number}</TableCell>
+                              <TableCell className="font-mono text-xs">{image.img_key}</TableCell>
+                              <TableCell>{image.filename}</TableCell>
                               <TableCell onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
                                 <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded" />
                               </TableCell>
-                              <TableCell>{image.filename}</TableCell>
                               <TableCell>{`${image.width}x${image.height}`}</TableCell>
                               <TableCell className="max-w-xs truncate">{image.prompt}</TableCell>
-                              <TableCell className="font-mono text-xs">{image.img_key}</TableCell>
                             </TableRow>
                           </DialogTrigger>
-                          <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto">
+                          <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
                             <DialogHeader>
                               <DialogTitle>{image.filename}</DialogTitle>
                               <DialogDescription>
                                 Image details
                               </DialogDescription>
                             </DialogHeader>
-                            <div className="grid gap-4 py-4 overflow-auto">
+                            <div className="grid gap-4 py-4 max-h-[calc(90vh-8rem)] overflow-y-auto">
                                <div className="flex justify-center">
                                  <img 
                                    src={image.url} 
                                    alt={image.filename} 
-                                   className="max-w-full max-h-[60vh] object-contain rounded-md" 
+                                   className="max-w-full max-h-[50vh] object-contain rounded-md" 
                                  />
                                </div>
                                <div className="text-sm space-y-2 min-w-0">
                                 <p><strong>Filename:</strong> {image.filename}</p>
-                                <p><strong>File extension:</strong> {image.filename.split('.').pop()?.toUpperCase() || 'Unknown'}</p>
+                                <p><strong>File extension:</strong> {getFileExtension(image.filename)}</p>
                                 <p><strong>Dimensions:</strong> {image.width} × {image.height} pixels</p>
-                                <p><strong>Aspect ratio:</strong> {(image.width / image.height).toFixed(2)}</p>
+                                <p><strong>Aspect ratio:</strong> {formatAspectRatio(image.width, image.height)}</p>
                                 <div>
                                   <p><strong>Prompt:</strong></p>
                                   <p className="text-muted-foreground break-words max-w-full">{image.prompt}</p>
@@ -309,7 +386,22 @@ const DatasetPage = () => {
                       />
                     </div>
                   )}
-                  <div className="flex justify-center mt-4">
+                  <div className="flex justify-between items-center mt-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Items per page:</span>
+                      <Select value={limit.toString()} onValueChange={(value) => updateLimit(parseInt(value, 10))}>
+                        <SelectTrigger className="w-[70px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="25">25</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
                      <Pagination>
                       <PaginationContent>
                         <PaginationItem>
@@ -354,6 +446,7 @@ const DatasetPage = () => {
                         </PaginationItem>
                       </PaginationContent>
                     </Pagination>
+                    </div>
                   </div>
                 </>
               ) : (
