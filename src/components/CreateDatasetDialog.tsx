@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,11 +22,17 @@ const API_URL = '/api/datasets'; // ИСПРАВЛЕНИЕ: Убираем аб�
 
 interface CreateDatasetDialogProps {
   onDatasetCreated: (newDataset: any) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function CreateDatasetDialog({ onDatasetCreated }: CreateDatasetDialogProps) {
+export function CreateDatasetDialog({ onDatasetCreated, open: externalOpen, onOpenChange }: CreateDatasetDialogProps) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  // Используем внешнее состояние, если оно предоставлено, иначе внутреннее
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isPublic, setIsPublic] = useState(true);
