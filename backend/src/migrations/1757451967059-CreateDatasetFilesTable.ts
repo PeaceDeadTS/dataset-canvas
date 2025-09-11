@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateDatasetFilesTable1737551600000 implements MigrationInterface {
-    name = 'CreateDatasetFilesTable1737551600000'
+export class CreateDatasetFilesTable1757451967059 implements MigrationInterface {
+    name = 'CreateDatasetFilesTable1757451967059'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE \`dataset_files\` (
