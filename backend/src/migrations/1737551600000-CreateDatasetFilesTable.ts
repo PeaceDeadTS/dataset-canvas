@@ -56,8 +56,7 @@ export class CreateDatasetFilesTable1737551600000 implements MigrationInterface 
                 },
                 {
                     name: 'datasetId',
-                    type: 'varchar',
-                    length: '36',
+                    type: 'uuid',
                 },
             ],
             foreignKeys: [
