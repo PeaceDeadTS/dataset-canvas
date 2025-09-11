@@ -25,7 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { Database, Users, Home, BarChart3, Settings } from "lucide-react";
+import { Database, Users, Home, BarChart3, Settings, Shield } from "lucide-react";
 import { LanguageSelector } from './LanguageSelector';
 
 const ListItem = ({ className, title, href, children, ...props }: {
@@ -208,6 +208,22 @@ export function AppHeader() {
                   {t('navigation:overview')}
                 </Link>
               </NavigationMenuItem>
+
+              {user && user.role === 'Administrator' && (
+                <NavigationMenuItem>
+                  <Link
+                    to="/admin"
+                    className={cn(
+                      navigationMenuTriggerStyle(),
+                      "flex items-center gap-2 text-red-600 hover:text-red-700",
+                      location.pathname === "/admin" && "bg-red-50 text-red-700"
+                    )}
+                  >
+                    <Shield className="h-4 w-4" />
+                    {t('navigation:admin_panel')}
+                  </Link>
+                </NavigationMenuItem>
+              )}
             </NavigationMenuList>
           </NavigationMenu>
         </div>
@@ -259,6 +275,14 @@ export function AppHeader() {
                           {t('navigation:users_all')}
                         </Link>
                       </DropdownMenuItem>
+                      {user.role === 'Administrator' && (
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin" className="flex items-center gap-2 cursor-pointer text-red-600">
+                            <Shield className="h-4 w-4" />
+                            {t('navigation:admin_panel')}
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
                 </DropdownMenuSub>

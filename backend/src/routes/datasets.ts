@@ -130,8 +130,8 @@ router.get('/:id', checkJwtOptional, async (req: Request, res: Response) => {
 router.post('/', checkJwt, async (req: Request, res: Response) => {
   logger.info('Create dataset endpoint hit', { body: req.body, user: req.user });
 
-  if (!req.user || (req.user.role !== UserRole.DEVELOPER && req.user.role !== UserRole.ADMIN)) {
-    return res.status(403).send('Only developers and admins can create datasets');
+  if (!req.user) {
+    return res.status(403).send('Authentication required to create datasets');
   }
 
   const { name, description, isPublic } = req.body;
@@ -285,6 +285,51 @@ router.delete('/:id', checkJwt, async (req: Request, res: Response) => {
     } catch (error) {
         logger.error(`Failed to delete dataset ${id}`, { error });
         res.status(500).send('Internal Server Error');
+    }
+});
+
+// DELETE /api/datasets/:id/admin - Admin force delete any dataset
+router.delete('/:id/admin', checkJwt, async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userRole = req.user?.role;
+    const adminId = req.user?.userId;
+
+    // Only administrators can force delete any dataset
+    if (userRole !== UserRole.ADMIN) {
+        return res.status(403).json({ error: 'Access denied. Admin rights required.' });
+    }
+
+    try {
+        const dataset = await datasetRepository.findOne({ 
+            where: { id },
+            relations: ['user', 'images']
+        });
+        
+        if (!dataset) {
+            return res.status(404).json({ error: 'Dataset not found' });
+        }
+
+        const datasetName = dataset.name;
+        const datasetOwner = dataset.user.username;
+        const imageCount = dataset.images?.length || 0;
+
+        await datasetRepository.remove(dataset);
+
+        logger.info(`Dataset force deleted by admin`, { 
+            datasetId: id,
+            datasetName,
+            datasetOwner,
+            imageCount,
+            adminId 
+        });
+
+        res.json({ 
+            message: `Dataset "${datasetName}" (owned by ${datasetOwner}) and its ${imageCount} images have been deleted successfully` 
+        });
+
+    } catch (error) {
+        logger.error(`Failed to admin delete dataset ${id}`, { error });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

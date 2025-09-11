@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
 import { User, UserRole } from '../entity/User.entity';
 import { Dataset } from '../entity/Dataset.entity';
-import { checkJwtOptional } from '../middleware/checkJwt';
+import { checkJwtOptional, checkJwt } from '../middleware/checkJwt';
 import logger from '../logger';
 
 const router = Router();
@@ -128,6 +128,113 @@ router.get('/:username', checkJwtOptional, async (req: Request, res: Response) =
 
   } catch (error) {
     logger.error(`Failed to get user profile ${username}`, { error });
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// PUT /api/users/:id/role - Update user role (Admin only)
+router.put('/:id/role', checkJwt, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { role } = req.body;
+  const currentUserRole = req.user?.role;
+  const currentUserId = req.user?.userId;
+
+  // Only administrators can change user roles
+  if (currentUserRole !== UserRole.ADMIN) {
+    return res.status(403).json({ error: 'Access denied. Admin rights required.' });
+  }
+
+  // Validate role
+  if (!role || !Object.values(UserRole).includes(role as UserRole)) {
+    return res.status(400).json({ error: 'Invalid role. Must be one of: Administrator, Developer, User' });
+  }
+
+  try {
+    const user = await userRepository.findOneBy({ id });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Prevent admin from changing their own role to avoid lockout
+    if (currentUserId === id && role !== UserRole.ADMIN) {
+      return res.status(400).json({ error: 'Cannot change your own admin role' });
+    }
+
+    const oldRole = user.role;
+    user.role = role as UserRole;
+    await userRepository.save(user);
+
+    logger.info(`User role updated`, { 
+      userId: id, 
+      username: user.username,
+      oldRole, 
+      newRole: role, 
+      adminId: currentUserId 
+    });
+
+    res.json({ 
+      message: `User ${user.username} role updated to ${role}`,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt
+      }
+    });
+
+  } catch (error) {
+    logger.error('Failed to update user role', { userId: id, error });
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// DELETE /api/users/:id - Delete user (Admin only)
+router.delete('/:id', checkJwt, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const currentUserRole = req.user?.role;
+  const currentUserId = req.user?.userId;
+
+  // Only administrators can delete users
+  if (currentUserRole !== UserRole.ADMIN) {
+    return res.status(403).json({ error: 'Access denied. Admin rights required.' });
+  }
+
+  // Prevent admin from deleting themselves
+  if (currentUserId === id) {
+    return res.status(400).json({ error: 'Cannot delete your own account' });
+  }
+
+  try {
+    const user = await userRepository.findOne({
+      where: { id },
+      relations: ['datasets']
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Get count of user's datasets for logging
+    const datasetCount = user.datasets?.length || 0;
+    const username = user.username;
+
+    // Delete the user (cascading delete will handle datasets and images)
+    await userRepository.remove(user);
+
+    logger.info(`User deleted by admin`, { 
+      deletedUserId: id, 
+      deletedUsername: username,
+      datasetCount,
+      adminId: currentUserId 
+    });
+
+    res.json({ 
+      message: `User ${username} and ${datasetCount} associated datasets have been deleted successfully` 
+    });
+
+  } catch (error) {
+    logger.error('Failed to delete user', { userId: id, error });
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

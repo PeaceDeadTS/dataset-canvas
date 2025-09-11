@@ -17,6 +17,7 @@ const DatasetPage = lazy(() => import("./pages/Dataset"));
 const UserPage = lazy(() => import("./pages/User"));
 const UsersPage = lazy(() => import("./pages/Users"));
 const AllDatasetsPage = lazy(() => import("./pages/AllDatasets"));
+const AdminPanelPage = lazy(() => import("./pages/AdminPanel"));
 
 // Компонент загрузки
 const PageLoader = () => {
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/datasets/:id" element={<DatasetPage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/users/:username" element={<UserPage />} />
+            <Route path="/admin" element={<AdminPanelPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

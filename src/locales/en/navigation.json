@@ -12,7 +12,7 @@
   "datasets_my": "My Datasets", 
   "datasets_my_description": "Your private datasets and their management",
   "datasets_create": "Create Dataset",
-  "datasets_create_description": "Create a new dataset (requires developer rights)",
+  "datasets_create_description": "Create a new dataset (requires authentication)",
   "community": "Community",
   "users_all": "All Users",
   "users_all_description": "List of all system users with their activity information", 
@@ -30,5 +30,7 @@
   "open_dataset": "Open Dataset",
   "language": "Language",
   "english": "English",
-  "russian": "Russian"
+  "russian": "Russian",
+  "admin_panel": "Admin Panel",
+  "admin_panel_description": "Administrative tools for user and dataset management"
 }
