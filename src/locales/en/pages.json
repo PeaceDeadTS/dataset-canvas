@@ -1,0 +1,99 @@
+{
+  "index": {
+    "title": "Welcome to Dataset Canvas",
+    "description": "Manage, visualize, and interact with your image datasets",
+    "my_private_datasets": "My Private Datasets",
+    "my_private_description": "Your personal datasets visible only to you",
+    "public_datasets": "Public Datasets", 
+    "public_description": "Datasets available to all users",
+    "no_private_datasets": "You don't have any private datasets",
+    "no_public_datasets": "No public datasets found",
+    "create_first_dataset": "Create your first dataset",
+    "view_all_datasets": "View all datasets"
+  },
+  "users": {
+    "title": "Users",
+    "description": "List of all users in the system",
+    "sort_by": "Sort by:",
+    "sort_by_name": "Name",
+    "sort_by_registration": "Registration Date", 
+    "sort_by_datasets": "Number of Datasets",
+    "order": "Order:",
+    "no_users_found": "No users found",
+    "public_datasets_count": "Public datasets:",
+    "registration": "Registration:",
+    "view_profile": "View Profile"
+  },
+  "datasets": {
+    "title": "Datasets",
+    "description": "All available datasets in the system", 
+    "sort_by": "Sort by:",
+    "sort_by_name": "Name",
+    "sort_by_created": "Creation Date",
+    "sort_by_pairs": "Number of Pairs", 
+    "sort_by_author": "Author",
+    "order": "Order:",
+    "public_tab": "Public",
+    "private_tab": "My Private",
+    "public_title": "Public Datasets",
+    "public_description": "Datasets available for viewing by all users",
+    "private_title": "My Private Datasets",
+    "private_description": "Your private datasets, visible only to you",
+    "no_public_datasets": "No public datasets found",
+    "no_private_datasets": "You don't have any private datasets",
+    "no_description": "No description available",
+    "created_date": "Created:",
+    "updated_date": "Updated:",
+    "open_dataset": "Open Dataset"
+  },
+  "dataset": {
+    "breadcrumb_datasets": "Datasets",
+    "items": "items",
+    "row": "Row",
+    "image_key": "Image Key",
+    "filename": "Filename", 
+    "dimensions": "Dimensions",
+    "prompt": "Prompt",
+    "no_images": "No images in this dataset",
+    "upload_csv": "Upload CSV",
+    "loading_page": "Loading page...",
+    "aspect_ratio": "Aspect Ratio"
+  },
+  "user": {
+    "profile": "Profile",
+    "datasets": "Datasets",
+    "no_datasets": "No datasets found for this user"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "login_title": "Welcome Back",
+    "login_description": "Sign in to your account to continue",
+    "register_title": "Create Account", 
+    "register_description": "Create a new account to get started",
+    "switch_to_register": "Don't have an account? Register", 
+    "switch_to_login": "Already have an account? Login",
+    "login_button": "Sign In",
+    "register_button": "Create Account"
+  },
+  "create_dataset": {
+    "title": "Create New Dataset",
+    "description": "Fill in the details to create a new dataset",
+    "name_label": "Dataset Name",
+    "name_placeholder": "Enter dataset name",
+    "description_label": "Description", 
+    "description_placeholder": "Enter dataset description",
+    "public_label": "Make this dataset public",
+    "public_description": "Public datasets are visible to all users",
+    "creating": "Creating...",
+    "success": "Dataset created successfully!",
+    "error": "Failed to create dataset"
+  },
+  "errors": {
+    "not_found": "Page Not Found",
+    "not_found_description": "The page you are looking for does not exist",
+    "go_home": "Go Home",
+    "something_wrong": "Something went wrong",
+    "try_again": "Try Again"
+  }
+}

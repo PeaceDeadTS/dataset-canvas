@@ -1,0 +1,99 @@
+{
+  "index": {
+    "title": "Добро пожаловать в Dataset Canvas",
+    "description": "Управляйте, визуализируйте и взаимодействуйте с вашими датасетами изображений",
+    "my_private_datasets": "Мои приватные датасеты",
+    "my_private_description": "Ваши персональные датасеты, видимые только вам",
+    "public_datasets": "Публичные датасеты",
+    "public_description": "Датасеты, доступные всем пользователям",
+    "no_private_datasets": "У вас нет приватных датасетов",
+    "no_public_datasets": "Публичные датасеты не найдены",
+    "create_first_dataset": "Создайте ваш первый датасет",
+    "view_all_datasets": "Посмотреть все датасеты"
+  },
+  "users": {
+    "title": "Пользователи",
+    "description": "Список всех пользователей в системе",
+    "sort_by": "Сортировать по:",
+    "sort_by_name": "Имени",
+    "sort_by_registration": "Дате регистрации",
+    "sort_by_datasets": "Количеству датасетов",
+    "order": "Порядок:",
+    "no_users_found": "Пользователи не найдены",
+    "public_datasets_count": "Публичных датасетов:",
+    "registration": "Регистрация:",
+    "view_profile": "Посмотреть профиль"
+  },
+  "datasets": {
+    "title": "Датасеты",
+    "description": "Все доступные датасеты в системе",
+    "sort_by": "Сортировать по:",
+    "sort_by_name": "Названию",
+    "sort_by_created": "Дате создания",
+    "sort_by_pairs": "Количеству пар",
+    "sort_by_author": "Автору",
+    "order": "Порядок:",
+    "public_tab": "Публичные",
+    "private_tab": "Мои приватные",
+    "public_title": "Публичные датасеты",
+    "public_description": "Датасеты, доступные для просмотра всем пользователям",
+    "private_title": "Мои приватные датасеты",
+    "private_description": "Ваши приватные датасеты, видимые только вам",
+    "no_public_datasets": "Публичные датасеты не найдены",
+    "no_private_datasets": "У вас нет приватных датасетов",
+    "no_description": "Описание отсутствует",
+    "created_date": "Создан:",
+    "updated_date": "Обновлён:",
+    "open_dataset": "Открыть датасет"
+  },
+  "dataset": {
+    "breadcrumb_datasets": "Датасеты",
+    "items": "элементов",
+    "row": "Строка",
+    "image_key": "Ключ изображения",
+    "filename": "Имя файла",
+    "dimensions": "Размеры",
+    "prompt": "Промпт",
+    "no_images": "В этом датасете нет изображений",
+    "upload_csv": "Загрузить CSV",
+    "loading_page": "Загружается страница...",
+    "aspect_ratio": "Соотношение сторон"
+  },
+  "user": {
+    "profile": "Профиль",
+    "datasets": "Датасеты",
+    "no_datasets": "У этого пользователя нет датасетов"
+  },
+  "auth": {
+    "login": "Войти",
+    "register": "Регистрация",
+    "login_title": "С возвращением",
+    "login_description": "Войдите в свой аккаунт для продолжения",
+    "register_title": "Создать аккаунт",
+    "register_description": "Создайте новый аккаунт для начала работы",
+    "switch_to_register": "Нет аккаунта? Зарегистрируйтесь",
+    "switch_to_login": "Уже есть аккаунт? Войдите",
+    "login_button": "Войти",
+    "register_button": "Создать аккаунт"
+  },
+  "create_dataset": {
+    "title": "Создать новый датасет",
+    "description": "Заполните детали для создания нового датасета",
+    "name_label": "Название датасета",
+    "name_placeholder": "Введите название датасета",
+    "description_label": "Описание",
+    "description_placeholder": "Введите описание датасета",
+    "public_label": "Сделать этот датасет публичным",
+    "public_description": "Публичные датасеты видны всем пользователям",
+    "creating": "Создание...",
+    "success": "Датасет успешно создан!",
+    "error": "Не удалось создать датасет"
+  },
+  "errors": {
+    "not_found": "Страница не найдена",
+    "not_found_description": "Страница, которую вы ищете, не существует",
+    "go_home": "На главную",
+    "something_wrong": "Что-то пошло не так",
+    "try_again": "Попробовать еще раз"
+  }
+}

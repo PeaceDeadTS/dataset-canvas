@@ -1,4 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,7 @@ import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Database, Users, Home, BarChart3, Settings } from "lucide-react";
+import { LanguageSelector } from './LanguageSelector';
 
 const ListItem = ({ className, title, href, children, ...props }: {
   className?: string;
@@ -57,6 +59,7 @@ export function AppHeader() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation(['navigation', 'common']);
 
   const handleLogout = () => {
     logout();
@@ -70,7 +73,7 @@ export function AppHeader() {
           <Link to="/" className="mr-4 flex items-center space-x-2">
             <Database className="h-6 w-6 text-blue-600" />
             <span className="font-bold text-lg sm:inline-block">
-              Dataset Canvas
+              {t('navigation:brand')}
             </span>
           </Link>
           
@@ -79,7 +82,7 @@ export function AppHeader() {
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="flex items-center gap-2">
                   <Home className="h-4 w-4" />
-                  Главная
+                  {t('navigation:main')}
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
@@ -91,22 +94,22 @@ export function AppHeader() {
                         >
                           <Database className="h-6 w-6 text-blue-600" />
                           <div className="mb-2 mt-4 text-lg font-medium">
-                            Dataset Canvas
+                            {t('navigation:brand')}
                           </div>
                           <p className="text-sm leading-tight text-muted-foreground">
-                            Платформа для управления, визуализации и взаимодействия с датасетами изображений
+                            {t('navigation:brand_description')}
                           </p>
                         </Link>
                       </NavigationMenuLink>
                     </li>
-                    <ListItem href="/" title="Главная страница">
-                      Обзор всех ваших датасетов и быстрый доступ к функциям
+                    <ListItem href="/" title={t('navigation:main_page')}>
+                      {t('navigation:main_description')}
                     </ListItem>
-                    <ListItem href="/datasets" title="Все датасеты">
-                      Просмотр всех доступных датасетов с фильтрацией и сортировкой
+                    <ListItem href="/datasets" title={t('navigation:datasets_all')}>
+                      {t('navigation:datasets_all_description')}
                     </ListItem>
-                    <ListItem href="/users" title="Пользователи">
-                      Список всех пользователей системы
+                    <ListItem href="/users" title={t('navigation:users_all')}>
+                      {t('navigation:users_all_description')}
                     </ListItem>
                   </ul>
                 </NavigationMenuContent>
@@ -115,35 +118,35 @@ export function AppHeader() {
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="flex items-center gap-2">
                   <Database className="h-4 w-4" />
-                  Датасеты
+                  {t('navigation:datasets')}
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     <ListItem
-                      title="Все датасеты"
+                      title={t('navigation:datasets_all')}
                       href="/datasets"
                     >
-                      Просмотр всех публичных и приватных датасетов с возможностью сортировки
+                      {t('navigation:datasets_all_description')}
                     </ListItem>
                     <ListItem
-                      title="Публичные датасеты"
+                      title={t('navigation:datasets_public')}
                       href="/datasets?tab=public"
                     >
-                      Только публичные датасеты, доступные всем пользователям
+                      {t('navigation:datasets_public_description')}
                     </ListItem>
                     {user && (
                       <ListItem
-                        title="Мои датасеты"
+                        title={t('navigation:datasets_my')}
                         href="/datasets?tab=private"
                       >
-                        Ваши приватные датасеты и управление ими
+                        {t('navigation:datasets_my_description')}
                       </ListItem>
                     )}
                     <ListItem
-                      title="Создать датасет"
+                      title={t('navigation:datasets_create')}
                       href="/?action=create"
                     >
-                      Создание нового датасета (требуются права разработчика)
+                      {t('navigation:datasets_create_description')}
                     </ListItem>
                   </ul>
                 </NavigationMenuContent>
@@ -152,34 +155,34 @@ export function AppHeader() {
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Сообщество
+                  {t('navigation:community')}
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     <ListItem
-                      title="Все пользователи"
+                      title={t('navigation:users_all')}
                       href="/users"
                     >
-                      Список всех пользователей системы с информацией о их активности
+                      {t('navigation:users_all_description')}
                     </ListItem>
                     <ListItem
-                      title="Разработчики"
+                      title={t('navigation:users_developers')}
                       href="/users?role=DEVELOPER"
                     >
-                      Пользователи с правами создания датасетов
+                      {t('navigation:users_developers_description')}
                     </ListItem>
                     <ListItem
-                      title="Администраторы"
+                      title={t('navigation:users_admins')}
                       href="/users?role=ADMIN"
                     >
-                      Администраторы системы с полными правами
+                      {t('navigation:users_admins_description')}
                     </ListItem>
                     {user && (
                       <ListItem
-                        title="Мой профиль"
+                        title={t('navigation:users_my_profile')}
                         href={`/users/${user.username}`}
                       >
-                        Просмотр и редактирование вашего профиля
+                        {t('navigation:users_my_profile_description')}
                       </ListItem>
                     )}
                   </ul>
@@ -196,7 +199,7 @@ export function AppHeader() {
                   )}
                 >
                   <BarChart3 className="h-4 w-4" />
-                  Обзор
+                  {t('navigation:overview')}
                 </Link>
               </NavigationMenuItem>
             </NavigationMenuList>
@@ -204,6 +207,7 @@ export function AppHeader() {
         </div>
         
         <div className="flex items-center gap-4">
+          <LanguageSelector />
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -227,26 +231,26 @@ export function AppHeader() {
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="flex items-center gap-2">
                     <Settings className="h-4 w-4" />
-                    <span>Навигация</span>
+                    <span>{t('navigation:navigation')}</span>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
                     <DropdownMenuSubContent>
                       <DropdownMenuItem asChild>
                         <Link to={`/users/${user.username}`} className="flex items-center gap-2 cursor-pointer">
                           <Users className="h-4 w-4" />
-                          Мой профиль
+                          {t('navigation:users_my_profile')}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link to="/datasets" className="flex items-center gap-2 cursor-pointer">
                           <Database className="h-4 w-4" />
-                          Датасеты
+                          {t('navigation:datasets')}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link to="/users" className="flex items-center gap-2 cursor-pointer">
                           <Users className="h-4 w-4" />
-                          Пользователи
+                          {t('navigation:users_all')}
                         </Link>
                       </DropdownMenuItem>
                     </DropdownMenuSubContent>
@@ -257,14 +261,14 @@ export function AppHeader() {
                   className="text-red-600 focus:text-red-600 cursor-pointer"
                   onClick={handleLogout}
                 >
-                  Выйти
+                  {t('common:logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" onClick={() => navigate('/auth')}>Войти</Button>
-              <Button onClick={() => navigate('/auth')}>Регистрация</Button>
+              <Button variant="ghost" onClick={() => navigate('/auth')}>{t('common:login')}</Button>
+              <Button onClick={() => navigate('/auth')}>{t('common:register')}</Button>
             </>
           )}
         </div>
