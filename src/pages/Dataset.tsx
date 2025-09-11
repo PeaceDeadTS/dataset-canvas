@@ -349,38 +349,28 @@ const DatasetPage = () => {
               </div>
             </div>
             
-            {/* Sticky Table Header - как часть фиксированной области */}
-            {!imagesLoading && images.length > 0 && (
-              <div className="px-4 bg-background border-b">
-                <div className="container mx-auto" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
-                  <div className="overflow-x-auto">
-                    <Table className="table-auto w-full">
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-10">Row</TableHead>
-                          <TableHead className="min-w-[18rem] max-w-[30rem]">Image Key</TableHead>
-                          <TableHead className="min-w-[18rem] max-w-[80rem]">Filename</TableHead>
-                          <TableHead className="min-w-[20rem] max-w-[80rem]">Image</TableHead>
-                          <TableHead className="w-20">Dimensions</TableHead>
-                          <TableHead className="min-w-[44rem]">Prompt</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                    </Table>
-                  </div>
-                </div>
-              </div>
-            )}
             
-            <div className="flex-1 overflow-auto relative">
-              <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
-                {imagesLoading ? (
-                  <div className="py-8">
-                    <Skeleton className="h-64 w-full" />
-                  </div>
-                ) : images.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <Table className="table-auto w-full">
-                      <TableBody>
+            <div className="flex-1 relative" style={{ height: 'calc(100vh - 200px)' }}>
+              <div className="absolute inset-0 overflow-auto">
+                <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+                  {imagesLoading ? (
+                    <div className="py-8">
+                      <Skeleton className="h-64 w-full" />
+                    </div>
+                  ) : images.length > 0 ? (
+                    <div className="overflow-x-auto py-4">
+                      <Table className="table-auto w-full">
+                        <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+                          <TableRow className="border-b">
+                            <TableHead className="w-10 bg-background">Row</TableHead>
+                            <TableHead className="min-w-[18rem] max-w-[30rem] bg-background">Image Key</TableHead>
+                            <TableHead className="min-w-[18rem] max-w-[80rem] bg-background">Filename</TableHead>
+                            <TableHead className="min-w-[20rem] max-w-[80rem] bg-background">Image</TableHead>
+                            <TableHead className="w-20 bg-background">Dimensions</TableHead>
+                            <TableHead className="min-w-[44rem] bg-background">Prompt</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
                         {images.map((image) => (
                           <Dialog key={image.id}>
                             <DialogTrigger asChild>
@@ -448,14 +438,15 @@ const DatasetPage = () => {
                             </DialogContent>
                           </Dialog>
                         ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                ) : (
-                  <div className="py-8">
-                    <p>No images found in this dataset.</p>
-                  </div>
-                )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="py-8">
+                      <p>No images found in this dataset.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
