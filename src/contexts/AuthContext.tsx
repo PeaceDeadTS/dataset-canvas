@@ -23,12 +23,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log('AuthContext: token from localStorage =', token ? 'exists' : 'null');
     
     if (token) {
       try {
         const decodedToken = jwtDecode<DecodedToken>(token);
-        console.log('AuthContext: decodedToken =', decodedToken);
         
         if (decodedToken.exp * 1000 > Date.now()) {
           const userObj = {
@@ -37,20 +35,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             role: decodedToken.role,
             username: decodedToken.username,
           };
-          console.log('AuthContext: setting user =', userObj);
           setUser(userObj);
         } else {
-          console.log('AuthContext: token expired, removing from localStorage');
           localStorage.removeItem('token');
           setUser(null);
         }
       } catch (error) {
-        console.error("AuthContext: Failed to decode token:", error);
+        console.error("Failed to decode token:", error);
         localStorage.removeItem('token');
         setUser(null);
       }
     } else {
-      console.log('AuthContext: no token found, user = null');
       setUser(null);
     }
   }, []);
