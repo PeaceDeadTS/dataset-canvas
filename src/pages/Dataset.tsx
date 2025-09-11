@@ -1,7 +1,9 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { DatasetHeader } from '@/components/DatasetHeader';
+import { AppHeader } from '@/components/AppHeader';
+import { DatasetBreadcrumb } from '@/components/DatasetBreadcrumb';
 import { Dataset } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
@@ -37,6 +39,7 @@ interface DatasetImage {
 const DatasetPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { t } = useTranslation(['pages', 'common']);
   const [searchParams, setSearchParams] = useSearchParams();
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [loading, setLoading] = useState(true);
@@ -149,7 +152,7 @@ const DatasetPage = () => {
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      toast.error('Please select a file to upload.');
+      toast.error(t('pages:dataset.no_file_selected'));
       return;
     }
     if (!id) return;
@@ -166,13 +169,13 @@ const DatasetPage = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      toast.success(response.data.message || 'File uploaded successfully!');
+      toast.success(response.data.message || t('pages:dataset.upload_success'));
       
       // Обновляем данные после успешной загрузки
       updateCurrentPage(1); // Сбрасываем на первую страницу - это автоматически запустит перезагрузку данных
 
     } catch (err: any) {
-      toast.error(err.response?.data?.message || err.response?.data || 'Failed to upload file.');
+      toast.error(err.response?.data?.message || err.response?.data || t('pages:dataset.upload_error'));
       console.error(err);
     } finally {
       setUploading(false);
@@ -301,9 +304,14 @@ const DatasetPage = () => {
 
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
-      {/* Sticky Header */}
+      {/* App Header */}
+      <AppHeader />
+      
+      {/* Dataset Breadcrumb */}
+      {dataset && <DatasetBreadcrumb dataset={dataset} />}
+      
+      {/* Dataset Info Section */}
       <div className="flex-none bg-background border-b">
-        <DatasetHeader dataset={dataset || undefined} />
         <div className="container mx-auto px-4 py-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
           {loading && <Skeleton className="mb-4 h-8 w-1/2" />}
           {error && <p className="text-red-500">{error}</p>}
@@ -313,22 +321,33 @@ const DatasetPage = () => {
               
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
-                  <AccordionTrigger>Dataset Card</AccordionTrigger>
+                  <AccordionTrigger>{t('pages:dataset.dataset_card')}</AccordionTrigger>
                   <AccordionContent>
-                    <p className="text-muted-foreground mb-6">{dataset.description}</p>
+                    <p className="text-muted-foreground mb-6">{dataset.description || t('pages:datasets.no_description')}</p>
                      {canUpload && (
                       <div className="my-6 p-4 border rounded-lg">
-                        <h2 className="text-lg font-semibold mb-2">Upload Data</h2>
+                        <h2 className="text-lg font-semibold mb-2">{t('pages:dataset.upload_csv')}</h2>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Upload a CSV file with columns: filename, url, width, height, prompt.
+                          {t('pages:dataset.upload_description')}
                         </p>
                         <div className="flex items-center gap-2">
-                          <Input type="file" accept=".csv" onChange={handleFileChange} className="max-w-xs" />
+                          <Input 
+                            type="file" 
+                            accept=".csv" 
+                            onChange={handleFileChange} 
+                            className="max-w-xs"
+                            placeholder={t('pages:dataset.select_file')} 
+                          />
                           <Button onClick={handleUpload} disabled={!selectedFile || uploading}>
                             <Upload className="mr-2 h-4 w-4" />
-                            {uploading ? 'Uploading...' : 'Upload'}
+                            {uploading ? t('pages:dataset.uploading') : t('common:upload')}
                           </Button>
                         </div>
+                        {!selectedFile && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t('pages:dataset.no_file_selected')}
+                          </p>
+                        )}
                       </div>
                     )}
                   </AccordionContent>
@@ -345,7 +364,7 @@ const DatasetPage = () => {
           <div className="flex-1 overflow-hidden flex flex-col">
             <div className="px-4 py-2 bg-background border-b">
               <div className="container mx-auto" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
-                <h2 className="text-xl font-semibold">Dataset Images ({totalImages})</h2>
+                <h2 className="text-xl font-semibold">{t('common:images')} ({totalImages})</h2>
               </div>
             </div>
             
@@ -360,12 +379,12 @@ const DatasetPage = () => {
                     <Table className="table-auto w-full">
                       <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
                         <TableRow className="border-b">
-                          <TableHead className="w-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Row</TableHead>
-                          <TableHead className="min-w-[18rem] max-w-[30rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image Key</TableHead>
-                          <TableHead className="min-w-[18rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Filename</TableHead>
-                          <TableHead className="min-w-[20rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image</TableHead>
-                          <TableHead className="w-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Dimensions</TableHead>
-                          <TableHead className="min-w-[44rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Prompt</TableHead>
+                          <TableHead className="w-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.row')}</TableHead>
+                          <TableHead className="min-w-[18rem] max-w-[30rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.image_key')}</TableHead>
+                          <TableHead className="min-w-[18rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.filename')}</TableHead>
+                          <TableHead className="min-w-[20rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('common:image')}</TableHead>
+                          <TableHead className="w-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.dimensions')}</TableHead>
+                          <TableHead className="min-w-[44rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.prompt')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -399,7 +418,7 @@ const DatasetPage = () => {
                               <DialogHeader>
                                 <DialogTitle>{image.filename}</DialogTitle>
                                 <DialogDescription>
-                                  Image details
+                                  {t('pages:dataset.image_details')}
                                 </DialogDescription>
                               </DialogHeader>
                               <div className="grid gap-4 py-4 max-h-[calc(90vh-8rem)] overflow-y-auto">
@@ -441,7 +460,7 @@ const DatasetPage = () => {
                   </div>
                 ) : (
                   <div className="py-8">
-                    <p>No images found in this dataset.</p>
+                    <p>{t('pages:dataset.no_images')}</p>
                   </div>
                 )}
               </div>
@@ -454,7 +473,7 @@ const DatasetPage = () => {
               <div className="container mx-auto px-4 py-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
                 <div className="flex flex-col items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Items per page:</span>
+                    <span className="text-sm text-muted-foreground">{t('pages:dataset.items_per_page')}:</span>
                     <Select value={limit.toString()} onValueChange={(value) => updateLimit(parseInt(value, 10))}>
                       <SelectTrigger className="w-[70px]">
                         <SelectValue />
