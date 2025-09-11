@@ -30,7 +30,17 @@ router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
 
     // Apply role filter if specified
     if (role && ['USER', 'DEVELOPER', 'ADMIN'].includes(role as string)) {
-      query = query.where('user.role = :role', { role: role as string });
+      // Преобразуем URL параметр в значение enum
+      const roleMapping: { [key: string]: UserRole } = {
+        'ADMIN': UserRole.ADMIN,
+        'DEVELOPER': UserRole.DEVELOPER,
+        'USER': UserRole.USER
+      };
+      const mappedRole = roleMapping[role as string];
+      
+      if (mappedRole) {
+        query = query.where('user.role = :role', { role: mappedRole });
+      }
     }
 
     // Apply sorting

@@ -45,11 +45,6 @@ const AllDatasetsPage = () => {
         } : {}
       });
       
-      // Debug: выводим информацию для отладки
-      console.log('API Response:', response.data);
-      console.log('Current user:', user);
-      console.log('All datasets:', response.data.length);
-      
       setAllDatasets(response.data);
     } catch (error) {
       console.error('Failed to fetch datasets:', error);
@@ -58,18 +53,10 @@ const AllDatasetsPage = () => {
     }
   };
 
-  // Разделяем датасеты на публичные и приватные
+  // Разделяем датасеты на три категории
   const publicDatasets = allDatasets.filter(dataset => dataset.isPublic);
-  const privateDatasets = allDatasets.filter(dataset => !dataset.isPublic && dataset.user?.id === user?.id);
-  
-  // Debug: выводим информацию для отладки фильтрации
-  console.log('Public datasets:', publicDatasets.length);
-  console.log('Private datasets before filter:', allDatasets.filter(d => !d.isPublic).length);
-  console.log('Private datasets after filter:', privateDatasets.length);
-  console.log('User ID for comparison:', user?.id);
-  allDatasets.filter(d => !d.isPublic).forEach(dataset => {
-    console.log('Private dataset user ID:', dataset.user?.id, 'matches current user:', dataset.user?.id === user?.id);
-  });
+  const myPublicDatasets = allDatasets.filter(dataset => dataset.isPublic && dataset.user?.id === user?.id);
+  const myPrivateDatasets = allDatasets.filter(dataset => !dataset.isPublic && dataset.user?.id === user?.id);
 
   const formatDate = (dateString: string) => {
     const locale = i18n.language === 'ru' ? 'ru-RU' : 'en-US';
@@ -223,7 +210,7 @@ const AllDatasetsPage = () => {
             }}
             className="w-full"
           >
-            <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
+            <TabsList className={`grid w-full mb-8 ${user ? 'grid-cols-3 max-w-2xl' : 'grid-cols-1 max-w-md'}`}>
               <TabsTrigger value="public" className="relative">
                 {t('pages:datasets.public_tab')}
                 <Badge variant="secondary" className="ml-2 text-xs">
@@ -231,10 +218,18 @@ const AllDatasetsPage = () => {
                 </Badge>
               </TabsTrigger>
               {user && (
-                <TabsTrigger value="private" className="relative">
-                  {t('pages:datasets.private_tab')}
+                <TabsTrigger value="my-public" className="relative">
+                  {t('pages:datasets.my_public_tab')}
+                  <Badge variant="default" className="ml-2 text-xs">
+                    {myPublicDatasets.length}
+                  </Badge>
+                </TabsTrigger>
+              )}
+              {user && (
+                <TabsTrigger value="my-private" className="relative">
+                  {t('pages:datasets.my_private_tab')}
                   <Badge variant="outline" className="ml-2 text-xs">
-                    {privateDatasets.length}
+                    {myPrivateDatasets.length}
                   </Badge>
                 </TabsTrigger>
               )}
@@ -256,18 +251,35 @@ const AllDatasetsPage = () => {
             </TabsContent>
             
             {user && (
-              <TabsContent value="private">
+              <TabsContent value="my-public">
                 <div className="mb-4">
                   <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-                    {t('pages:datasets.private_title')}
+                    {t('pages:datasets.my_public_title')}
                   </h2>
                   <p className="text-gray-600">
-                    {t('pages:datasets.private_description')}
+                    {t('pages:datasets.my_public_description')}
                   </p>
                 </div>
                 <DatasetGrid 
-                  datasets={privateDatasets} 
-                  emptyMessage={t('pages:datasets.no_private_datasets')}
+                  datasets={myPublicDatasets} 
+                  emptyMessage={t('pages:datasets.no_my_public_datasets')}
+                />
+              </TabsContent>
+            )}
+            
+            {user && (
+              <TabsContent value="my-private">
+                <div className="mb-4">
+                  <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                    {t('pages:datasets.my_private_title')}
+                  </h2>
+                  <p className="text-gray-600">
+                    {t('pages:datasets.my_private_description')}
+                  </p>
+                </div>
+                <DatasetGrid 
+                  datasets={myPrivateDatasets} 
+                  emptyMessage={t('pages:datasets.no_my_private_datasets')}
                 />
               </TabsContent>
             )}
