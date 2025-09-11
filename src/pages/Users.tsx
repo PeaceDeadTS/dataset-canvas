@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
-import { useTranslation } from 'react-i18next';
 import axios from "axios";
 
 interface User {
@@ -24,7 +23,6 @@ type SortField = 'username' | 'createdAt' | 'publicDatasetCount';
 type SortOrder = 'ASC' | 'DESC';
 
 const UsersPage = () => {
-  const { t, i18n } = useTranslation();
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +60,7 @@ const UsersPage = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(i18n.language === 'ru' ? 'ru-RU' : 'en-US', {
+    return new Date(dateString).toLocaleDateString('ru-RU', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -77,34 +75,34 @@ const UsersPage = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">{t('pages:users.title')}</h1>
-              <p className="text-gray-600 mt-2">{t('pages:users.description')}</p>
+              <h1 className="text-4xl font-bold text-gray-900">Пользователи</h1>
+              <p className="text-gray-600 mt-2">Список всех пользователей в системе</p>
             </div>
             
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700">{t('pages:users.sort_by')}</label>
+                <label className="text-sm font-medium text-gray-700">Сортировать по:</label>
                 <Select value={sortBy} onValueChange={(value: SortField) => setSortBy(value)}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="username">{t('pages:users.sort_by_name')}</SelectItem>
-                    <SelectItem value="createdAt">{t('pages:users.sort_by_registration')}</SelectItem>
-                    <SelectItem value="publicDatasetCount">{t('pages:users.sort_by_datasets')}</SelectItem>
+                    <SelectItem value="username">Имени</SelectItem>
+                    <SelectItem value="createdAt">Дате регистрации</SelectItem>
+                    <SelectItem value="publicDatasetCount">Количеству датасетов</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700">{t('pages:users.order')}</label>
+                <label className="text-sm font-medium text-gray-700">Порядок:</label>
                 <Select value={order} onValueChange={(value: SortOrder) => setOrder(value)}>
                   <SelectTrigger className="w-[120px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ASC">{t('common:ascending')}</SelectItem>
-                    <SelectItem value="DESC">{t('common:descending')}</SelectItem>
+                    <SelectItem value="ASC">По возрастанию</SelectItem>
+                    <SelectItem value="DESC">По убыванию</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -144,7 +142,7 @@ const UsersPage = () => {
                           </Link>
                         </CardTitle>
                         <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs mt-1">
-                          {user.role === 'ADMIN' ? t('common:admin') : user.role === 'DEVELOPER' ? t('common:developer') : t('common:user')}
+                          {user.role}
                         </Badge>
                       </div>
                     </div>
@@ -155,16 +153,16 @@ const UsersPage = () => {
                   <div className="space-y-3">
                     {user.email && (
                       <div className="text-sm text-gray-600">
-                        <span className="font-medium">{t('common:email')}:</span> {user.email}
+                        <span className="font-medium">Email:</span> {user.email}
                       </div>
                     )}
                     
                     <div className="text-sm text-gray-600">
-                      <span className="font-medium">{t('pages:users.registration')}</span> {formatDate(user.createdAt)}
+                      <span className="font-medium">Регистрация:</span> {formatDate(user.createdAt)}
                     </div>
                     
                     <div className="text-sm text-gray-600">
-                      <span className="font-medium">{t('pages:users.public_datasets_count')}</span> 
+                      <span className="font-medium">Публичных датасетов:</span> 
                       <Badge variant="outline" className="ml-2">
                         {user.publicDatasetCount}
                       </Badge>
@@ -178,7 +176,7 @@ const UsersPage = () => {
                         className="w-full"
                       >
                         <Link to={`/users/${user.username}`}>
-                          {t('pages:users.view_profile')}
+                          Посмотреть профиль
                         </Link>
                       </Button>
                     </div>
@@ -191,7 +189,7 @@ const UsersPage = () => {
         
         {!loading && users.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">{t('pages:users.no_users_found')}</p>
+            <p className="text-gray-500 text-lg">Пользователи не найдены</p>
           </div>
         )}
       </div>
