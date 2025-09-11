@@ -11,22 +11,25 @@ Dataset Canvas is a comprehensive web application inspired by Hugging Face's Dat
 ## ✨ Features
 
 ### 🌍 Internationalization & Accessibility
-- **Multi-language support**: Complete interface translation for English (default) and Russian
+- **Multi-language support**: Complete interface translation for English (default) and Russian with 100% coverage
 - **Smart language detection**: Automatic browser language detection with persistent user preferences
 - **Real-time language switching**: Dynamic language changes without page refresh
 - **TypeScript integration**: Type-safe translations with full IDE support
 - **Modern language selector**: Intuitive language switcher with flag indicators
+- **Quality assurance**: Comprehensive localization testing with systematic bug fixes for missing translation keys
 
 ### 👥 User Management System
 - **Comprehensive user directory** (`/users`): Complete listing of all system users
+- **Role-based filtering**: Filter users by role through navigation menu (`/users?role=ADMIN`, `/users?role=DEVELOPER`, `/users?role=USER`)
 - **Advanced sorting capabilities**: Sort users by name, registration date, or public dataset count
 - **User profile cards**: Professional display with avatars, roles, and statistics
 - **Direct profile navigation**: Click-through to individual user profiles
-- **Role-based visibility**: Appropriate information display based on user permissions
+- **Complete role coverage**: Navigation menu includes options for all user roles (Administrators, Developers, Regular Users)
 
 ### 📊 Advanced Dataset Discovery
 - **All datasets page** (`/datasets`): Unified browsing interface for all available datasets
-- **Intelligent categorization**: Separate tabs for public and private datasets with URL state management
+- **Enhanced three-tab system**: Separate tabs for "Public" (all public datasets), "My Public" (user's own public datasets), and "My Private" (user's private datasets)
+- **Intelligent URL state management**: Tab selection preserved in URL parameters (`?tab=public/my-public/my-private`)
 - **Multi-criteria sorting**: Sort by name, creation date, image count, or author
 - **Enhanced filtering**: Advanced dataset organization with persistent URL parameters
 - **Seamless navigation**: Deep linking support with URL state preservation
@@ -199,7 +202,7 @@ Start both servers simultaneously:
 - `POST /api/datasets/:id/upload` - Upload CSV data (Owner/Admin)
 
 ### User Management Endpoints
-- `GET /api/users` - List all users with sorting options (sortBy: username/createdAt/publicDatasetCount)
+- `GET /api/users` - List all users with sorting and role filtering options (sortBy: username/createdAt/publicDatasetCount, role: ADMIN/DEVELOPER/USER)
 - `GET /api/users/:username` - Get user profile and their datasets
 
 ### Query Parameters
@@ -207,7 +210,8 @@ Start both servers simultaneously:
 - `?limit=N` - Items per page (10, 25, 50, 100)
 - `?sortBy=field` - Sorting field (username/createdAt/publicDatasetCount for users; name/createdAt/imageCount/username for datasets)
 - `?order=ASC/DESC` - Sort order (ascending or descending)
-- `?tab=public/private` - Dataset tab selection (for `/datasets` page)
+- `?role=ADMIN/DEVELOPER/USER` - User role filtering (for `/api/users` endpoint and `/users` page)
+- `?tab=public/my-public/my-private` - Dataset tab selection (for `/datasets` page)
 
 ## 🧪 Testing
 

@@ -129,6 +129,10 @@ During development, several critical issues were identified and resolved:
 *   **Navigation UX**: Users had no easy way to return to the main page from dataset details. Implemented breadcrumb navigation with clickable "Datasets" link.
 *   **Limited Dataset Viewing Area**: Dataset working area had excessive padding, wasting screen space. Expanded layout to utilize nearly full screen width while maintaining responsive design.
 *   **Sticky Interface Layout**: Implemented a modern sticky layout system where the dataset header (including Dataset Card) remains fixed at the top and pagination controls stay anchored at the bottom. This allows users to scroll through large datasets while maintaining constant access to dataset information and navigation controls, significantly improving the user experience for data exploration.
+*   **Localization Bug Fixes**: Fixed missing translation keys in the datasets page where the "Open Dataset" button was always displayed in Russian regardless of selected language. Added proper localization keys and ensured consistent translation across all interface elements.
+*   **User Role Filtering Enhancement**: Resolved issue where filtering users by role (e.g., `/users?role=ADMIN`, `/users?role=DEVELOPER`) returned "No users found" due to incorrect role mapping between URL parameters and database enum values. Implemented proper role mapping system to convert URL parameters (`ADMIN`, `DEVELOPER`, `USER`) to database enum values (`Administrator`, `Developer`, `User`).
+*   **Dataset Organization Improvement**: Enhanced the datasets page structure by implementing a three-tab system instead of two: "Public" (all public datasets), "My Public" (user's own public datasets), and "My Private" (user's private datasets). This provides clearer dataset organization and easier navigation for users to manage their own content separately from browsing all available datasets.
+*   **Navigation Menu Enhancement**: Added missing navigation option for Regular Users (`/users?role=USER`) to complement existing Administrator and Developer filters, providing complete role-based user browsing capabilities through the Community menu.
 
 ---
 
@@ -176,12 +180,13 @@ This section provides a summary of the core features implemented in the applicat
     *   Anonymous users see only public datasets with appropriate call-to-action buttons
 *   **Comprehensive User Management System**: Complete user directory and management functionality:
     *   **Users Directory Page** (`/users`): Comprehensive listing of all system users with advanced filtering and sorting capabilities
+    *   **Role-Based User Filtering**: Complete navigation menu integration for filtering users by role (`/users?role=ADMIN`, `/users?role=DEVELOPER`, `/users?role=USER`) with proper role mapping between URL parameters and database enums
     *   **Advanced User Sorting**: Multi-criteria sorting by username, registration date, and public dataset count with ascending/descending order controls
     *   **User Profile Cards**: Professional user cards displaying avatars, roles, registration dates, and public dataset statistics
-    *   **Enhanced User API** (`/api/users`): Backend endpoints supporting dynamic sorting with proper access control for sensitive information
+    *   **Enhanced User API** (`/api/users`): Backend endpoints supporting dynamic sorting and role-based filtering with proper access control for sensitive information
 *   **Advanced Dataset Discovery System**: Comprehensive dataset browsing and organization:
     *   **All Datasets Page** (`/datasets`): Unified interface for browsing all available datasets with advanced filtering
-    *   **Tabbed Interface**: Intelligent separation of public and private datasets with URL state management (`?tab=public/private`)
+    *   **Enhanced Three-Tab Interface**: Intelligent organization with separate tabs for "Public" (all public datasets), "My Public" (user's own public datasets), and "My Private" (user's private datasets) with URL state management (`?tab=public/my-public/my-private`)
     *   **Multi-Criteria Sorting**: Flexible sorting by name, creation date, image count, and author with persistent URL parameters
     *   **Enhanced Datasets API**: Backend support for complex sorting and filtering with proper access control and performance optimization
 *   **Revolutionary Navigation System**: Modern, scalable navigation architecture:
@@ -190,11 +195,12 @@ This section provides a summary of the core features implemented in the applicat
     *   **Unified Interface**: Consistent navigation throughout the entire application, including dataset detail pages
     *   **Language Selector Integration**: Seamless integration of language switching within the navigation system
 *   **Complete Internationalization (i18n) System**: Comprehensive multilingual support:
-    *   **Multi-Language Support**: Full interface translation for English (default) and Russian locales
+    *   **Multi-Language Support**: Full interface translation for English (default) and Russian locales with complete coverage of all UI elements
     *   **Smart Language Detection**: Automatic browser language detection with localStorage persistence for user preferences
     *   **Real-Time Switching**: Dynamic language switching without page refresh, maintaining application state
     *   **Developer-Friendly Architecture**: Modular translation files organized by feature with TypeScript integration for type-safe translations
     *   **User Experience**: Intuitive language selector in the navigation menu with flag indicators and persistent selection
+    *   **Quality Assurance**: Comprehensive localization coverage with systematic identification and correction of missing translation keys
 *   **Performance Optimization & Modern Architecture**: Cutting-edge performance enhancements:
     *   **Lazy Loading Implementation**: Comprehensive lazy loading for all pages using React.lazy() and Suspense
     *   **Bundle Optimization**: Significant bundle size reduction from 504KB to 313KB (37% reduction) with intelligent code splitting
@@ -210,6 +216,6 @@ This section provides a summary of the core features implemented in the applicat
 
 ## Document Version History
 
-*Latest Update: January 2025 - Major feature expansion including comprehensive internationalization system, user management pages, advanced dataset discovery, performance optimization with lazy loading, and revolutionary navigation architecture*
+*Latest Update: January 2025 - Major feature expansion including comprehensive internationalization system with localization bug fixes, enhanced user management with role-based filtering, advanced three-tab dataset discovery system, performance optimization with lazy loading, and revolutionary navigation architecture with complete user role coverage*
 
 *December 2024 - Added Modern Interface Enhancements including sticky layout system and improved UX patterns*
