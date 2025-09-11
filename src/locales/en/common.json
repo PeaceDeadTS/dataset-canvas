@@ -59,5 +59,11 @@
   "error_access_denied": "You don't have permission to view this dataset.",
   "error_not_found": "Dataset not found.",
   "error_load_failed": "Failed to load dataset.",
-  "loading_page": "Loading page..."
+  "loading_page": "Loading page...",
+  "login_success": "Logged in successfully!",
+  "login_failed": "Failed to login",
+  "register_success": "Registered successfully! Please login.",
+  "register_failed": "Failed to register",
+  "dataset_create_success": "Dataset created successfully!",
+  "dataset_create_failed": "Failed to create dataset"
 }

@@ -30,10 +30,10 @@ export function AuthPage() {
         password: loginPassword,
       });
       localStorage.setItem('token', response.data.token);
-      toast.success('Logged in successfully!');
+      toast.success(t('common:login_success'));
       window.location.href = '/'; // Redirect user and refresh app state
     } catch (error: any) {
-      toast.error(error.response?.data || 'Failed to login');
+      toast.error(error.response?.data || t('common:login_failed'));
     } finally {
       setLoading(false);
     }
@@ -48,14 +48,14 @@ export function AuthPage() {
         email: registerEmail,
         password: registerPassword,
       });
-      toast.success('Registered successfully! Please login.');
+      toast.success(t('common:register_success'));
       // Reset form and switch to login tab
       setRegisterUsername('');
       setRegisterEmail('');
       setRegisterPassword('');
       setActiveTab('login');
     } catch (error: any) {
-      toast.error(error.response?.data || 'Failed to register');
+      toast.error(error.response?.data || t('common:register_failed'));
     } finally {
       setLoading(false);
     }

@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from './ui/textarea';
+import { useTranslation } from 'react-i18next';
 import { Switch } from './ui/switch';
 import { toast } from 'sonner';
 import { PlusCircle } from 'lucide-react';
@@ -24,6 +25,7 @@ interface CreateDatasetDialogProps {
 }
 
 export function CreateDatasetDialog({ onDatasetCreated }: CreateDatasetDialogProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -41,7 +43,7 @@ export function CreateDatasetDialog({ onDatasetCreated }: CreateDatasetDialogPro
         { name, description, isPublic },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success('Dataset created successfully!');
+      toast.success(t('common:dataset_create_success'));
       onDatasetCreated(response.data);
       setOpen(false);
       // Reset form
@@ -49,7 +51,7 @@ export function CreateDatasetDialog({ onDatasetCreated }: CreateDatasetDialogPro
       setDescription('');
       setIsPublic(true);
     } catch (error: any) {
-      toast.error(error.response?.data || 'Failed to create dataset');
+      toast.error(error.response?.data || t('common:dataset_create_failed'));
     } finally {
       setLoading(false);
     }

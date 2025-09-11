@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Dataset } from "@/types";
 import { Badge } from "./ui/badge";
 import { Settings, Trash2 } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { toast } from "sonner";
 import {
@@ -32,6 +33,7 @@ interface DatasetHeaderProps {
 }
 
 export function DatasetHeader({ dataset }: DatasetHeaderProps) {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -55,10 +57,10 @@ export function DatasetHeader({ dataset }: DatasetHeaderProps) {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      toast.success('Датасет успешно удален');
+      toast.success(t('pages:dataset.dataset_deleted'));
       navigate('/'); // Перенаправляем на главную страницу
     } catch (error: any) {
-      toast.error(error.response?.data || 'Ошибка при удалении датасета');
+      toast.error(error.response?.data || t('pages:dataset.error_deleting'));
       console.error(error);
     }
   };
