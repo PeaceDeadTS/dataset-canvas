@@ -67,26 +67,18 @@ export class CreateDatasetFilesTable1737551600000 implements MigrationInterface 
         );
 
         // Create foreign key constraint
-        await queryRunner.createForeignKey(
-            'dataset_files',
-            new ForeignKey({
-                columnNames: ['datasetId'],
-                referencedTableName: 'datasets',
-                referencedColumnNames: ['id'],
-                onDelete: 'CASCADE',
-            }),
-        );
+        await queryRunner.createForeignKey('dataset_files', {
+            columnNames: ['datasetId'],
+            referencedTableName: 'datasets',
+            referencedColumnNames: ['id'],
+            onDelete: 'CASCADE',
+            name: 'FK_dataset_files_datasetId'
+        });
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         // Drop foreign key constraint first
-        const table = await queryRunner.getTable('dataset_files');
-        if (table) {
-            const foreignKey = table.foreignKeys.find(fk => fk.columnNames.indexOf('datasetId') !== -1);
-            if (foreignKey) {
-                await queryRunner.dropForeignKey('dataset_files', foreignKey);
-            }
-        }
+        await queryRunner.dropForeignKey('dataset_files', 'FK_dataset_files_datasetId');
 
         // Drop table
         await queryRunner.dropTable('dataset_files');
