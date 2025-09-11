@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
 import { User } from '@/types';
 
 interface DecodedToken {
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -53,7 +55,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
-    window.location.href = '/auth';
+    // Используем React Router для навигации
+    navigate('/auth', { replace: true });
   };
 
   return (

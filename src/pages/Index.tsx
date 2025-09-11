@@ -36,11 +36,11 @@ const Index = () => {
     useEffect(() => {
         const action = searchParams.get('action');
         if (action === 'create') {
-            // Проверяем, может ли пользователь создавать датасеты
-            if (user && (user.role === 'Administrator' || user.role === 'Developer')) {
+            // Проверяем, авторизован ли пользователь для создания датасетов
+            if (user) {
                 setIsCreateDialogOpen(true);
             } else {
-                // Если пользователь не может создавать датасеты, удаляем параметр из URL
+                // Если пользователь не авторизован, удаляем параметр из URL
                 const newSearchParams = new URLSearchParams(searchParams);
                 newSearchParams.delete('action');
                 setSearchParams(newSearchParams, { replace: true });
@@ -107,7 +107,7 @@ const Index = () => {
                 <section>
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-3xl font-bold">{t('pages:index.public_datasets')}</h1>
-                        {user && (user.role === 'Administrator' || user.role === 'Developer') && (
+                        {user && (
                            <CreateDatasetDialog 
                                onDatasetCreated={handleDatasetCreated} 
                                open={isCreateDialogOpen}
