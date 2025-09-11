@@ -11,7 +11,7 @@ import { CreateDatasetDialog } from '@/components/CreateDatasetDialog';
 import { Dataset } from "@/types";
 import { useTranslation } from 'react-i18next';
 
-const API_URL = '/api';
+// Убираем константу, так как базовый URL уже настроен в axios
 
 const Index = () => {
     const { t } = useTranslation();
@@ -62,9 +62,7 @@ const Index = () => {
     useEffect(() => {
         const fetchDatasets = async () => {
             try {
-                const token = localStorage.getItem('token');
-                const headers = token ? { Authorization: `Bearer ${token}` } : {};
-                const response = await axios.get(`${API_URL}/datasets`, { headers });
+                const response = await axios.get('/datasets');
                 setDatasets(response.data);
             } catch (err) {
                 setError(t('common:error_load_failed'));

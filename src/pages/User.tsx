@@ -39,9 +39,7 @@ const UserPage = () => {
       }
 
       try {
-        const token = localStorage.getItem('token');
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.get(`${API_URL}/${username}`, { headers });
+        const response = await axios.get(`${API_URL}/${username}`);
         setData(response.data);
       } catch (err: any) {
         if (err.response?.status === 404) {

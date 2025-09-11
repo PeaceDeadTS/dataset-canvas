@@ -117,9 +117,7 @@ const DatasetPage = () => {
       if (!id) return;
       
       try {
-        const token = localStorage.getItem('token');
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.get(`${API_URL}/${id}?page=${currentPage}&limit=${limit}`, { headers });
+        const response = await axios.get(`${API_URL}/${id}?page=${currentPage}&limit=${limit}`);
         setDataset(response.data);
         setImages(response.data.images.data);
         setTotalImages(response.data.images.total);
