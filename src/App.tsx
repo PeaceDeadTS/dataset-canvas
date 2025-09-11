@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 
 // Инициализация i18n
 import '@/lib/i18n';
@@ -18,14 +19,18 @@ const UsersPage = lazy(() => import("./pages/Users"));
 const AllDatasetsPage = lazy(() => import("./pages/AllDatasets"));
 
 // Компонент загрузки
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-    <div className="flex flex-col items-center gap-4">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      <p className="text-gray-600 text-lg">Загрузка страницы...</p>
+const PageLoader = () => {
+  const { t } = useTranslation();
+  
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="flex flex-col items-center gap-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p className="text-gray-600 text-lg">{t('common:loading_page')}</p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const queryClient = new QueryClient();
 

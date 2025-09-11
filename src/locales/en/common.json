@@ -51,5 +51,13 @@
   "access_denied": "Access denied",
   "internal_error": "Internal server error",
   "upload": "Upload",
-  "download": "Download"
+  "download": "Download",
+  "toggle_sidebar": "Toggle Sidebar",
+  "search_placeholder": "Search this dataset",
+  "email_placeholder": "m@example.com",
+  "username_placeholder": "Your username",
+  "error_access_denied": "You don't have permission to view this dataset.",
+  "error_not_found": "Dataset not found.",
+  "error_load_failed": "Failed to load dataset.",
+  "loading_page": "Loading page..."
 }

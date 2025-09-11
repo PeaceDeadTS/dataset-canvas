@@ -51,5 +51,13 @@
   "access_denied": "Доступ запрещен",
   "internal_error": "Внутренняя ошибка сервера",
   "upload": "Загрузить",
-  "download": "Скачать"
+  "download": "Скачать",
+  "toggle_sidebar": "Переключить боковую панель",
+  "search_placeholder": "Поиск по датасету",
+  "email_placeholder": "m@example.com",
+  "username_placeholder": "Ваше имя пользователя",
+  "error_access_denied": "У вас нет прав для просмотра этого датасета.",
+  "error_not_found": "Датасет не найден.",
+  "error_load_failed": "Не удалось загрузить датасет.",
+  "loading_page": "Загрузка страницы..."
 }

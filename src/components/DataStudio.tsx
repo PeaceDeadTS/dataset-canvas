@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "./DataTable";
+import { useTranslation } from 'react-i18next';
 
 // Placeholder data structure
 const generatePlaceholderData = () => {
@@ -18,6 +19,7 @@ const generatePlaceholderData = () => {
 };
 
 export function DataStudio() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(25);
@@ -57,7 +59,7 @@ export function DataStudio() {
         <div className="relative w-80">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search this dataset"
+            placeholder={t('common:search_placeholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"

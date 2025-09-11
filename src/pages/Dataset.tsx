@@ -126,11 +126,11 @@ const DatasetPage = () => {
         setTotalPages(Math.ceil(response.data.images.total / response.data.images.limit));
       } catch (err: any) {
         if (err.response?.status === 403) {
-          setError('У вас нет прав для просмотра этого датасета.');
+          setError(t('common:error_access_denied'));
         } else if (err.response?.status === 404) {
-          setError('Датасет не найден.');
+          setError(t('common:error_not_found'));
         } else {
-          setError('Не удалось загрузить датасет.');
+          setError(t('common:error_load_failed'));
         }
         console.error(err);
       } finally {

@@ -7,10 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 const API_URL = '/api/auth'; // Используем относительный путь
 
 export function AuthPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('login');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -81,7 +83,7 @@ export function AuthPage() {
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="login-email">Email</Label>
-                    <Input id="login-email" type="email" placeholder="m@example.com" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required disabled={loading} />
+                    <Input id="login-email" type="email" placeholder={t('common:email_placeholder')} value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required disabled={loading} />
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="login-password">Password</Label>
@@ -103,11 +105,11 @@ export function AuthPage() {
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="register-username">Username</Label>
-                    <Input id="register-username" placeholder="Your username" value={registerUsername} onChange={(e) => setRegisterUsername(e.target.value)} required disabled={loading} />
+                    <Input id="register-username" placeholder={t('common:username_placeholder')} value={registerUsername} onChange={(e) => setRegisterUsername(e.target.value)} required disabled={loading} />
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="register-email">Email</Label>
-                    <Input id="register-email" type="email" placeholder="m@example.com" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} required disabled={loading} />
+                    <Input id="register-email" type="email" placeholder={t('common:email_placeholder')} value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} required disabled={loading} />
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="register-password">Password</Label>
