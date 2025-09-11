@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate } from "react-router-dom";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppHeader } from "@/components/AppHeader";
 import { 
@@ -104,7 +104,7 @@ export default function AdminPanel() {
   const loadUsers = async () => {
     try {
       setUsersLoading(true);
-      const response = await axios.get('/api/users?sortBy=username&order=ASC');
+      const response = await axios.get('/users?sortBy=username&order=ASC');
       setUsers(response.data);
     } catch (error) {
       console.error('Error loading users:', error);
@@ -120,7 +120,7 @@ export default function AdminPanel() {
   const loadDatasets = async () => {
     try {
       setDatasetsLoading(true);
-      const response = await axios.get('/api/datasets?sortBy=createdAt&order=DESC');
+      const response = await axios.get('/datasets?sortBy=createdAt&order=DESC');
       setDatasets(response.data);
     } catch (error) {
       console.error('Error loading datasets:', error);
@@ -137,7 +137,7 @@ export default function AdminPanel() {
     if (!selectedUser || !newRole) return;
     
     try {
-      await axios.put(`/api/users/${selectedUser.id}/role`, { role: newRole });
+      await axios.put(`/users/${selectedUser.id}/role`, { role: newRole });
       
       setUsers(users.map(u => 
         u.id === selectedUser.id 
@@ -171,7 +171,7 @@ export default function AdminPanel() {
     }
 
     try {
-      await axios.delete(`/api/users/${userToDelete.id}`);
+      await axios.delete(`/users/${userToDelete.id}`);
       
       setUsers(users.filter(u => u.id !== userToDelete.id));
       
@@ -189,7 +189,7 @@ export default function AdminPanel() {
 
   const handleDeleteDataset = async (datasetToDelete: AdminDataset) => {
     try {
-      await axios.delete(`/api/datasets/${datasetToDelete.id}/admin`);
+      await axios.delete(`/datasets/${datasetToDelete.id}/admin`);
       
       setDatasets(datasets.filter(d => d.id !== datasetToDelete.id));
       

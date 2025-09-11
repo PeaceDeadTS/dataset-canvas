@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import axios from '@/lib/axios';
 import { AppHeader } from "@/components/AppHeader";
 import { DatasetListItem } from "@/components/DatasetListItem";
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,7 +9,7 @@ import { Dataset } from "@/types";
 import { Badge } from '@/components/ui/badge';
 import { Calendar, User as UserIcon, Mail } from 'lucide-react';
 
-const API_URL = '/api/users';
+const API_URL = '/users';
 
 interface UserProfile {
   username: string;

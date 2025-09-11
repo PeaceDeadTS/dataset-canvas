@@ -14,7 +14,7 @@ import { Dataset } from "@/types";
 import { Badge } from "./ui/badge";
 import { Settings, Trash2 } from "lucide-react";
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
+import axios from '@/lib/axios';
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -52,10 +52,7 @@ export function DatasetHeader({ dataset }: DatasetHeaderProps) {
     if (!dataset) return;
     
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`/api/datasets/${dataset.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.delete(`/datasets/${dataset.id}`);
       
       toast.success(t('pages:dataset.dataset_deleted'));
       navigate('/'); // Перенаправляем на главную страницу

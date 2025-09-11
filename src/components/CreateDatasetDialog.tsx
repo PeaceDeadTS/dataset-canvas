@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '@/lib/axios';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -18,7 +18,7 @@ import { Switch } from './ui/switch';
 import { toast } from 'sonner';
 import { PlusCircle } from 'lucide-react';
 
-const API_URL = '/api/datasets'; // ИСПРАВЛЕНИЕ: Убираем абсолютный путь
+const API_URL = '/datasets'; // Убираем префикс /api
 
 interface CreateDatasetDialogProps {
   onDatasetCreated: (newDataset: any) => void;

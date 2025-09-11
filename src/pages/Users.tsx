@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from 'react-i18next';
-import axios from "axios";
+import axios from "@/lib/axios";
 
 interface User {
   id: string;
@@ -42,7 +42,7 @@ const UsersPage = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/users', {
+      const response = await axios.get('/users', {
         params: { 
           sortBy, 
           order, 

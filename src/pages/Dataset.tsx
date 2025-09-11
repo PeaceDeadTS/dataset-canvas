@@ -1,7 +1,7 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
+import axios from '@/lib/axios';
 import { AppHeader } from '@/components/AppHeader';
 import { DatasetBreadcrumb } from '@/components/DatasetBreadcrumb';
 import { Dataset } from '@/types';
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/accordion"
 
 
-const API_URL = '/api/datasets';
+const API_URL = '/datasets';
 
 interface DatasetImage {
   id: number;

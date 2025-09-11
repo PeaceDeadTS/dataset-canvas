@@ -5,7 +5,7 @@ import { Badge } from "./ui/badge";
 import { Settings, Trash2, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dataset } from "@/types";
-import axios from 'axios';
+import axios from '@/lib/axios';
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -36,10 +36,7 @@ export function DatasetBreadcrumb({ dataset }: DatasetBreadcrumbProps) {
 
   const handleDeleteDataset = async () => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`/api/datasets/${dataset.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.delete(`/datasets/${dataset.id}`);
       
       toast.success(t('pages:dataset.dataset_deleted'));
       navigate('/');

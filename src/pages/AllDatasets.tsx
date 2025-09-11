@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dataset } from "@/types";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { useTranslation } from 'react-i18next';
 
 type SortField = 'name' | 'createdAt' | 'imageCount' | 'username';
@@ -38,11 +38,8 @@ const AllDatasetsPage = () => {
   const fetchDatasets = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/datasets', {
-        params: { sortBy, order },
-        headers: user ? {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        } : {}
+      const response = await axios.get('/datasets', {
+        params: { sortBy, order }
       });
       
       setAllDatasets(response.data);
