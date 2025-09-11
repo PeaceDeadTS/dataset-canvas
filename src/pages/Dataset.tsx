@@ -6,7 +6,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { DatasetBreadcrumb } from '@/components/DatasetBreadcrumb';
 import { Dataset } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';

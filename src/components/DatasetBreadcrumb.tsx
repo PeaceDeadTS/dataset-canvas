@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Settings, Trash2, ChevronRight } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { Dataset } from "@/types";
 import axios from 'axios';
 import { toast } from "sonner";

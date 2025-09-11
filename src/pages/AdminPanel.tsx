@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { AppHeader } from "@/components/AppHeader";
 import { Shield } from "lucide-react";
 

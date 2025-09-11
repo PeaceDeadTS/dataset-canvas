@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { AppHeader } from "@/components/AppHeader";
 import { DatasetListItem } from "@/components/DatasetListItem";
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { CreateDatasetDialog } from '@/components/CreateDatasetDialog';

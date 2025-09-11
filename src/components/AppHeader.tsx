@@ -23,7 +23,7 @@ import {
 } from "./ui/navigation-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Database, Users, Home, BarChart3, Settings, Shield } from "lucide-react";
 import { LanguageSelector } from './LanguageSelector';

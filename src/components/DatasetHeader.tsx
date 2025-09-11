@@ -9,7 +9,7 @@ import {
 } from "./ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { Dataset } from "@/types";
 import { Badge } from "./ui/badge";
 import { Settings, Trash2 } from "lucide-react";

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { AppHeader } from "@/components/AppHeader";
 import { DatasetListItem } from "@/components/DatasetListItem";
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Dataset } from "@/types";
 import { Badge } from '@/components/ui/badge';
 import { Calendar, User as UserIcon, Mail } from 'lucide-react';
