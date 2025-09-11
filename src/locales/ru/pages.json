@@ -83,14 +83,16 @@
   "auth": {
     "login": "Войти",
     "register": "Регистрация",
-    "login_title": "С возвращением",
+    "login_title": "Войти",
     "login_description": "Войдите в свой аккаунт для продолжения",
-    "register_title": "Создать аккаунт",
+    "register_title": "Регистрация",
     "register_description": "Создайте новый аккаунт для начала работы",
     "switch_to_register": "Нет аккаунта? Зарегистрируйтесь",
     "switch_to_login": "Уже есть аккаунт? Войдите",
     "login_button": "Войти",
-    "register_button": "Создать аккаунт"
+    "register_button": "Создать аккаунт",
+    "logging_in": "Вход...",
+    "registering": "Регистрация..."
   },
   "create_dataset": {
     "title": "Создать новый датасет",

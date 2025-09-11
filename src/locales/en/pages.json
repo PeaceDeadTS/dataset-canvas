@@ -83,14 +83,16 @@
   "auth": {
     "login": "Login",
     "register": "Register",
-    "login_title": "Welcome Back",
+    "login_title": "Login",
     "login_description": "Sign in to your account to continue",
-    "register_title": "Create Account", 
+    "register_title": "Register", 
     "register_description": "Create a new account to get started",
     "switch_to_register": "Don't have an account? Register", 
     "switch_to_login": "Already have an account? Login",
     "login_button": "Sign In",
-    "register_button": "Create Account"
+    "register_button": "Create Account",
+    "logging_in": "Logging in...",
+    "registering": "Registering..."
   },
   "create_dataset": {
     "title": "Create New Dataset",

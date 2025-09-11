@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { CreateDatasetDialog } from '@/components/CreateDatasetDialog';
 import { Dataset } from "@/types";
+import { useTranslation } from 'react-i18next';
 
 const API_URL = '/api';
 
 const Index = () => {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const [datasets, setDatasets] = useState<Dataset[]>([]);
     const [loading, setLoading] = useState(true);
@@ -33,7 +35,7 @@ const Index = () => {
                 const response = await axios.get(`${API_URL}/datasets`, { headers });
                 setDatasets(response.data);
             } catch (err) {
-                setError('Failed to fetch datasets.');
+                setError(t('common:error_load_failed'));
                 console.error(err);
             } finally {
                 setLoading(false);
@@ -60,7 +62,7 @@ const Index = () => {
                 {user && userPrivateDatasets.length > 0 && (
                     <section>
                         <div className="flex justify-between items-center mb-6">
-                            <h1 className="text-3xl font-bold">My Private Datasets</h1>
+                            <h1 className="text-3xl font-bold">{t('pages:index.my_private_datasets')}</h1>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {userPrivateDatasets.map(dataset => (
@@ -72,7 +74,7 @@ const Index = () => {
 
                 <section>
                     <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-3xl font-bold">Public Datasets</h1>
+                        <h1 className="text-3xl font-bold">{t('pages:index.public_datasets')}</h1>
                         {user && (user.role === 'Administrator' || user.role === 'Developer') && (
                            <CreateDatasetDialog onDatasetCreated={handleDatasetCreated} />
                         )}
@@ -101,7 +103,7 @@ const Index = () => {
                                     <DatasetListItem key={dataset.id} dataset={dataset} />
                                 ))
                             ) : (
-                                <p>No public datasets found.</p>
+                                <p>{t('pages:index.no_public_datasets')}</p>
                             )}
                         </div>
                     )}

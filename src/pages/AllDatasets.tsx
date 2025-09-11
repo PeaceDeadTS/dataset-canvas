@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { Dataset } from "@/types";
 import axios from "axios";
+import { useTranslation } from 'react-i18next';
 
 type SortField = 'name' | 'createdAt' | 'imageCount' | 'username';
 type SortOrder = 'ASC' | 'DESC';
@@ -19,6 +20,7 @@ interface DatasetWithImageCount extends Dataset {
 }
 
 const AllDatasetsPage = () => {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [allDatasets, setAllDatasets] = useState<DatasetWithImageCount[]>([]);
@@ -55,7 +57,8 @@ const AllDatasetsPage = () => {
   const privateDatasets = allDatasets.filter(dataset => !dataset.isPublic && dataset.user.id === user?.id);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ru-RU', {
+    const locale = i18n.language === 'ru' ? 'ru-RU' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -84,7 +87,7 @@ const AllDatasetsPage = () => {
                       </Link>
                     </CardTitle>
                     <CardDescription className="mt-1 line-clamp-2">
-                      {dataset.description || 'Описание отсутствует'}
+                      {dataset.description || t('pages:datasets.no_description')}
                     </CardDescription>
                   </div>
                   
@@ -93,10 +96,10 @@ const AllDatasetsPage = () => {
                       variant={dataset.isPublic ? "default" : "secondary"}
                       className="mb-2"
                     >
-                      {dataset.isPublic ? 'Публичный' : 'Приватный'}
+                      {dataset.isPublic ? t('common:public') : t('common:private')}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {dataset.imageCount} пар
+                      {dataset.imageCount} {t('common:pairs')}
                     </Badge>
                   </div>
                 </div>
@@ -115,12 +118,12 @@ const AllDatasetsPage = () => {
                   </div>
                   
                   <div className="text-sm text-gray-600">
-                    <span className="font-medium">Создан:</span> {formatDate(dataset.createdAt)}
+                    <span className="font-medium">{t('pages:datasets.created_date')}</span> {formatDate(dataset.createdAt)}
                   </div>
                   
                   {dataset.updatedAt && dataset.updatedAt !== dataset.createdAt && (
                     <div className="text-sm text-gray-600">
-                      <span className="font-medium">Обновлён:</span> {formatDate(dataset.updatedAt)}
+                      <span className="font-medium">{t('pages:datasets.updated_date')}</span> {formatDate(dataset.updatedAt)}
                     </div>
                   )}
                   
@@ -153,35 +156,35 @@ const AllDatasetsPage = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">Датасеты</h1>
-              <p className="text-gray-600 mt-2">Все доступные датасеты в системе</p>
+              <h1 className="text-4xl font-bold text-gray-900">{t('pages:datasets.title')}</h1>
+              <p className="text-gray-600 mt-2">{t('pages:datasets.description')}</p>
             </div>
             
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700">Сортировать по:</label>
+                <label className="text-sm font-medium text-gray-700">{t('pages:datasets.sort_by')}</label>
                 <Select value={sortBy} onValueChange={(value: SortField) => setSortBy(value)}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="name">Названию</SelectItem>
-                    <SelectItem value="createdAt">Дате создания</SelectItem>
-                    <SelectItem value="imageCount">Количеству пар</SelectItem>
-                    <SelectItem value="username">Автору</SelectItem>
+                    <SelectItem value="name">{t('pages:datasets.sort_by_name')}</SelectItem>
+                    <SelectItem value="createdAt">{t('pages:datasets.sort_by_created')}</SelectItem>
+                    <SelectItem value="imageCount">{t('pages:datasets.sort_by_pairs')}</SelectItem>
+                    <SelectItem value="username">{t('pages:datasets.sort_by_author')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700">Порядок:</label>
+                <label className="text-sm font-medium text-gray-700">{t('pages:datasets.order')}</label>
                 <Select value={order} onValueChange={(value: SortOrder) => setOrder(value)}>
                   <SelectTrigger className="w-[120px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ASC">По возрастанию</SelectItem>
-                    <SelectItem value="DESC">По убыванию</SelectItem>
+                    <SelectItem value="ASC">{t('common:ascending')}</SelectItem>
+                    <SelectItem value="DESC">{t('common:descending')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -207,14 +210,14 @@ const AllDatasetsPage = () => {
           >
             <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
               <TabsTrigger value="public" className="relative">
-                Публичные
+                {t('pages:datasets.public_tab')}
                 <Badge variant="secondary" className="ml-2 text-xs">
                   {publicDatasets.length}
                 </Badge>
               </TabsTrigger>
               {user && privateDatasets.length > 0 && (
                 <TabsTrigger value="private" className="relative">
-                  Мои приватные
+                  {t('pages:datasets.private_tab')}
                   <Badge variant="outline" className="ml-2 text-xs">
                     {privateDatasets.length}
                   </Badge>
@@ -225,15 +228,15 @@ const AllDatasetsPage = () => {
             <TabsContent value="public">
               <div className="mb-4">
                 <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-                  Публичные датасеты
+                  {t('pages:datasets.public_title')}
                 </h2>
                 <p className="text-gray-600">
-                  Датасеты, доступные для просмотра всем пользователям
+                  {t('pages:datasets.public_description')}
                 </p>
               </div>
               <DatasetGrid 
                 datasets={publicDatasets} 
-                emptyMessage="Публичные датасеты не найдены"
+                emptyMessage={t('pages:datasets.no_public_datasets')}
               />
             </TabsContent>
             
@@ -241,15 +244,15 @@ const AllDatasetsPage = () => {
               <TabsContent value="private">
                 <div className="mb-4">
                   <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-                    Мои приватные датасеты
+                    {t('pages:datasets.private_title')}
                   </h2>
                   <p className="text-gray-600">
-                    Ваши приватные датасеты, видимые только вам
+                    {t('pages:datasets.private_description')}
                   </p>
                 </div>
                 <DatasetGrid 
                   datasets={privateDatasets} 
-                  emptyMessage="У вас нет приватных датасетов"
+                  emptyMessage={t('pages:datasets.no_private_datasets')}
                 />
               </TabsContent>
             )}

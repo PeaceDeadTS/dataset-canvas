@@ -62,40 +62,40 @@ export function CreateDatasetDialog({ onDatasetCreated }: CreateDatasetDialogPro
       <DialogTrigger asChild>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Создать датасет
+          {t('pages:create_dataset.title')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create a new dataset</DialogTitle>
+          <DialogTitle>{t('pages:create_dataset.title')}</DialogTitle>
           <DialogDescription>
-            Give your dataset a name and a description. You can choose to make it public or private.
+            {t('pages:create_dataset.description')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
-                Name
+                {t('common:name')}
               </Label>
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="description" className="text-right">
-                Description
+                {t('common:description')}
               </Label>
               <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="is-public" className="text-right">
-                Public
+                {t('common:public')}
               </Label>
               <Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} />
             </div>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Dataset'}
+              {loading ? t('pages:create_dataset.creating') : t('pages:create_dataset.title')}
             </Button>
           </DialogFooter>
         </form>
