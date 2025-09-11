@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, ForeignKey } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
 export class CreateDatasetFilesTable1737551600000 implements MigrationInterface {
     name = 'CreateDatasetFilesTable1737551600000'
@@ -67,13 +67,13 @@ export class CreateDatasetFilesTable1737551600000 implements MigrationInterface 
         );
 
         // Create foreign key constraint
-        await queryRunner.createForeignKey('dataset_files', {
+        await queryRunner.createForeignKey('dataset_files', new TableForeignKey({
             columnNames: ['datasetId'],
             referencedTableName: 'datasets',
             referencedColumnNames: ['id'],
             onDelete: 'CASCADE',
             name: 'FK_dataset_files_datasetId'
-        });
+        }));
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
