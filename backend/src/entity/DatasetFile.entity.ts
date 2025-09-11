@@ -4,35 +4,35 @@ import { Dataset } from './Dataset.entity';
 @Entity('dataset_files')
 export class DatasetFile {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  filename: string;
+  filename!: string;
 
   @Column()
-  originalName: string;
+  originalName!: string;
 
   @Column()
-  mimeType: string;
+  mimeType!: string;
 
   @Column()
-  size: number;
+  size!: number;
 
   @Column()
-  filePath: string;
+  filePath!: string;
 
   @Column({ type: 'text', nullable: true })
   description?: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @ManyToOne(() => Dataset, dataset => dataset.files, { onDelete: 'CASCADE' })
-  dataset: Dataset;
+  dataset!: Dataset;
 
   @Column()
-  datasetId: string;
+  datasetId!: string;
 }
