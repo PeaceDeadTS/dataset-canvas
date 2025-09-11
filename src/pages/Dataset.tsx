@@ -349,36 +349,34 @@ const DatasetPage = () => {
               </div>
             </div>
             
-            
-            <div className="flex-1 relative" style={{ height: 'calc(100vh - 200px)' }}>
-              <div className="absolute inset-0 overflow-auto">
-                <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
-                  {imagesLoading ? (
-                    <div className="py-8">
-                      <Skeleton className="h-64 w-full" />
-                    </div>
-                  ) : images.length > 0 ? (
-                    <div className="overflow-x-auto py-4">
-                      <Table className="table-auto w-full">
-                        <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
-                          <TableRow className="border-b">
-                            <TableHead className="w-10 bg-background">Row</TableHead>
-                            <TableHead className="min-w-[18rem] max-w-[30rem] bg-background">Image Key</TableHead>
-                            <TableHead className="min-w-[18rem] max-w-[80rem] bg-background">Filename</TableHead>
-                            <TableHead className="min-w-[20rem] max-w-[80rem] bg-background">Image</TableHead>
-                            <TableHead className="w-20 bg-background">Dimensions</TableHead>
-                            <TableHead className="min-w-[44rem] bg-background">Prompt</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
+            <div className="flex-1 overflow-auto relative">
+              <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+                {imagesLoading ? (
+                  <div className="py-8">
+                    <Skeleton className="h-64 w-full" />
+                  </div>
+                ) : images.length > 0 ? (
+                  <div className="overflow-x-auto py-4">
+                    <Table className="table-auto w-full">
+                      <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+                        <TableRow className="border-b">
+                          <TableHead className="w-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Row</TableHead>
+                          <TableHead className="min-w-[18rem] max-w-[30rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image Key</TableHead>
+                          <TableHead className="min-w-[18rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Filename</TableHead>
+                          <TableHead className="min-w-[20rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Image</TableHead>
+                          <TableHead className="w-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Dimensions</TableHead>
+                          <TableHead className="min-w-[44rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">Prompt</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {images.map((image) => (
                           <Dialog key={image.id}>
                             <DialogTrigger asChild>
                               <TableRow className="cursor-pointer">
-                                <TableCell className="w-10 py-4 text-center">{image.row_number}</TableCell>
-                                <TableCell className="min-w-[18rem] max-w-[30rem] font-mono text-xs py-4 overflow-hidden text-ellipsis">{image.img_key}</TableCell>
-                                <TableCell className="min-w-[18rem] max-w-[80rem] py-4 overflow-hidden text-ellipsis">{image.filename}</TableCell>
-                                <TableCell className="min-w-[20rem] max-w-[80rem] py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
+                                <TableCell className="py-4 text-center">{image.row_number}</TableCell>
+                                <TableCell className="font-mono text-xs py-4 overflow-hidden text-ellipsis">{image.img_key}</TableCell>
+                                <TableCell className="py-4 overflow-hidden text-ellipsis">{image.filename}</TableCell>
+                                <TableCell className="py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
                                   <div className="flex flex-col items-center gap-2 w-full min-w-0">
                                     <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded flex-shrink-0" />
                                     <a 
@@ -393,8 +391,8 @@ const DatasetPage = () => {
                                     </a>
                                   </div>
                                 </TableCell>
-                                <TableCell className="w-20 py-4 text-center whitespace-nowrap">{`${image.width}x${image.height}`}</TableCell>
-                                <TableCell className="min-w-[44rem] py-4 overflow-hidden text-ellipsis">{image.prompt}</TableCell>
+                                <TableCell className="py-4 text-center whitespace-nowrap">{`${image.width}x${image.height}`}</TableCell>
+                                <TableCell className="py-4 overflow-hidden text-ellipsis">{image.prompt}</TableCell>
                               </TableRow>
                             </DialogTrigger>
                             <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
@@ -438,15 +436,14 @@ const DatasetPage = () => {
                             </DialogContent>
                           </Dialog>
                         ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <div className="py-8">
-                      <p>No images found in this dataset.</p>
-                    </div>
-                  )}
-                </div>
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="py-8">
+                    <p>No images found in this dataset.</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
