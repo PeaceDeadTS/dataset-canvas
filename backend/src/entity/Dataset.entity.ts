@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from './User.entity';
 import { DatasetImage } from './DatasetImage.entity';
+import { DatasetFile } from './DatasetFile.entity';
 
 @Entity('datasets')
 export class Dataset {
@@ -27,6 +28,11 @@ export class Dataset {
     cascade: true,
   })
   images!: DatasetImage[];
+
+  @OneToMany(() => DatasetFile, (file) => file.dataset, { 
+    cascade: true,
+  })
+  files!: DatasetFile[];
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -5,6 +5,28 @@ export interface User {
     role: 'Administrator' | 'Developer' | 'User';
 }
 
+export interface DatasetImage {
+    id: number;
+    img_key: string;
+    row_number: number;
+    filename: string;
+    url: string;
+    width: number;
+    height: number;
+    prompt: string;
+}
+
+export interface DatasetFile {
+    id: number;
+    filename: string;
+    originalName: string;
+    mimeType: string;
+    size: number;
+    description?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface Dataset {
     id: string;
     name: string;
@@ -22,7 +44,7 @@ export interface Dataset {
     
     // Для страницы конкретного датасета с пагинацией изображений
     images?: {
-        data: any[];
+        data: DatasetImage[];
         total: number;
         page: number;
         limit: number;

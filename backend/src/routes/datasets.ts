@@ -4,12 +4,15 @@ import csv from 'csv-parser';
 import { Readable } from 'stream';
 import multer from 'multer';
 import { randomUUID } from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import { AppDataSource } from '../data-source';
 import { Dataset } from '../entity/Dataset.entity';
 import { User, UserRole } from '../entity/User.entity';
 import { checkJwt, checkJwtOptional } from '../middleware/checkJwt';
 import { DatasetImage } from '../entity/DatasetImage.entity';
+import { DatasetFile } from '../entity/DatasetFile.entity';
 import logger from '../logger';
 
 const router = Router();
@@ -18,6 +21,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 const datasetRepository = AppDataSource.getRepository(Dataset);
 const userRepository = AppDataSource.getRepository(User);
 const imageRepository = AppDataSource.getRepository(DatasetImage);
+const fileRepository = AppDataSource.getRepository(DatasetFile);
 
 // GET /api/datasets - Get all visible datasets with optional sorting
 router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
@@ -190,7 +194,34 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
             return res.status(403).send('Forbidden');
         }
 
-        // Overwrite Logic
+        // Create uploads directory if it doesn't exist
+        const uploadsDir = path.join(process.cwd(), 'uploads');
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+
+        // Generate unique filename for the CSV file
+        const fileExtension = path.extname(req.file.originalname) || '.csv';
+        const uniqueFilename = `${dataset.id}_${Date.now()}_${randomUUID()}${fileExtension}`;
+        const filePath = path.join(uploadsDir, uniqueFilename);
+
+        // Save the CSV file to disk
+        fs.writeFileSync(filePath, req.file.buffer);
+
+        // Save file metadata to database
+        const datasetFile = new DatasetFile();
+        datasetFile.filename = uniqueFilename;
+        datasetFile.originalName = req.file.originalname;
+        datasetFile.mimeType = req.file.mimetype;
+        datasetFile.size = req.file.size;
+        datasetFile.filePath = filePath;
+        datasetFile.description = 'Original CSV upload';
+        datasetFile.dataset = dataset;
+        datasetFile.datasetId = dataset.id;
+
+        await fileRepository.save(datasetFile);
+
+        // Overwrite Logic - delete existing images
         await imageRepository.delete({ dataset: { id: dataset.id } });
         
         const images: DatasetImage[] = [];
@@ -220,7 +251,12 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
             .on('end', async () => {
                 try {
                     await imageRepository.save(images);
-                    res.status(201).send({ message: `Successfully uploaded ${images.length} images to dataset ${dataset.name}` });
+                    logger.info(`Successfully uploaded CSV file ${uniqueFilename} and ${images.length} images to dataset ${dataset.name}`);
+                    res.status(201).send({ 
+                        message: `Successfully uploaded ${images.length} images to dataset ${dataset.name}`,
+                        fileId: datasetFile.id,
+                        filename: datasetFile.originalName
+                    });
                 } catch (dbError) {
                     logger.error(`DB error during CSV save for dataset ${id}`, { error: dbError });
                     res.status(500).send('Error saving images to database.');
@@ -330,6 +366,106 @@ router.delete('/:id/admin', checkJwt, async (req: Request, res: Response) => {
     } catch (error) {
         logger.error(`Failed to admin delete dataset ${id}`, { error });
         res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// GET /api/datasets/:id/files - Get files for a dataset
+router.get('/:id/files', checkJwtOptional, async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userId = req.user?.userId;
+    const userRole = req.user?.role;
+
+    try {
+        const dataset = await datasetRepository.findOne({
+            where: { id },
+            relations: ['user', 'files']
+        });
+
+        if (!dataset) {
+            return res.status(404).json({ error: 'Dataset not found' });
+        }
+
+        // Check visibility permissions
+        if (!dataset.isPublic && userRole !== UserRole.ADMIN && dataset.userId !== userId) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        // Return files data without file paths for security
+        const filesData = dataset.files.map(file => ({
+            id: file.id,
+            filename: file.filename,
+            originalName: file.originalName,
+            mimeType: file.mimeType,
+            size: file.size,
+            description: file.description,
+            createdAt: file.createdAt,
+            updatedAt: file.updatedAt
+        }));
+
+        res.json({ files: filesData });
+
+    } catch (error) {
+        logger.error(`Failed to get files for dataset ${id}`, { error });
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// GET /api/datasets/:id/files/:fileId/download - Download a specific file
+router.get('/:id/files/:fileId/download', checkJwtOptional, async (req: Request, res: Response) => {
+    const { id, fileId } = req.params;
+    const userId = req.user?.userId;
+    const userRole = req.user?.role;
+
+    try {
+        const dataset = await datasetRepository.findOne({
+            where: { id },
+            relations: ['user']
+        });
+
+        if (!dataset) {
+            return res.status(404).json({ error: 'Dataset not found' });
+        }
+
+        // Check visibility permissions
+        if (!dataset.isPublic && userRole !== UserRole.ADMIN && dataset.userId !== userId) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const file = await fileRepository.findOne({
+            where: { id: parseInt(fileId), datasetId: dataset.id }
+        });
+
+        if (!file) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        // Check if file exists on disk
+        if (!fs.existsSync(file.filePath)) {
+            logger.error(`File not found on disk: ${file.filePath}`);
+            return res.status(404).json({ error: 'File not found on disk' });
+        }
+
+        // Set headers for file download
+        res.setHeader('Content-Type', file.mimeType || 'application/octet-stream');
+        res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
+        res.setHeader('Content-Length', file.size);
+
+        // Stream the file
+        const fileStream = fs.createReadStream(file.filePath);
+        fileStream.pipe(res);
+
+        fileStream.on('error', (error) => {
+            logger.error(`Error streaming file ${file.filePath}`, { error });
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'Error downloading file' });
+            }
+        });
+
+    } catch (error) {
+        logger.error(`Failed to download file ${fileId} for dataset ${id}`, { error });
+        if (!res.headersSent) {
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
     }
 });
 
