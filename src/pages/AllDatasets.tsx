@@ -33,7 +33,7 @@ const AllDatasetsPage = () => {
 
   useEffect(() => {
     fetchDatasets();
-  }, [sortBy, order]);
+  }, [sortBy, order, user]);
 
   const fetchDatasets = async () => {
     try {
@@ -44,6 +44,12 @@ const AllDatasetsPage = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         } : {}
       });
+      
+      // Debug: выводим информацию для отладки
+      console.log('API Response:', response.data);
+      console.log('Current user:', user);
+      console.log('All datasets:', response.data.length);
+      
       setAllDatasets(response.data);
     } catch (error) {
       console.error('Failed to fetch datasets:', error);
@@ -54,7 +60,16 @@ const AllDatasetsPage = () => {
 
   // Разделяем датасеты на публичные и приватные
   const publicDatasets = allDatasets.filter(dataset => dataset.isPublic);
-  const privateDatasets = allDatasets.filter(dataset => !dataset.isPublic && dataset.user.id === user?.id);
+  const privateDatasets = allDatasets.filter(dataset => !dataset.isPublic && dataset.user?.id === user?.id);
+  
+  // Debug: выводим информацию для отладки фильтрации
+  console.log('Public datasets:', publicDatasets.length);
+  console.log('Private datasets before filter:', allDatasets.filter(d => !d.isPublic).length);
+  console.log('Private datasets after filter:', privateDatasets.length);
+  console.log('User ID for comparison:', user?.id);
+  allDatasets.filter(d => !d.isPublic).forEach(dataset => {
+    console.log('Private dataset user ID:', dataset.user?.id, 'matches current user:', dataset.user?.id === user?.id);
+  });
 
   const formatDate = (dateString: string) => {
     const locale = i18n.language === 'ru' ? 'ru-RU' : 'en-US';
@@ -108,7 +123,7 @@ const AllDatasetsPage = () => {
               <CardContent className="pt-0">
                 <div className="space-y-3">
                   <div className="text-sm text-gray-600">
-                    <span className="font-medium">Автор:</span> 
+                    <span className="font-medium">{t('common:author')}:</span> 
                     <Link 
                       to={`/users/${dataset.user.username}`}
                       className="ml-1 text-blue-600 hover:text-blue-800"
@@ -135,7 +150,7 @@ const AllDatasetsPage = () => {
                       className="w-full"
                     >
                       <Link to={`/datasets/${dataset.id}`}>
-                        Открыть датасет
+                        {t('pages:datasets.open_dataset')}
                       </Link>
                     </Button>
                   </div>
@@ -215,7 +230,7 @@ const AllDatasetsPage = () => {
                   {publicDatasets.length}
                 </Badge>
               </TabsTrigger>
-              {user && privateDatasets.length > 0 && (
+              {user && (
                 <TabsTrigger value="private" className="relative">
                   {t('pages:datasets.private_tab')}
                   <Badge variant="outline" className="ml-2 text-xs">

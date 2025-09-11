@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,20 +26,28 @@ type SortOrder = 'ASC' | 'DESC';
 const UsersPage = () => {
   const { t, i18n } = useTranslation();
   const { user: currentUser } = useAuth();
+  const [searchParams] = useSearchParams();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortField>('username');
   const [order, setOrder] = useState<SortOrder>('ASC');
+  
+  // Получаем роль для фильтрации из URL параметров
+  const roleFilter = searchParams.get('role') as 'USER' | 'DEVELOPER' | 'ADMIN' | null;
 
   useEffect(() => {
     fetchUsers();
-  }, [sortBy, order]);
+  }, [sortBy, order, roleFilter]);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/users', {
-        params: { sortBy, order },
+        params: { 
+          sortBy, 
+          order, 
+          ...(roleFilter && { role: roleFilter })
+        },
         headers: currentUser ? {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         } : {}
@@ -87,8 +95,15 @@ const UsersPage = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">{t('pages:users.title')}</h1>
-              <p className="text-gray-600 mt-2">{t('pages:users.description')}</p>
+              <h1 className="text-4xl font-bold text-gray-900">
+                {roleFilter ? `${getRoleLabel(roleFilter)} - ${t('pages:users.title')}` : t('pages:users.title')}
+              </h1>
+              <p className="text-gray-600 mt-2">
+                {roleFilter 
+                  ? `${t('pages:users.description')} - ${t('common:filter')}: ${getRoleLabel(roleFilter)}` 
+                  : t('pages:users.description')
+                }
+              </p>
             </div>
             
             <div className="flex items-center gap-4">

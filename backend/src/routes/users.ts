@@ -11,7 +11,7 @@ const datasetRepository = AppDataSource.getRepository(Dataset);
 
 // GET /api/users - Get all users with sorting options
 router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
-  const { sortBy = 'username', order = 'ASC' } = req.query;
+  const { sortBy = 'username', order = 'ASC', role } = req.query;
   const currentUserId = req.user?.userId;
 
   try {
@@ -27,6 +27,11 @@ router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
       .loadRelationCountAndMap('user.publicDatasetCount', 'user.datasets', 'dataset', qb => 
         qb.where('dataset.isPublic = :isPublic', { isPublic: true })
       );
+
+    // Apply role filter if specified
+    if (role && ['USER', 'DEVELOPER', 'ADMIN'].includes(role as string)) {
+      query = query.where('user.role = :role', { role: role as string });
+    }
 
     // Apply sorting
     if (sortField === 'publicDatasetCount') {
