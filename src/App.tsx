@@ -8,6 +8,8 @@ import NotFound from "./pages/NotFound";
 import { AuthPage } from "./pages/Auth";
 import DatasetPage from "./pages/Dataset";
 import UserPage from "./pages/User";
+import UsersPage from "./pages/Users";
+import AllDatasetsPage from "./pages/AllDatasets";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +22,9 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/datasets" element={<AllDatasetsPage />} />
           <Route path="/datasets/:id" element={<DatasetPage />} />
+          <Route path="/users" element={<UsersPage />} />
           <Route path="/users/:username" element={<UserPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

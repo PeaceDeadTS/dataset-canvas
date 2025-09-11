@@ -19,17 +19,25 @@ const datasetRepository = AppDataSource.getRepository(Dataset);
 const userRepository = AppDataSource.getRepository(User);
 const imageRepository = AppDataSource.getRepository(DatasetImage);
 
-// GET /api/datasets - Get all visible datasets
+// GET /api/datasets - Get all visible datasets with optional sorting
 router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   const userRole = req.user?.role;
+  const { sortBy = 'createdAt', order = 'DESC' } = req.query;
 
   try {
-    const query = datasetRepository
+    const validSortFields = ['name', 'createdAt', 'imageCount', 'username'];
+    const validOrder = ['ASC', 'DESC'];
+    
+    const sortField = validSortFields.includes(sortBy as string) ? sortBy as string : 'createdAt';
+    const sortOrder = validOrder.includes((order as string)?.toUpperCase()) ? (order as string).toUpperCase() as 'ASC' | 'DESC' : 'DESC';
+
+    let query = datasetRepository
       .createQueryBuilder('dataset')
       .leftJoinAndSelect('dataset.user', 'user')
       .loadRelationCountAndMap('dataset.imageCount', 'dataset.images');
 
+    // Apply visibility filters
     if (userRole === UserRole.ADMIN) {
       // Admin sees everything
     } else if (userId) {
@@ -43,8 +51,29 @@ router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
       query.where('dataset.isPublic = :isPublic', { isPublic: true });
     }
 
-    const datasets = await query.getMany();
-    res.json(datasets);
+    // Apply sorting
+    if (sortField === 'imageCount') {
+      // For image count sorting, we need to use a subquery or handle after data retrieval
+      const datasets = await query.getMany();
+      const sorted = datasets.sort((a, b) => {
+        const aCount = (a as any).imageCount || 0;
+        const bCount = (b as any).imageCount || 0;
+        return sortOrder === 'ASC' ? aCount - bCount : bCount - aCount;
+      });
+      res.json(sorted);
+    } else if (sortField === 'username') {
+      query.orderBy('user.username', sortOrder);
+      const datasets = await query.getMany();
+      res.json(datasets);
+    } else if (sortField === 'name') {
+      query.orderBy('dataset.name', sortOrder);
+      const datasets = await query.getMany();
+      res.json(datasets);
+    } else {
+      query.orderBy('dataset.createdAt', sortOrder);
+      const datasets = await query.getMany();
+      res.json(datasets);
+    }
   } catch (error) {
     logger.error('Failed to get datasets', { error });
     res.status(500).send('Internal Server Error');
