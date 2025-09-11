@@ -6,9 +6,30 @@
 [![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)](https://expressjs.com/)
 [![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)](https://mariadb.org/)
 
-Dataset Canvas is a comprehensive web application inspired by Hugging Face's Data Studio, designed for professional dataset management and visualization. Built with modern technologies, it provides a robust platform for managing image datasets with advanced features like role-based access control, CSV data imports, and intelligent image metadata processing.
+Dataset Canvas is a comprehensive web application inspired by Hugging Face's Data Studio, designed for professional dataset management and visualization. Built with modern technologies and international accessibility in mind, it provides a robust platform for managing image datasets with advanced features like multilingual support, user management system, role-based access control, CSV data imports, and intelligent image metadata processing.
 
 ## ✨ Features
+
+### 🌍 Internationalization & Accessibility
+- **Multi-language support**: Complete interface translation for English (default) and Russian
+- **Smart language detection**: Automatic browser language detection with persistent user preferences
+- **Real-time language switching**: Dynamic language changes without page refresh
+- **TypeScript integration**: Type-safe translations with full IDE support
+- **Modern language selector**: Intuitive language switcher with flag indicators
+
+### 👥 User Management System
+- **Comprehensive user directory** (`/users`): Complete listing of all system users
+- **Advanced sorting capabilities**: Sort users by name, registration date, or public dataset count
+- **User profile cards**: Professional display with avatars, roles, and statistics
+- **Direct profile navigation**: Click-through to individual user profiles
+- **Role-based visibility**: Appropriate information display based on user permissions
+
+### 📊 Advanced Dataset Discovery
+- **All datasets page** (`/datasets`): Unified browsing interface for all available datasets
+- **Intelligent categorization**: Separate tabs for public and private datasets with URL state management
+- **Multi-criteria sorting**: Sort by name, creation date, image count, or author
+- **Enhanced filtering**: Advanced dataset organization with persistent URL parameters
+- **Seamless navigation**: Deep linking support with URL state preservation
 
 ### 🔐 Authentication & Authorization
 - **Secure JWT-based authentication** with token management
@@ -35,12 +56,21 @@ Dataset Canvas is a comprehensive web application inspired by Hugging Face's Dat
 - **Optimized table layout** with responsive column sizing
 - **Sticky header/footer interface** - dataset info stays visible while scrolling through images
 
-### 🎨 Modern User Interface
+### 🎨 Modern User Interface & Navigation
+- **Revolutionary navigation system**: Organized menu structure with logical grouping (Main, Datasets, Community)
+- **Enhanced visual design**: Modern dropdown menus with icons, descriptions, and contextual help
+- **Unified interface**: Consistent navigation throughout the entire application
 - **Responsive design** with Tailwind CSS and shadcn/ui components
 - **Sticky layout system**: Header and pagination remain fixed while table scrolls
 - **Breadcrumb navigation** for easy navigation between views
 - **Full-screen utilization** for optimal data visualization
 - **Loading states and error handling** throughout the application
+
+### ⚡ Performance Optimization
+- **Lazy loading implementation**: All pages load on-demand using React.lazy() and Suspense
+- **Significant bundle reduction**: Main bundle size reduced from 504KB to 313KB (37% improvement)
+- **Intelligent code splitting**: Automatic chunk optimization for faster loading
+- **Progressive loading**: Improved initial load times with optimized resource distribution
 
 ### 🛠️ Technical Excellence
 - **Database migrations** for safe schema management
@@ -68,11 +98,15 @@ Dataset Canvas is a comprehensive web application inspired by Hugging Face's Dat
 
 2. **Install dependencies:**
    ```bash
+   # Frontend dependencies (including i18n support)
    # Using Bun (recommended)
    bun install
    
    # Or using npm
    npm install
+   
+   # Install internationalization dependencies if not already included
+   npm install react-i18next i18next i18next-browser-languagedetector
    
    # Backend dependencies
    cd backend
@@ -134,9 +168,11 @@ Start both servers simultaneously:
 
 ### Frontend
 - **Build Tool**: Vite for fast development and optimized builds
-- **Framework**: React 18 with TypeScript
+- **Framework**: React 18 with TypeScript and lazy loading optimization
 - **Styling**: Tailwind CSS with shadcn/ui component library
-- **Routing**: React Router DOM with URL parameter management
+- **Routing**: React Router DOM with URL parameter management and deep linking
+- **Internationalization**: react-i18next with browser detection and TypeScript integration
+- **Performance**: Intelligent code splitting and lazy loading for optimal bundle size
 - **HTTP Client**: Axios with JWT token management
 - **State Management**: Custom hooks with localStorage persistence
 - **Testing**: Vitest with React Testing Library and JSDOM
@@ -155,16 +191,23 @@ Start both servers simultaneously:
 - `POST /api/auth/login` - User authentication
 
 ### Dataset Endpoints
-- `GET /api/datasets` - List datasets (with role-based filtering)
+- `GET /api/datasets` - List datasets (with role-based filtering and sorting)
 - `GET /api/datasets/:id` - Get dataset details with paginated images
 - `POST /api/datasets` - Create new dataset (Developer/Admin)
 - `PUT /api/datasets/:id` - Update dataset (Owner/Admin)
 - `DELETE /api/datasets/:id` - Delete dataset (Owner/Admin)
 - `POST /api/datasets/:id/upload` - Upload CSV data (Owner/Admin)
 
+### User Management Endpoints
+- `GET /api/users` - List all users with sorting options (sortBy: username/createdAt/publicDatasetCount)
+- `GET /api/users/:username` - Get user profile and their datasets
+
 ### Query Parameters
 - `?page=N` - Pagination page number
 - `?limit=N` - Items per page (10, 25, 50, 100)
+- `?sortBy=field` - Sorting field (username/createdAt/publicDatasetCount for users; name/createdAt/imageCount/username for datasets)
+- `?order=ASC/DESC` - Sort order (ascending or descending)
+- `?tab=public/private` - Dataset tab selection (for `/datasets` page)
 
 ## 🧪 Testing
 
@@ -189,15 +232,34 @@ dataset-canvas/
 ├── src/                    # Frontend source code
 │   ├── components/         # React components
 │   │   ├── ui/            # shadcn/ui components
-│   │   └── ...            # Custom components
+│   │   ├── AppHeader.tsx   # Main navigation header
+│   │   ├── DatasetBreadcrumb.tsx  # Dataset navigation
+│   │   ├── LanguageSelector.tsx   # Language switcher
+│   │   └── ...            # Other custom components
 │   ├── pages/             # Route components
+│   │   ├── Users.tsx      # Users directory page
+│   │   ├── AllDatasets.tsx # All datasets page
+│   │   └── ...            # Other page components
+│   ├── locales/           # Internationalization files
+│   │   ├── en/           # English translations
+│   │   │   ├── common.json
+│   │   │   ├── navigation.json
+│   │   │   └── pages.json
+│   │   └── ru/           # Russian translations
+│   │       ├── common.json
+│   │       ├── navigation.json
+│   │       └── pages.json
 │   ├── hooks/             # Custom React hooks
 │   ├── lib/               # Utility functions
+│   │   └── i18n.ts       # Internationalization config
 │   └── types/             # TypeScript type definitions
+│       └── i18next.d.ts   # i18n type definitions
 ├── backend/               # Backend source code
 │   ├── src/
 │   │   ├── entity/        # TypeORM entities
 │   │   ├── routes/        # Express routes
+│   │   │   ├── users.ts   # User management endpoints
+│   │   │   └── datasets.ts # Dataset endpoints
 │   │   ├── middleware/    # Custom middleware
 │   │   └── types/         # Backend type definitions
 │   └── ...
