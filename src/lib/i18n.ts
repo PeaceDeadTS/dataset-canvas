@@ -6,10 +6,12 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import enCommon from '@/locales/en/common.json';
 import enNavigation from '@/locales/en/navigation.json';
 import enPages from '@/locales/en/pages.json';
+import enAdmin from '@/locales/en/admin.json';
 
 import ruCommon from '@/locales/ru/common.json';
 import ruNavigation from '@/locales/ru/navigation.json';
 import ruPages from '@/locales/ru/pages.json';
+import ruAdmin from '@/locales/ru/admin.json';
 
 // Ресурсы переводов
 const resources = {
@@ -17,11 +19,13 @@ const resources = {
     common: enCommon,
     navigation: enNavigation,
     pages: enPages,
+    admin: enAdmin,
   },
   ru: {
     common: ruCommon,
     navigation: ruNavigation,
     pages: ruPages,
+    admin: ruAdmin,
   },
 } as const;
 
@@ -56,7 +60,7 @@ i18n
 
     // Настройки namespace
     defaultNS: 'common',
-    ns: ['common', 'navigation', 'pages'],
+    ns: ['common', 'navigation', 'pages', 'admin'],
 
     // Отладка (только в разработке)
     debug: import.meta.env.DEV,

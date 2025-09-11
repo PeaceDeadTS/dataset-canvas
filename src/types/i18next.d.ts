@@ -4,6 +4,7 @@ import 'react-i18next';
 import type common from '@/locales/en/common.json';
 import type navigation from '@/locales/en/navigation.json';
 import type pages from '@/locales/en/pages.json';
+import type admin from '@/locales/en/admin.json';
 
 // Декларируем модуль для типизации
 declare module 'react-i18next' {
@@ -13,6 +14,7 @@ declare module 'react-i18next' {
       common: typeof common;
       navigation: typeof navigation;
       pages: typeof pages;
+      admin: typeof admin;
     };
   }
 }
