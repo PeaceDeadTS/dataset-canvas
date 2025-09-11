@@ -48,9 +48,9 @@ The project is architected with a distinct frontend and backend.
     *   **`checkJwtOptional`**: Allows optional authentication, properly sets `req.user` for authenticated requests while allowing anonymous access, essential for private dataset visibility logic
 *   **Token Management**: Upon successful login, the server issues a token containing the user's `id`, `username`, `email`, and `role`. The client stores this token in `localStorage` and includes it in the `Authorization` header for all subsequent API requests.
 *   **Role-Based Access Control (RBAC)**: The system defines three user roles with dataset-specific permissions:
-    1.  `Administrator`: Full control over all users and datasets, including private datasets of other users
+    1.  `Administrator`: Full control over all users and datasets, including private datasets of other users, access to admin panel
     2.  `Developer`: Can create datasets and manage their own (both public and private)
-    3.  `User`: Can view public datasets only
+    3.  `User`: Can create and view datasets, access to public datasets and their own private datasets
 *   **Dataset Visibility Rules**:
     *   **Public datasets**: Visible to all users (authenticated and anonymous)
     *   **Private datasets**: Only visible to the dataset owner and administrators
@@ -70,13 +70,19 @@ The project is architected with a distinct frontend and backend.
     *   **Dynamic Language Switching**: Real-time language switching with persistent storage
 *   **State Management**: Global user state is managed via a custom `useAuth` hook that decodes the JWT with proper token validation and expiration handling. Component-level state is managed with `useState` and `useEffect`. The auth state properly synchronizes with dataset visibility logic. URL state management through React Router for pagination and filtering.
 *   **Routing**: React Router DOM v6 is used for client-side routing with URL parameter management, enabling deep linking to specific pages and states (e.g., `?p=22&limit=50&tab=public`). Enhanced routing includes dedicated pages for users list and all datasets with URL state management.
-*   **HTTP Client**: Axios with interceptors for JWT token management and consistent API communication patterns.
+*   **HTTP Client**: Axios with advanced interceptors for automatic JWT token management, request/response handling, and consistent API communication patterns. The axios instance automatically includes authentication headers and handles token refresh.
 *   **Navigation System**: Revolutionary navigation menu architecture with:
     *   **Organized Menu Structure**: Logical grouping into sections (Main, Datasets, Community) with descriptive dropdown menus
     *   **Enhanced User Experience**: Modern navigation menu with icons, descriptions, and contextual links
     *   **Unified Interface**: Consistent navigation throughout all pages including dataset details
 *   **User Experience**: Modern sticky layout system with fixed header/footer, intuitive breadcrumb navigation, loading states, error boundaries, and responsive modal dialogs.
 *   **Shared Types**: To ensure consistency and prevent data-related bugs, the frontend uses a centralized file for shared TypeScript types (`src/types/index.ts`). All major data structures, like `User` and `Dataset`, are defined here and imported throughout the application.
+*   **Administrative Panel**: Comprehensive admin interface (`/admin`) available exclusively to Administrator users with:
+    *   **User Management**: Change user roles (Administrator, Developer, User) and delete users from the system
+    *   **Dataset Management**: Force delete any datasets regardless of ownership
+    *   **Safety Controls**: Admins cannot modify their own accounts to prevent lockouts
+    *   **Audit Logging**: All administrative actions are logged with details for security tracking
+    *   **Full Localization**: Complete translation support with proper i18n integration
 
 ### 2.4. User Experience & Interface Design
 
@@ -133,6 +139,20 @@ During development, several critical issues were identified and resolved:
 *   **User Role Filtering Enhancement**: Resolved issue where filtering users by role (e.g., `/users?role=ADMIN`, `/users?role=DEVELOPER`) returned "No users found" due to incorrect role mapping between URL parameters and database enum values. Implemented proper role mapping system to convert URL parameters (`ADMIN`, `DEVELOPER`, `USER`) to database enum values (`Administrator`, `Developer`, `User`).
 *   **Dataset Organization Improvement**: Enhanced the datasets page structure by implementing a three-tab system instead of two: "Public" (all public datasets), "My Public" (user's own public datasets), and "My Private" (user's private datasets). This provides clearer dataset organization and easier navigation for users to manage their own content separately from browsing all available datasets.
 *   **Navigation Menu Enhancement**: Added missing navigation option for Regular Users (`/users?role=USER`) to complement existing Administrator and Developer filters, providing complete role-based user browsing capabilities through the Community menu.
+*   **Administrative Panel Implementation**: Developed comprehensive admin panel with complete user and dataset management capabilities:
+    *   **User Role Management**: Administrators can change user roles and delete users with proper safety controls
+    *   **Dataset Force Deletion**: Admins can delete any dataset regardless of ownership through dedicated admin endpoint
+    *   **Security Safeguards**: Implemented protection against self-modification to prevent admin lockout scenarios
+    *   **Audit Trail**: All administrative actions are properly logged with user details and action timestamps
+*   **User Permission Enhancement**: Modified dataset creation permissions to allow all authenticated users (including User role) to create datasets, removing the previous Developer-only restriction for better accessibility.
+*   **Authentication System Overhaul**: Resolved JWT token management issues by implementing comprehensive axios interceptor system:
+    *   **Automatic Token Injection**: All API requests automatically include JWT tokens in Authorization headers
+    *   **Token Refresh Handling**: Automatic token refresh and storage from server responses
+    *   **401 Error Handling**: Automatic logout and redirect on authentication failures
+    *   **Centralized Configuration**: Single axios instance with consistent API communication patterns
+*   **URL Duplication Bug**: Fixed critical bug where API URLs were duplicated (e.g., `/api/api/datasets`) due to conflicting base URL configurations, causing 404 errors.
+*   **React Navigation Error**: Resolved React error #300 during logout by replacing window.location.href with proper React Router navigation, preventing component lifecycle conflicts.
+*   **Global Authentication Context**: Implemented centralized AuthContext to replace multiple useAuth hook instances, ensuring consistent user state across all components and preventing authentication desynchronization issues.
 
 ---
 
@@ -211,11 +231,29 @@ This section provides a summary of the core features implemented in the applicat
     *   Persistent footer with always-accessible pagination controls
     *   Responsive design that maximizes screen real estate utilization
     *   Enhanced data visualization with professional table layout and interactive elements
+*   **Administrative Panel System**: Complete administrative control interface for system management:
+    *   **Comprehensive User Management**: View all users with advanced filtering and sorting, change user roles (Administrator/Developer/User), and delete users with confirmation dialogs
+    *   **Dataset Administration**: Force delete any dataset in the system regardless of ownership with proper confirmation and logging
+    *   **Security Features**: Built-in safeguards prevent administrators from modifying their own accounts to avoid system lockouts
+    *   **Audit and Logging**: All administrative actions are tracked and logged with detailed information for security and compliance
+    *   **Professional UI**: Modern tabbed interface with data tables, role badges, and intuitive action buttons
+    *   **Complete Localization**: Full translation support for all admin panel features in English and Russian
+*   **Enhanced Authentication Architecture**: Robust authentication system with advanced JWT management:
+    *   **Centralized Auth Context**: Single source of truth for user authentication state across all components using React Context
+    *   **Automatic Token Management**: Axios interceptors automatically handle JWT token injection and refresh cycles
+    *   **Smart Error Handling**: Automatic logout and redirect on authentication failures with proper error messaging
+    *   **Session Persistence**: Secure token storage with automatic expiration handling and validation
+*   **Universal Dataset Creation**: Democratized dataset creation allowing all authenticated users to create and manage datasets:
+    *   **Role Accessibility**: Removed Developer-only restriction, now all user roles can create datasets
+    *   **Consistent UI**: Updated all interface elements to reflect the new permission model
+    *   **Proper Authorization**: Backend validation ensures only authenticated users can create datasets while maintaining security
 
 ---
 
 ## Document Version History
 
-*Latest Update: January 2025 - Major feature expansion including comprehensive internationalization system with localization bug fixes, enhanced user management with role-based filtering, advanced three-tab dataset discovery system, performance optimization with lazy loading, and revolutionary navigation architecture with complete user role coverage*
+*Latest Update: January 2025 - Administrative Panel Implementation: Added comprehensive admin panel with complete user and dataset management capabilities, enhanced authentication architecture with centralized JWT management and axios interceptors, democratized dataset creation for all authenticated users, resolved critical authentication bugs and URL duplication issues, implemented centralized authentication context for consistent user state management across all components*
+
+*Previous Update: January 2025 - Major feature expansion including comprehensive internationalization system with localization bug fixes, enhanced user management with role-based filtering, advanced three-tab dataset discovery system, performance optimization with lazy loading, and revolutionary navigation architecture with complete user role coverage*
 
 *December 2024 - Added Modern Interface Enhancements including sticky layout system and improved UX patterns*

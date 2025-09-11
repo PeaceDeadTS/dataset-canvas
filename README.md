@@ -6,7 +6,26 @@
 [![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)](https://expressjs.com/)
 [![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)](https://mariadb.org/)
 
-Dataset Canvas is a comprehensive web application inspired by Hugging Face's Data Studio, designed for professional dataset management and visualization. Built with modern technologies and international accessibility in mind, it provides a robust platform for managing image datasets with advanced features like multilingual support, user management system, role-based access control, CSV data imports, and intelligent image metadata processing.
+Dataset Canvas is a comprehensive web application inspired by Hugging Face's Data Studio, designed for professional dataset management and visualization. Built with modern technologies and international accessibility in mind, it provides a robust platform for managing image datasets with advanced features like multilingual support, comprehensive administrative panel, enhanced authentication architecture, role-based access control, CSV data imports, and intelligent image metadata processing.
+
+## 🆕 Latest Updates (January 2025)
+
+### ⚡ Administrative Panel
+- **New Admin Interface**: Comprehensive `/admin` panel exclusively for administrators
+- **Complete User Management**: Change roles, delete users, view system statistics
+- **Dataset Administration**: Force delete any dataset with proper audit logging
+- **Security Features**: Built-in safeguards prevent admin account lockouts
+
+### 🔐 Enhanced Authentication
+- **Centralized Auth Context**: Unified user state management across all components
+- **Automatic Token Management**: Axios interceptors handle JWT tokens seamlessly
+- **Universal Dataset Creation**: All authenticated users can now create datasets
+- **Smart Error Handling**: Automatic logout and redirect on authentication failures
+
+### 🐛 Critical Bug Fixes
+- **Fixed URL Duplication**: Resolved `/api/api/datasets` 404 errors from conflicting configurations
+- **React Navigation Error**: Fixed logout errors by implementing proper React Router navigation
+- **Authentication Sync**: Resolved user state inconsistencies between components
 
 ## ✨ Features
 
@@ -35,19 +54,41 @@ Dataset Canvas is a comprehensive web application inspired by Hugging Face's Dat
 - **Seamless navigation**: Deep linking support with URL state preservation
 
 ### 🔐 Authentication & Authorization
-- **Secure JWT-based authentication** with token management
+- **Secure JWT-based authentication** with advanced token management and axios interceptors
+- **Centralized Authentication Context**: Global user state management with React Context
+- **Automatic Token Handling**: JWT tokens automatically included in all API requests
 - **Role-Based Access Control (RBAC)**:
-  - **Administrator**: Full control over all datasets and users
+  - **Administrator**: Full control over all datasets and users, access to admin panel
   - **Developer**: Can create datasets and manage their own (public/private)
-  - **User**: Read-only access to public datasets
+  - **User**: Can create datasets and view public content, manage own private datasets
 - **First user auto-promotion** to Administrator role
+- **Smart Session Management**: Automatic logout and redirect on authentication failures
+
+### ⚡ Administrative Panel
+- **Comprehensive Admin Interface** (`/admin`): Exclusive administrative control panel for system management
+- **User Management System**:
+  - View all users with advanced filtering and sorting capabilities
+  - Change user roles (Administrator, Developer, User) with confirmation dialogs
+  - Delete users from the system with proper safety controls
+  - Protection against self-modification to prevent admin lockouts
+- **Dataset Administration**:
+  - Force delete any dataset regardless of ownership
+  - Comprehensive dataset overview with owner information and statistics
+  - Confirmation dialogs and audit logging for all administrative actions
+- **Security & Compliance**:
+  - All administrative actions are logged with detailed audit trails
+  - Built-in safeguards prevent system lockout scenarios
+  - Professional UI with modern tabbed interface and data tables
+- **Full Localization**: Complete translation support for all admin features
 
 ### 📊 Dataset Management
-- **Complete CRUD operations** for datasets
-- **Public/Private dataset support** with visibility controls
+- **Universal Dataset Creation**: All authenticated users can create and manage datasets
+- **Complete CRUD operations** for datasets with proper authorization controls
+- **Public/Private dataset support** with intelligent visibility controls
 - **CSV data upload** with intelligent parsing (filename, url, width, height, prompt columns)
 - **Advanced pagination system** with URL parameter support (`?p=22`, customizable items per page: 10/25/50/100)
 - **Smart dataset organization** with separate sections for private and public datasets
+- **Administrative Override**: Admins can manage any dataset regardless of ownership
 
 ### 🖼️ Advanced Image Data Display
 - **Interactive image previews** with click-to-expand modals
@@ -76,12 +117,15 @@ Dataset Canvas is a comprehensive web application inspired by Hugging Face's Dat
 - **Progressive loading**: Improved initial load times with optimized resource distribution
 
 ### 🛠️ Technical Excellence
-- **Database migrations** for safe schema management
+- **Advanced Authentication Architecture**: Centralized auth context with React Context API for consistent state management
+- **Automated HTTP Management**: Axios interceptors for automatic JWT token injection, refresh, and error handling
+- **Database migrations** for safe schema management with TypeORM
 - **Comprehensive testing** with Vitest for both frontend and backend
-- **Type-safe development** with TypeScript throughout
+- **Type-safe development** with TypeScript throughout and complete i18n integration
 - **Production-ready deployment** with systemd service configuration
-- **Centralized logging** with Winston
-- **Development tools**: ESLint, testing utilities, and development servers
+- **Centralized logging** with Winston and detailed audit trails for admin actions
+- **Security-first design**: Built-in safeguards, input validation, and secure session management
+- **Development tools**: ESLint, testing utilities, development servers, and comprehensive error handling
 
 ## 🚀 Quick Start
 
