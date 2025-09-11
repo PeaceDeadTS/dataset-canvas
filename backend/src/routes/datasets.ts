@@ -195,7 +195,8 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
         }
 
         // Create uploads directory if it doesn't exist
-        const uploadsDir = path.join(process.cwd(), 'uploads');
+        const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
+        logger.info(`Creating uploads directory at: ${uploadsDir}`);
         if (!fs.existsSync(uploadsDir)) {
             fs.mkdirSync(uploadsDir, { recursive: true });
         }
@@ -204,22 +205,6 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
         const fileExtension = path.extname(req.file.originalname) || '.csv';
         const uniqueFilename = `${dataset.id}_${Date.now()}_${randomUUID()}${fileExtension}`;
         const filePath = path.join(uploadsDir, uniqueFilename);
-
-        // Save the CSV file to disk
-        fs.writeFileSync(filePath, req.file.buffer);
-
-        // Save file metadata to database
-        const datasetFile = new DatasetFile();
-        datasetFile.filename = uniqueFilename;
-        datasetFile.originalName = req.file.originalname;
-        datasetFile.mimeType = req.file.mimetype;
-        datasetFile.size = req.file.size;
-        datasetFile.filePath = filePath;
-        datasetFile.description = 'Original CSV upload';
-        datasetFile.dataset = dataset;
-        datasetFile.datasetId = dataset.id;
-
-        await fileRepository.save(datasetFile);
 
         // Overwrite Logic - delete existing images
         await imageRepository.delete({ dataset: { id: dataset.id } });
@@ -250,7 +235,25 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
             })
             .on('end', async () => {
                 try {
+                    // Save images to database
                     await imageRepository.save(images);
+                    
+                    // Save the CSV file to disk after successful processing
+                    fs.writeFileSync(filePath, req.file.buffer);
+
+                    // Save file metadata to database
+                    const datasetFile = new DatasetFile();
+                    datasetFile.filename = uniqueFilename;
+                    datasetFile.originalName = req.file.originalname;
+                    datasetFile.mimeType = req.file.mimetype;
+                    datasetFile.size = req.file.size;
+                    datasetFile.filePath = filePath;
+                    datasetFile.description = 'Original CSV upload';
+                    datasetFile.dataset = dataset;
+                    datasetFile.datasetId = dataset.id;
+
+                    await fileRepository.save(datasetFile);
+                    
                     logger.info(`Successfully uploaded CSV file ${uniqueFilename} and ${images.length} images to dataset ${dataset.name}`);
                     res.status(201).send({ 
                         message: `Successfully uploaded ${images.length} images to dataset ${dataset.name}`,
@@ -261,6 +264,10 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
                     logger.error(`DB error during CSV save for dataset ${id}`, { error: dbError });
                     res.status(500).send('Error saving images to database.');
                 }
+            })
+            .on('error', (csvError) => {
+                logger.error(`CSV parsing error for dataset ${id}`, { error: csvError });
+                res.status(400).send('Error parsing CSV file.');
             });
     } catch (error) {
         logger.error(`Upload failed for dataset ${id}`, { error });
