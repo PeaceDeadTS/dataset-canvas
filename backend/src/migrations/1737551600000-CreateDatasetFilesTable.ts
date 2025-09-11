@@ -1,84 +1,28 @@
-import { MigrationInterface, QueryRunner, Table, Index } from 'typeorm';
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateDatasetFilesTable1737551600000 implements MigrationInterface {
     name = 'CreateDatasetFilesTable1737551600000'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        // Create dataset_files table
-        await queryRunner.createTable(new Table({
-            name: 'dataset_files',
-            columns: [
-                {
-                    name: 'id',
-                    type: 'int',
-                    isPrimary: true,
-                    isGenerated: true,
-                    generationStrategy: 'increment',
-                },
-                {
-                    name: 'filename',
-                    type: 'varchar',
-                    length: '255',
-                },
-                {
-                    name: 'originalName',
-                    type: 'varchar',
-                    length: '255',
-                },
-                {
-                    name: 'mimeType',
-                    type: 'varchar',
-                    length: '100',
-                },
-                {
-                    name: 'size',
-                    type: 'int',
-                },
-                {
-                    name: 'filePath',
-                    type: 'varchar',
-                    length: '500',
-                },
-                {
-                    name: 'description',
-                    type: 'text',
-                    isNullable: true,
-                },
-                {
-                    name: 'createdAt',
-                    type: 'datetime',
-                    default: 'CURRENT_TIMESTAMP',
-                },
-                {
-                    name: 'updatedAt',
-                    type: 'datetime',
-                    default: 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
-                },
-                {
-                    name: 'datasetId',
-                    type: 'uuid',
-                },
-            ],
-            foreignKeys: [
-                {
-                    name: 'FK_dataset_files_dataset',
-                    columnNames: ['datasetId'],
-                    referencedTableName: 'datasets',
-                    referencedColumnNames: ['id'],
-                    onDelete: 'CASCADE',
-                },
-            ],
-            indices: [
-                {
-                    name: 'IDX_dataset_files_datasetId',
-                    columnNames: ['datasetId'],
-                },
-            ],
-        }), true);
+        await queryRunner.query(`CREATE TABLE \`dataset_files\` (
+            \`id\` int NOT NULL AUTO_INCREMENT, 
+            \`filename\` varchar(255) NOT NULL, 
+            \`originalName\` varchar(255) NOT NULL, 
+            \`mimeType\` varchar(100) NOT NULL, 
+            \`size\` int NOT NULL, 
+            \`filePath\` varchar(500) NOT NULL, 
+            \`description\` text NULL, 
+            \`createdAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), 
+            \`updatedAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), 
+            \`datasetId\` uuid NULL, 
+            PRIMARY KEY (\`id\`)
+        ) ENGINE=InnoDB`);
+        
+        await queryRunner.query(`ALTER TABLE \`dataset_files\` ADD CONSTRAINT \`FK_dataset_files_dataset\` FOREIGN KEY (\`datasetId\`) REFERENCES \`datasets\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        // Drop dataset_files table
-        await queryRunner.dropTable('dataset_files');
+        await queryRunner.query(`ALTER TABLE \`dataset_files\` DROP FOREIGN KEY \`FK_dataset_files_dataset\``);
+        await queryRunner.query(`DROP TABLE \`dataset_files\``);
     }
 }
