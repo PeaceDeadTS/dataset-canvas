@@ -18,6 +18,8 @@
   "users_all_description": "Список всех пользователей системы с информацией о их активности",
   "users_developers": "Разработчики",
   "users_developers_description": "Пользователи с правами создания датасетов",
+  "users_regular": "Обычные пользователи",
+  "users_regular_description": "Обычные пользователи системы",
   "users_admins": "Администраторы",
   "users_admins_description": "Администраторы системы с полными правами",
   "users_my_profile": "Мой профиль",

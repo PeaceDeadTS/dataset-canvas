@@ -172,6 +172,12 @@ export function AppHeader() {
                       {t('navigation:users_developers_description')}
                     </ListItem>
                     <ListItem
+                      title={t('navigation:users_regular')}
+                      href="/users?role=USER"
+                    >
+                      {t('navigation:users_regular_description')}
+                    </ListItem>
+                    <ListItem
                       title={t('navigation:users_admins')}
                       href="/users?role=ADMIN"
                     >

@@ -18,6 +18,8 @@
   "users_all_description": "List of all system users with their activity information", 
   "users_developers": "Developers",
   "users_developers_description": "Users with dataset creation rights",
+  "users_regular": "Regular Users",
+  "users_regular_description": "Regular system users", 
   "users_admins": "Administrators", 
   "users_admins_description": "System administrators with full rights",
   "users_my_profile": "My Profile",
