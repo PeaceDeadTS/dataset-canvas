@@ -195,7 +195,7 @@ const DatasetPage = () => {
           </div>
 
           {/* Sticky Footer - Pagination */}
-          {images.length > 0 && (searchParams.get('tab') === 'data-studio' || !searchParams.get('tab')) && (
+          {images.length > 0 && searchParams.get('tab') === 'data-studio' && (
             <div className="flex-none bg-background border-t">
               <div className="container mx-auto px-4 py-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
                 <div className="flex flex-col items-center gap-4">
