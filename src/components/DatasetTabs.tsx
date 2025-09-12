@@ -90,7 +90,7 @@ export const DatasetTabs: React.FC<DatasetTabsProps> = ({
             <DatasetCardTab dataset={dataset} canUpload={canUpload} onUploadSuccess={onUploadSuccess} />
           </TabsContent>
           
-          <TabsContent value="data-studio" className="mt-0 h-full overflow-hidden flex flex-col">
+          <TabsContent value="data-studio" className="mt-0 h-full overflow-hidden">
             <DataStudioTab
               dataset={dataset}
               images={images}

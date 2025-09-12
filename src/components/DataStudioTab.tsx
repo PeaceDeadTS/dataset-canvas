@@ -146,7 +146,7 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
   };
 
   return (
-    <>
+    <div className="h-full flex flex-col">
       {/* Header */}
       <div className="flex-none bg-background border-b">
         <div className="container mx-auto px-4 py-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
@@ -337,6 +337,6 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
           />
         </div>
       )}
-    </>
+    </div>
   );
 };
