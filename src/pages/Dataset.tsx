@@ -8,6 +8,8 @@ import { DatasetTabs } from '@/components/DatasetTabs';
 import { Dataset, DatasetImage } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 const API_URL = '/datasets';
@@ -117,6 +119,41 @@ const DatasetPage = () => {
     updateCurrentPage(1);
   };
 
+  const getPaginationGroup = () => {
+    const pageCount = totalPages;
+    const currentPageLocal = currentPage;
+    const siblings = 2;
+    const totalPageNumbers = siblings * 2 + 3;
+
+    if (pageCount <= totalPageNumbers) {
+      return Array.from({ length: pageCount }, (_, i) => i + 1);
+    }
+
+    const leftSiblingIndex = Math.max(currentPageLocal - siblings, 1);
+    const rightSiblingIndex = Math.min(currentPageLocal + siblings, pageCount);
+
+    const shouldShowLeftDots = leftSiblingIndex > 2;
+    const shouldShowRightDots = rightSiblingIndex < pageCount - 1;
+
+    if (!shouldShowLeftDots && shouldShowRightDots) {
+      const leftItemCount = 3 + 2 * siblings;
+      const leftRange = Array.from({ length: leftItemCount }, (_, i) => i + 1);
+      return [...leftRange, '...', pageCount];
+    }
+
+    if (shouldShowLeftDots && !shouldShowRightDots) {
+      const rightItemCount = 3 + 2 * siblings;
+      const rightRange = Array.from({ length: rightItemCount }, (_, i) => pageCount - rightItemCount + 1 + i);
+      return [1, '...', ...rightRange];
+    }
+
+    if (shouldShowLeftDots && shouldShowRightDots) {
+      const middleRange = Array.from({ length: rightSiblingIndex - leftSiblingIndex + 1 }, (_, i) => leftSiblingIndex + i);
+      return [1, '...', ...middleRange, '...', pageCount];
+    }
+    return [];
+  };
+
   const canUpload = user && dataset && (user.role === 'Administrator' || (dataset.user && user.id === dataset.user.id));
 
   return (
@@ -140,19 +177,93 @@ const DatasetPage = () => {
 
       {/* Main Content with Tabs */}
       {dataset && (
-        <DatasetTabs
-          dataset={dataset}
-          images={images}
-          imagesLoading={imagesLoading}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalImages={totalImages}
-          limit={limit}
-          canUpload={canUpload}
-          onPageChange={updateCurrentPage}
-          onLimitChange={updateLimit}
-          onUploadSuccess={handleUploadSuccess}
-        />
+        <>
+          <div className="flex-1 overflow-hidden">
+            <DatasetTabs
+              dataset={dataset}
+              images={images}
+              imagesLoading={imagesLoading}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalImages={totalImages}
+              limit={limit}
+              canUpload={canUpload}
+              onPageChange={updateCurrentPage}
+              onLimitChange={updateLimit}
+              onUploadSuccess={handleUploadSuccess}
+            />
+          </div>
+
+          {/* Sticky Footer - Pagination */}
+          {images.length > 0 && (searchParams.get('tab') === 'data-studio' || !searchParams.get('tab')) && (
+            <div className="flex-none bg-background border-t">
+              <div className="container mx-auto px-4 py-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">{t('pages:dataset.items_per_page')}:</span>
+                    <Select value={limit.toString()} onValueChange={(value) => updateLimit(parseInt(value, 10))}>
+                      <SelectTrigger className="w-[70px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="25">25</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                   <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            updateCurrentPage(Math.max(currentPage - 1, 1));
+                          }}
+                          className={currentPage === 1 ? 'pointer-events-none text-muted-foreground' : ''}
+                        />
+                      </PaginationItem>
+
+                      {getPaginationGroup().map((item, index) => (
+                        <PaginationItem key={index}>
+                          {item === '...' ? (
+                            <span className="px-4 py-2">...</span>
+                          ) : (
+                            <PaginationLink
+                              href="#"
+                              isActive={currentPage === item}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                updateCurrentPage(item as number);
+                              }}
+                            >
+                              {item}
+                            </PaginationLink>
+                          )}
+                        </PaginationItem>
+                      ))}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            updateCurrentPage(Math.min(currentPage + 1, totalPages));
+                          }}
+                          className={currentPage === totalPages ? 'pointer-events-none text-muted-foreground' : ''}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
