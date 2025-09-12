@@ -76,8 +76,7 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
   };
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="container mx-auto px-4 py-6" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+    <div className="container mx-auto px-4 py-6" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
         <div className="space-y-6">
           {/* Files Header */}
           <div className="space-y-2">
@@ -164,7 +163,6 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
             </CardContent>
           </Card>
         </div>
-      </div>
     </div>
   );
 };

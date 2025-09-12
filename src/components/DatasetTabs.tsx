@@ -85,12 +85,12 @@ export const DatasetTabs: React.FC<DatasetTabsProps> = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-hidden">
-          <TabsContent value="dataset-card" className="mt-0 h-full">
+        <div className="flex-1 flex flex-col min-h-0">
+          <TabsContent value="dataset-card" className="mt-0 flex-1 overflow-auto">
             <DatasetCardTab dataset={dataset} canUpload={canUpload} onUploadSuccess={onUploadSuccess} />
           </TabsContent>
           
-          <TabsContent value="data-studio" className="mt-0 h-full">
+          <TabsContent value="data-studio" className="mt-0 flex-1 flex flex-col min-h-0">
             <DataStudioTab
               dataset={dataset}
               images={images}
@@ -104,11 +104,11 @@ export const DatasetTabs: React.FC<DatasetTabsProps> = ({
             />
           </TabsContent>
           
-          <TabsContent value="files-versions" className="mt-0 h-full">
+          <TabsContent value="files-versions" className="mt-0 flex-1 overflow-auto">
             <FilesAndVersionsTab dataset={dataset} />
           </TabsContent>
           
-          <TabsContent value="community" className="mt-0 h-full">
+          <TabsContent value="community" className="mt-0 flex-1 overflow-auto">
             <CommunityTab dataset={dataset} />
           </TabsContent>
         </div>
