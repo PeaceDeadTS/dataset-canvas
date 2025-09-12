@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCreateDataset } from "@/contexts/CreateDatasetContext";
 import { Dataset } from "@/types";
 import axios from "@/lib/axios";
 import { useTranslation } from 'react-i18next';
+import { PlusCircle } from "lucide-react";
 
 type SortField = 'name' | 'createdAt' | 'imageCount' | 'username';
 type SortOrder = 'ASC' | 'DESC';
@@ -22,6 +24,7 @@ interface DatasetWithImageCount extends Dataset {
 const AllDatasetsPage = () => {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const { openDialog } = useCreateDataset();
   const [searchParams, setSearchParams] = useSearchParams();
   const [allDatasets, setAllDatasets] = useState<DatasetWithImageCount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,6 +163,12 @@ const AllDatasetsPage = () => {
             </div>
             
             <div className="flex items-center gap-4">
+              {user && (
+                <Button onClick={openDialog} size="lg">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  {t('pages:create_dataset.title')}
+                </Button>
+              )}
               <div className="flex items-center gap-2">
                 <label className="text-sm font-medium text-gray-700">{t('pages:datasets.sort_by')}</label>
                 <Select value={sortBy} onValueChange={(value: SortField) => setSortBy(value)}>

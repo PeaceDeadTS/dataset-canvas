@@ -24,6 +24,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCreateDataset } from "@/contexts/CreateDatasetContext";
 import { cn } from "@/lib/utils";
 import { Database, Users, Home, BarChart3, Settings, Shield } from "lucide-react";
 import { LanguageSelector } from './LanguageSelector';
@@ -55,8 +56,45 @@ const ListItem = ({ className, title, href, children, ...props }: {
   );
 };
 
+const CreateDatasetItem = ({ className, title, children, ...props }: {
+  className?: string;
+  title: string;
+  children: React.ReactNode;
+}) => {
+  const { user } = useAuth();
+  const { openDialog } = useCreateDataset();
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (user) {
+      openDialog();
+    }
+  };
+
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <div
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer",
+            className
+          )}
+          onClick={handleClick}
+          {...props}
+        >
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </div>
+      </NavigationMenuLink>
+    </li>
+  );
+};
+
 export function AppHeader() {
   const { user, logout } = useAuth();
+  const { openDialog } = useCreateDataset();
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation(['navigation', 'common']);
@@ -142,12 +180,11 @@ export function AppHeader() {
                         {t('navigation:datasets_my_description')}
                       </ListItem>
                     )}
-                    <ListItem
+                    <CreateDatasetItem
                       title={t('navigation:datasets_create')}
-                      href="/?action=create"
                     >
                       {t('navigation:datasets_create_description')}
-                    </ListItem>
+                    </CreateDatasetItem>
                   </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>

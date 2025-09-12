@@ -9,6 +9,8 @@ import { useTranslation } from 'react-i18next';
 // Инициализация i18n
 import '@/lib/i18n';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { CreateDatasetProvider } from '@/contexts/CreateDatasetContext';
+import { GlobalCreateDatasetDialog } from '@/components/GlobalCreateDatasetDialog';
 
 // Lazy загрузка страниц
 const Index = lazy(() => import("./pages/Index"));
@@ -43,19 +45,22 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/datasets" element={<AllDatasetsPage />} />
-              <Route path="/datasets/:id" element={<DatasetPage />} />
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/users/:username" element={<UserPage />} />
-              <Route path="/admin" element={<AdminPanelPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+          <CreateDatasetProvider>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/datasets" element={<AllDatasetsPage />} />
+                <Route path="/datasets/:id" element={<DatasetPage />} />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/users/:username" element={<UserPage />} />
+                <Route path="/admin" element={<AdminPanelPage />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+            <GlobalCreateDatasetDialog />
+          </CreateDatasetProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

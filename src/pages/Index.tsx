@@ -1,13 +1,12 @@
 import { useEffect, useState, useMemo } from 'react';
 import axios from '@/lib/axios';
-import { useSearchParams } from 'react-router-dom';
 import { AppHeader } from "@/components/AppHeader";
 import { DatasetListItem } from "@/components/DatasetListItem";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCreateDataset } from '@/contexts/CreateDatasetContext';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { CreateDatasetDialog } from '@/components/CreateDatasetDialog';
 import { Dataset } from "@/types";
 import { useTranslation } from 'react-i18next';
 
@@ -16,47 +15,13 @@ import { useTranslation } from 'react-i18next';
 const Index = () => {
     const { t } = useTranslation();
     const { user } = useAuth();
-    const [searchParams, setSearchParams] = useSearchParams();
+    const { openDialog } = useCreateDataset();
     const [datasets, setDatasets] = useState<Dataset[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
-    // Состояние для управления диалогом создания датасета
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-
-    const handleDatasetCreated = (newDataset: Dataset) => {
-        setDatasets(prevDatasets => [newDataset, ...prevDatasets]);
-    };
 
     const handleDatasetDeleted = (datasetId: string) => {
         setDatasets(prevDatasets => prevDatasets.filter(d => d.id !== datasetId));
-    };
-
-    // Обработка URL параметров для автоматического открытия диалога создания датасета
-    useEffect(() => {
-        const action = searchParams.get('action');
-        if (action === 'create') {
-            // Проверяем, авторизован ли пользователь для создания датасетов
-            if (user) {
-                setIsCreateDialogOpen(true);
-            } else {
-                // Если пользователь не авторизован, удаляем параметр из URL
-                const newSearchParams = new URLSearchParams(searchParams);
-                newSearchParams.delete('action');
-                setSearchParams(newSearchParams, { replace: true });
-            }
-        }
-    }, [searchParams, user, setSearchParams]);
-
-    // Функция для управления диалогом с обновлением URL
-    const handleCreateDialogOpenChange = (open: boolean) => {
-        setIsCreateDialogOpen(open);
-        if (!open) {
-            // Удаляем параметр action из URL при закрытии диалога
-            const newSearchParams = new URLSearchParams(searchParams);
-            newSearchParams.delete('action');
-            setSearchParams(newSearchParams, { replace: true });
-        }
     };
 
     useEffect(() => {
@@ -106,11 +71,10 @@ const Index = () => {
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-3xl font-bold">{t('pages:index.public_datasets')}</h1>
                         {user && (
-                           <CreateDatasetDialog 
-                               onDatasetCreated={handleDatasetCreated} 
-                               open={isCreateDialogOpen}
-                               onOpenChange={handleCreateDialogOpenChange}
-                           />
+                           <Button onClick={openDialog}>
+                               <PlusCircle className="mr-2 h-4 w-4" />
+                               {t('pages:create_dataset.title')}
+                           </Button>
                         )}
                     </div>
                     
