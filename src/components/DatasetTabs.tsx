@@ -52,8 +52,8 @@ export const DatasetTabs: React.FC<DatasetTabsProps> = ({
   };
 
   return (
-    <div className="w-full">
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+    <div className="flex-1 flex flex-col">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col">
         <div className="border-b bg-background">
           <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
             <TabsList className="grid grid-cols-4 w-fit bg-transparent h-auto p-0">
@@ -90,7 +90,7 @@ export const DatasetTabs: React.FC<DatasetTabsProps> = ({
             <DatasetCardTab dataset={dataset} canUpload={canUpload} onUploadSuccess={onUploadSuccess} />
           </TabsContent>
           
-          <TabsContent value="data-studio" className="mt-0 flex-1 flex flex-col min-h-0">
+          <TabsContent value="data-studio" className="mt-0 h-full flex flex-col">
             <DataStudioTab
               dataset={dataset}
               images={images}

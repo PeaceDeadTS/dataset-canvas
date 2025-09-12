@@ -146,9 +146,9 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <>
       {/* Header */}
-      <div className="flex-none bg-background border-b">
+      <div className="bg-background border-b">
         <div className="container mx-auto px-4 py-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
           <h2 className="text-xl font-semibold">{t('common:images')} ({totalImages})</h2>
         </div>
@@ -255,7 +255,7 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
 
       {/* Footer - Pagination */}
       {images.length > 0 && (
-        <div className="flex-none bg-background border-t">
+        <div className="bg-background border-t">
           <div className="container mx-auto px-4 py-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
             <div className="flex flex-col items-center gap-4">
               <div className="flex items-center gap-2">
@@ -337,6 +337,6 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
           />
         </div>
       )}
-    </div>
+    </>
   );
 };
