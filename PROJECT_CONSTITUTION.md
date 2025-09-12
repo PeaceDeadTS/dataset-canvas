@@ -30,8 +30,9 @@ The project is architected with a distinct frontend and backend.
     *   **Deployment**: During deployment, the `npm run migration:run` command is executed on the production server. This command applies any pending migrations, bringing the database schema up to date with the application code. This process is safe, repeatable, and eliminates the risk of accidental data loss.
 *   **Entities**:
     *   `User`: Stores user information, including `username`, `email`, hashed `password`, and `role`.
-    *   `Dataset`: Represents a dataset "container," with properties like `name`, `description`, `isPublic`, and relationships to its owner (`user`) and its images. Includes a computed `imageCount` field populated via TypeORM's `loadRelationCountAndMap` for efficient display of total image counts.
+    *   `Dataset`: Represents a dataset "container," with properties like `name`, `description`, `isPublic`, and relationships to its owner (`user`) and its images. Includes a computed `imageCount` field populated via TypeORM's `loadRelationCountAndMap` for efficient display of total image counts. Enhanced with file management relationship.
     *   `DatasetImage`: Stores metadata for each image within a dataset, including `url`, `filename`, `width`, `height`, and `prompt`.
+    *   `DatasetFile`: Manages uploaded CSV files with properties like `filename`, `originalName`, `mimeType`, `size`, `filePath`, and `description`. Includes cascade delete relationship to ensure file cleanup when datasets are removed.
 *   **API**: A RESTful API is exposed under `/api` for all frontend-backend communication.
 *   **Testable Entry Point**: The main application entry point (`src/index.ts`) is architected to be test-friendly. It exports the Express `app` instance separately from the server startup logic. This allows integration tests (like those using Supertest) to import and test the `app` directly without actually listening on a network port, ensuring tests are fast and isolated.
 *   **Build Process**: The backend is written in TypeScript and must be compiled into JavaScript before running in production. The `npm run build` command handles this, outputting the final JavaScript files to the `dist` directory. To ensure a clean build process where compiled files have a flat structure, all source files, including the TypeORM configuration (`ormconfig.ts`), are located within the `src` directory, which is defined as the `rootDir` in `tsconfig.json`. The TypeScript configuration (`tsconfig.json`) is specifically set up to **exclude all test files** from the production build, preventing test-specific code and dependencies from ending up on the server.
@@ -247,13 +248,40 @@ This section provides a summary of the core features implemented in the applicat
     *   **Role Accessibility**: Removed Developer-only restriction, now all user roles can create datasets
     *   **Consistent UI**: Updated all interface elements to reflect the new permission model
     *   **Proper Authorization**: Backend validation ensures only authenticated users can create datasets while maintaining security
+*   **Revolutionary Dataset Page Architecture**: Modern tabbed interface system for dataset pages inspired by Hugging Face:
+    *   **Four-Tab System**: Organized dataset information into distinct sections - Dataset Card, Data Studio, Files and versions, and Community
+    *   **URL State Management**: Deep linking support with tab parameters (`?tab=data-studio`) while maintaining pagination state
+    *   **Sticky Navigation**: Persistent tab navigation and footer pagination for optimal user experience
+    *   **Responsive Layout**: Proper height management with scrollable content areas and fixed headers/footers
+*   **Advanced Dataset Card System**: Comprehensive dataset information display and management:
+    *   **Dataset Overview**: Professional card layout with metadata including author, creation date, and privacy status
+    *   **Statistics Dashboard**: Real-time display of dataset metrics including total samples and image counts
+    *   **Upload Integration**: Seamless CSV upload functionality directly integrated into the dataset card
+    *   **Privacy Indicators**: Clear visual indicators for public/private dataset status with appropriate icons
+*   **Enhanced Data Studio Interface**: Improved data visualization and interaction system:
+    *   **Optimized Table Layout**: Professional data table with proper column sizing and sticky headers
+    *   **Advanced Image Previews**: Interactive image thumbnails with modal dialogs for detailed inspection
+    *   **Smart Aspect Ratio Display**: Intelligent aspect ratio calculation with standard format detection
+    *   **Scrollable Content Area**: Properly implemented scrolling with persistent pagination controls
+*   **Comprehensive File Management System**: Complete CSV file storage and retrieval architecture:
+    *   **Backend File Storage**: Robust file storage system with dedicated `DatasetFile` entity and proper file organization
+    *   **Secure File Handling**: Files stored in protected upload directories with unique naming and metadata tracking
+    *   **Download Functionality**: Secure file download with proper MIME types and authentication checks
+    *   **File Versioning Support**: Infrastructure for tracking multiple file versions and upload history
+    *   **API Endpoints**: Dedicated endpoints for file listing (`/files`) and downloading (`/files/:id/download`)
+*   **Community Infrastructure**: Foundation for user engagement and collaboration:
+    *   **Discussion Framework**: Placeholder architecture for future discussion and commenting system
+    *   **Community Statistics**: User engagement metrics and contribution tracking infrastructure
+    *   **Modular Design**: Extensible component structure ready for community features implementation
 
 ---
 
 ## Document Version History
 
-*Latest Update: January 2025 - Administrative Panel Implementation: Added comprehensive admin panel with complete user and dataset management capabilities, enhanced authentication architecture with centralized JWT management and axios interceptors, democratized dataset creation for all authenticated users, resolved critical authentication bugs and URL duplication issues, implemented centralized authentication context for consistent user state management across all components*
+*Latest Update: January 2025 - Revolutionary Dataset Page Architecture: Implemented comprehensive tabbed interface system for dataset pages with four distinct sections (Dataset Card, Data Studio, Files and versions, Community), complete file management system with CSV storage and download functionality, enhanced data visualization with scrollable content areas and sticky pagination, URL state management for deep linking with tab parameters, and modular component architecture ready for future community features*
 
-*Previous Update: January 2025 - Major feature expansion including comprehensive internationalization system with localization bug fixes, enhanced user management with role-based filtering, advanced three-tab dataset discovery system, performance optimization with lazy loading, and revolutionary navigation architecture with complete user role coverage*
+*Previous Update: January 2025 - Administrative Panel Implementation: Added comprehensive admin panel with complete user and dataset management capabilities, enhanced authentication architecture with centralized JWT management and axios interceptors, democratized dataset creation for all authenticated users, resolved critical authentication bugs and URL duplication issues, implemented centralized authentication context for consistent user state management across all components*
+
+*January 2025 - Major feature expansion including comprehensive internationalization system with localization bug fixes, enhanced user management with role-based filtering, advanced three-tab dataset discovery system, performance optimization with lazy loading, and revolutionary navigation architecture with complete user role coverage*
 
 *December 2024 - Added Modern Interface Enhancements including sticky layout system and improved UX patterns*
