@@ -52,9 +52,9 @@ export const DatasetTabs: React.FC<DatasetTabsProps> = ({
   };
 
   return (
-    <div className="w-full">
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <div className="border-b bg-background">
+    <div className="h-full flex flex-col">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
+        <div className="flex-none border-b bg-background">
           <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
             <TabsList className="grid grid-cols-4 w-fit bg-transparent h-auto p-0">
               <TabsTrigger 
@@ -85,12 +85,12 @@ export const DatasetTabs: React.FC<DatasetTabsProps> = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-hidden">
-          <TabsContent value="dataset-card" className="mt-0 h-full overflow-hidden">
+        <div className="flex-1 min-h-0">
+          <TabsContent value="dataset-card" className="h-full m-0 data-[state=inactive]:hidden">
             <DatasetCardTab dataset={dataset} canUpload={canUpload} onUploadSuccess={onUploadSuccess} />
           </TabsContent>
           
-          <TabsContent value="data-studio" className="mt-0 h-full overflow-hidden">
+          <TabsContent value="data-studio" className="h-full m-0 data-[state=inactive]:hidden">
             <DataStudioTab
               dataset={dataset}
               images={images}
@@ -104,11 +104,11 @@ export const DatasetTabs: React.FC<DatasetTabsProps> = ({
             />
           </TabsContent>
           
-          <TabsContent value="files-versions" className="mt-0 h-full overflow-hidden">
+          <TabsContent value="files-versions" className="h-full m-0 data-[state=inactive]:hidden">
             <FilesAndVersionsTab dataset={dataset} />
           </TabsContent>
           
-          <TabsContent value="community" className="mt-0 h-full overflow-hidden">
+          <TabsContent value="community" className="h-full m-0 data-[state=inactive]:hidden">
             <CommunityTab dataset={dataset} />
           </TabsContent>
         </div>
