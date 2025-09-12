@@ -1,11 +1,12 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dataset } from '@/types';
+import { Progress } from '@/components/ui/progress';
+import { Dataset, DatasetStatistics } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { Upload, FileText, BarChart3, Calendar, User, Lock, Globe } from 'lucide-react';
+import { Upload, FileText, BarChart3, Calendar, User, Lock, Globe, CheckCircle, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from '@/lib/axios';
 import { useParams } from 'react-router-dom';
@@ -25,10 +26,27 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
   const { id } = useParams<{ id: string }>();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [statistics, setStatistics] = useState<DatasetStatistics | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       setSelectedFile(event.target.files[0]);
+    }
+  };
+
+  const loadStatistics = async () => {
+    if (!id) return;
+    
+    try {
+      setLoadingStats(true);
+      const response = await axios.get(`/datasets/${id}/statistics`);
+      setStatistics(response.data);
+    } catch (err: any) {
+      console.error('Failed to load dataset statistics:', err);
+      // Не показываем ошибку пользователю, просто не загружаем статистику
+    } finally {
+      setLoadingStats(false);
     }
   };
 
@@ -51,6 +69,8 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
       });
       toast.success(response.data.message || t('pages:dataset.upload_success'));
       onUploadSuccess();
+      // Перезагружаем статистику после успешной загрузки
+      await loadStatistics();
     } catch (err: any) {
       toast.error(err.response?.data?.message || err.response?.data || t('pages:dataset.upload_error'));
       console.error(err);
@@ -59,6 +79,10 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
       setSelectedFile(null);
     }
   };
+
+  useEffect(() => {
+    loadStatistics();
+  }, [id]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
@@ -124,35 +148,85 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
                 {t('pages:dataset.statistics')}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">
-                    {dataset.imageCount || '0'}
+                    {loadingStats ? '...' : (statistics?.totalSamples || '0')}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {t('pages:dataset.total_samples')}
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">-</div>
-                  <div className="text-sm text-muted-foreground">
-                    {t('pages:dataset.dataset_size')}
+                  <div className="text-2xl font-bold text-primary">
+                    {loadingStats ? '...' : (statistics?.avgPromptLength || '0')}
                   </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">-</div>
-                  <div className="text-sm text-muted-foreground">
-                    {t('pages:dataset.image_resolution')}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">-</div>
                   <div className="text-sm text-muted-foreground">
                     {t('pages:dataset.avg_prompt_length')}
                   </div>
                 </div>
               </div>
+
+              {/* Resolution Statistics */}
+              {!loadingStats && statistics && statistics.resolutionStats.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-3">{t('pages:dataset.resolution_distribution')}</h4>
+                  <div className="space-y-2">
+                    {statistics.resolutionStats.slice(0, 5).map(({ resolution, count, percentage }) => (
+                      <div key={resolution} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <span className="text-sm font-mono truncate">{resolution}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {count} {t('common:pairs')}, {percentage}%
+                          </span>
+                        </div>
+                        <div className="w-20">
+                          <Progress value={percentage} className="h-2" />
+                        </div>
+                      </div>
+                    ))}
+                    {statistics.resolutionStats.length > 5 && (
+                      <p className="text-xs text-muted-foreground text-center mt-2">
+                        {t('pages:dataset.and_more_resolutions', { 
+                          count: statistics.resolutionStats.length - 5 
+                        })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Training Compatibility Check */}
+              {!loadingStats && statistics && (
+                <div className={`p-3 rounded-lg border ${
+                  statistics.divisibilityCheck.allDivisibleBy64 
+                    ? 'bg-green-50 border-green-200 text-green-800' 
+                    : 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    {statistics.divisibilityCheck.allDivisibleBy64 ? (
+                      <CheckCircle className="h-4 w-4" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4" />
+                    )}
+                    <span className="text-sm font-medium">
+                      {statistics.divisibilityCheck.allDivisibleBy64 
+                        ? t('pages:dataset.training_compatible') 
+                        : t('pages:dataset.training_warning')
+                      }
+                    </span>
+                  </div>
+                  {!statistics.divisibilityCheck.allDivisibleBy64 && (
+                    <p className="text-xs mt-1">
+                      {t('pages:dataset.divisibility_details', {
+                        compatible: statistics.divisibilityCheck.divisibleCount,
+                        total: statistics.divisibilityCheck.totalCount
+                      })}
+                    </p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 

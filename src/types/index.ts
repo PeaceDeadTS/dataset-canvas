@@ -50,3 +50,22 @@ export interface Dataset {
         limit: number;
     };
 }
+
+export interface ResolutionStat {
+    resolution: string;
+    count: number;
+    percentage: number;
+}
+
+export interface DivisibilityCheck {
+    allDivisibleBy64: boolean;
+    divisibleCount: number;
+    totalCount: number;
+}
+
+export interface DatasetStatistics {
+    totalSamples: number;
+    resolutionStats: ResolutionStat[];
+    avgPromptLength: number;
+    divisibilityCheck: DivisibilityCheck;
+}

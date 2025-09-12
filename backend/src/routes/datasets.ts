@@ -469,5 +469,105 @@ router.get('/:id/files/:fileId/download', checkJwtOptional, async (req: Request,
     }
 });
 
+// GET /api/datasets/:id/statistics - Get dataset statistics
+router.get('/:id/statistics', checkJwtOptional, async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userId = req.user?.userId;
+    const userRole = req.user?.role;
+
+    try {
+        const dataset = await datasetRepository.findOne({
+            where: { id },
+            relations: ['user']
+        });
+
+        if (!dataset) {
+            return res.status(404).json({ error: 'Dataset not found' });
+        }
+
+        // Check visibility permissions
+        if (!dataset.isPublic && userRole !== UserRole.ADMIN && dataset.userId !== userId) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        // Get all images for statistics calculation
+        const images = await imageRepository.find({
+            where: { dataset: { id } }
+        });
+
+        const totalSamples = images.length;
+
+        if (totalSamples === 0) {
+            return res.json({
+                totalSamples: 0,
+                resolutionStats: [],
+                avgPromptLength: 0,
+                divisibilityCheck: {
+                    allDivisibleBy64: true,
+                    divisibleCount: 0,
+                    totalCount: 0
+                }
+            });
+        }
+
+        // Calculate resolution statistics
+        const resolutionMap = new Map<string, number>();
+        let totalPromptLength = 0;
+        let promptCount = 0;
+        let divisibleBy64Count = 0;
+
+        images.forEach(image => {
+            // Resolution statistics
+            const resolution = `${image.width}x${image.height}`;
+            resolutionMap.set(resolution, (resolutionMap.get(resolution) || 0) + 1);
+
+            // Prompt length statistics
+            if (image.prompt && image.prompt.trim()) {
+                totalPromptLength += image.prompt.length;
+                promptCount++;
+            }
+
+            // Divisibility by 64 check
+            if (image.width % 64 === 0 && image.height % 64 === 0) {
+                divisibleBy64Count++;
+            }
+        });
+
+        // Convert resolution map to sorted array with percentages
+        const resolutionStats = Array.from(resolutionMap.entries())
+            .map(([resolution, count]) => ({
+                resolution,
+                count,
+                percentage: Math.round((count / totalSamples) * 100 * 100) / 100 // Round to 2 decimal places
+            }))
+            .sort((a, b) => b.count - a.count); // Sort by count descending
+
+        // Calculate average prompt length
+        const avgPromptLength = promptCount > 0 
+            ? Math.round((totalPromptLength / promptCount) * 100) / 100 
+            : 0;
+
+        // Divisibility check
+        const allDivisibleBy64 = divisibleBy64Count === totalSamples;
+
+        const statistics = {
+            totalSamples,
+            resolutionStats,
+            avgPromptLength,
+            divisibilityCheck: {
+                allDivisibleBy64,
+                divisibleCount: divisibleBy64Count,
+                totalCount: totalSamples
+            }
+        };
+
+        res.json(statistics);
+
+    } catch (error) {
+        logger.error(`Failed to get statistics for dataset ${id}`, { error });
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 export default router;
