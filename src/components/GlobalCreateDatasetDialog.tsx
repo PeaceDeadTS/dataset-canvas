@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateDataset } from '@/contexts/CreateDatasetContext';
-import { CreateDatasetDialog } from './CreateDatasetDialog';
+import { CreateDatasetDialogContent } from './CreateDatasetDialogContent';
 
 export function GlobalCreateDatasetDialog() {
   const { user } = useAuth();
@@ -12,7 +12,7 @@ export function GlobalCreateDatasetDialog() {
   }
 
   return (
-    <CreateDatasetDialog
+    <CreateDatasetDialogContent
       open={isOpen}
       onOpenChange={closeDialog}
       onDatasetCreated={onDatasetCreated}
