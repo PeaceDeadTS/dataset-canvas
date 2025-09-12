@@ -146,7 +146,7 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
   };
 
   return (
-    <>
+    <div className="h-full flex flex-col">
       {/* Header */}
       <div className="flex-none bg-background border-b">
         <div className="container mx-auto px-4 py-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
@@ -155,97 +155,95 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto min-h-0">
+      <div className="flex-1 overflow-auto">
         <div className="container mx-auto px-4" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
           {imagesLoading ? (
             <div className="py-8">
               <Skeleton className="h-64 w-full" />
             </div>
           ) : images.length > 0 ? (
-            <div className="py-4">
-              <div className="overflow-x-auto">
-                <Table className="table-auto w-full">
-                  <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
-                    <TableRow className="border-b">
-                      <TableHead className="w-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.row')}</TableHead>
-                      <TableHead className="min-w-[18rem] max-w-[30rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.image_key')}</TableHead>
-                      <TableHead className="min-w-[18rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.filename')}</TableHead>
-                      <TableHead className="min-w-[20rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('common:image')}</TableHead>
-                      <TableHead className="w-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.dimensions')}</TableHead>
-                      <TableHead className="min-w-[44rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.prompt')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {images.map((image) => (
-                      <Dialog key={image.id}>
-                        <DialogTrigger asChild>
-                          <TableRow className="cursor-pointer">
-                            <TableCell className="py-4 text-center">{image.row_number}</TableCell>
-                            <TableCell className="font-mono text-xs py-4 overflow-hidden text-ellipsis">{image.img_key}</TableCell>
-                            <TableCell className="py-4 overflow-hidden text-ellipsis">{image.filename}</TableCell>
-                            <TableCell className="py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
-                              <div className="flex flex-col items-center gap-2 w-full min-w-0">
-                                <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded flex-shrink-0" />
-                                <a 
-                                  href={image.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="text-xs text-muted-foreground hover:text-primary underline w-full text-center overflow-hidden text-ellipsis whitespace-nowrap"
-                                  title={image.url}
-                                >
-                                  {new URL(image.url).pathname.split('/').pop()}
-                                </a>
-                              </div>
-                            </TableCell>
-                            <TableCell className="py-4 text-center whitespace-nowrap">{`${image.width}x${image.height}`}</TableCell>
-                            <TableCell className="py-4 overflow-hidden text-ellipsis">{image.prompt}</TableCell>
-                          </TableRow>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
-                          <DialogHeader>
-                            <DialogTitle>{image.filename}</DialogTitle>
-                            <DialogDescription>
-                              {t('pages:dataset.image_details')}
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="grid gap-4 py-4 max-h-[calc(90vh-8rem)] overflow-y-auto">
-                             <div className="flex justify-center">
-                               <img 
-                                 src={image.url} 
-                                 alt={image.filename} 
-                                 className="max-w-full max-h-[50vh] object-contain rounded-md" 
-                               />
-                             </div>
-                             <div className="text-sm space-y-2 min-w-0">
-                              <p><strong>Filename:</strong> {image.filename}</p>
-                              <p><strong>File extension:</strong> {getFileExtension(image.url)}</p>
-                              <p><strong>Dimensions:</strong> {image.width} × {image.height} pixels</p>
-                              <p><strong>Aspect ratio:</strong> {formatAspectRatio(image.width, image.height)}</p>
-                              <div>
-                                <p><strong>URL:</strong></p>
-                                <a 
-                                  href={image.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-muted-foreground hover:text-primary break-all max-w-full text-xs underline"
-                                >
-                                  {image.url}
-                                </a>
-                              </div>
-                              <div>
-                                <p><strong>Prompt:</strong></p>
-                                <p className="text-muted-foreground break-words max-w-full">{image.prompt}</p>
-                              </div>
-                              <p className="font-mono text-xs break-all"><strong>Key:</strong> {image.img_key}</p>
-                             </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+            <div className="overflow-x-auto py-4">
+              <Table className="table-auto w-full">
+                <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+                  <TableRow className="border-b">
+                    <TableHead className="w-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.row')}</TableHead>
+                    <TableHead className="min-w-[18rem] max-w-[30rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.image_key')}</TableHead>
+                    <TableHead className="min-w-[18rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.filename')}</TableHead>
+                    <TableHead className="min-w-[20rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('common:image')}</TableHead>
+                    <TableHead className="w-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.dimensions')}</TableHead>
+                    <TableHead className="min-w-[44rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.prompt')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {images.map((image) => (
+                    <Dialog key={image.id}>
+                      <DialogTrigger asChild>
+                        <TableRow className="cursor-pointer">
+                          <TableCell className="py-4 text-center">{image.row_number}</TableCell>
+                          <TableCell className="font-mono text-xs py-4 overflow-hidden text-ellipsis">{image.img_key}</TableCell>
+                          <TableCell className="py-4 overflow-hidden text-ellipsis">{image.filename}</TableCell>
+                          <TableCell className="py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
+                            <div className="flex flex-col items-center gap-2 w-full min-w-0">
+                              <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded flex-shrink-0" />
+                              <a 
+                                href={image.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-xs text-muted-foreground hover:text-primary underline w-full text-center overflow-hidden text-ellipsis whitespace-nowrap"
+                                title={image.url}
+                              >
+                                {new URL(image.url).pathname.split('/').pop()}
+                              </a>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4 text-center whitespace-nowrap">{`${image.width}x${image.height}`}</TableCell>
+                          <TableCell className="py-4 overflow-hidden text-ellipsis">{image.prompt}</TableCell>
+                        </TableRow>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
+                        <DialogHeader>
+                          <DialogTitle>{image.filename}</DialogTitle>
+                          <DialogDescription>
+                            {t('pages:dataset.image_details')}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4 max-h-[calc(90vh-8rem)] overflow-y-auto">
+                           <div className="flex justify-center">
+                             <img 
+                               src={image.url} 
+                               alt={image.filename} 
+                               className="max-w-full max-h-[50vh] object-contain rounded-md" 
+                             />
+                           </div>
+                           <div className="text-sm space-y-2 min-w-0">
+                            <p><strong>Filename:</strong> {image.filename}</p>
+                            <p><strong>File extension:</strong> {getFileExtension(image.url)}</p>
+                            <p><strong>Dimensions:</strong> {image.width} × {image.height} pixels</p>
+                            <p><strong>Aspect ratio:</strong> {formatAspectRatio(image.width, image.height)}</p>
+                            <div>
+                              <p><strong>URL:</strong></p>
+                              <a 
+                                href={image.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-muted-foreground hover:text-primary break-all max-w-full text-xs underline"
+                              >
+                                {image.url}
+                              </a>
+                            </div>
+                            <div>
+                              <p><strong>Prompt:</strong></p>
+                              <p className="text-muted-foreground break-words max-w-full">{image.prompt}</p>
+                            </div>
+                            <p className="font-mono text-xs break-all"><strong>Key:</strong> {image.img_key}</p>
+                           </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           ) : (
             <div className="py-8">
