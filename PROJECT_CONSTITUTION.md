@@ -163,7 +163,11 @@ This section provides a summary of the core features implemented in the applicat
 
 *   **Full User Authentication**: Implemented complete user registration and login flow (`/api/auth/register`, `/api/auth/login`) using JWT and password hashing (`bcrypt`).
 *   **Role-Based Access Control (RBAC)**: Developed a full RBAC system (Administrator, Developer, User) that governs all API actions with proper middleware implementation.
-*   **CRUD API for Datasets**: Built a full CRUD API (`/api/datasets`) that respects RBAC rules for creating, reading, updating, and deleting datasets. The API properly handles user relations and authorization for private datasets.
+*   **CRUD API for Datasets**: Built a full CRUD API (`/api/datasets`) that respects RBAC rules for creating, reading, updating, and deleting datasets. The API properly handles user relations and authorization for private datasets. Enhanced with comprehensive statistics endpoint (`/api/datasets/:id/statistics`) providing:
+    *   **Resolution Distribution Analytics**: Server-side calculation of image resolution statistics with percentage breakdowns and frequency sorting
+    *   **Training Compatibility Analysis**: Automatic validation for neural network training requirements (64px divisibility check)
+    *   **Prompt Length Metrics**: Average prompt length calculation for text-to-image dataset analysis
+    *   **Performance Optimization**: Efficient database queries with proper error handling and access control
 *   **Private Dataset Support**: Full implementation of private dataset functionality with proper access control:
     *   Private datasets are only visible to their owners and administrators
     *   Public/private datasets are clearly distinguished in the UI with badges
@@ -255,8 +259,14 @@ This section provides a summary of the core features implemented in the applicat
     *   **Responsive Layout**: Proper height management with scrollable content areas and fixed headers/footers
 *   **Advanced Dataset Card System**: Comprehensive dataset information display and management:
     *   **Dataset Overview**: Professional card layout with metadata including author, creation date, and privacy status
-    *   **Statistics Dashboard**: Real-time display of dataset metrics including total samples and image counts
-    *   **Upload Integration**: Seamless CSV upload functionality directly integrated into the dataset card
+    *   **Comprehensive Statistics Dashboard**: Advanced analytics system with real-time computation:
+        *   **Resolution Distribution Analysis**: Automatic calculation of image resolution statistics with percentage breakdowns, sorted by frequency
+        *   **Interactive Statistics Display**: Expandable resolution lists with progress bars, showing top 5 resolutions by default with clickable expansion for full data
+        *   **Training Compatibility Validation**: Automatic neural network training compatibility check (64px divisibility validation) with visual indicators
+        *   **Prompt Length Analytics**: Average prompt length calculation for text-to-image datasets with real-time updates
+        *   **Smart Visual Feedback**: Color-coded compatibility warnings (yellow) and success messages (green) for training readiness
+        *   **Performance Optimized**: Statistics computed server-side with efficient database queries and cached results
+    *   **Upload Integration**: Seamless CSV upload functionality directly integrated into the dataset card with automatic statistics refresh
     *   **Privacy Indicators**: Clear visual indicators for public/private dataset status with appropriate icons
 *   **Enhanced Data Studio Interface**: Improved data visualization and interaction system:
     *   **Optimized Table Layout**: Professional data table with proper column sizing and sticky headers
@@ -278,9 +288,11 @@ This section provides a summary of the core features implemented in the applicat
 
 ## Document Version History
 
-*Latest Update: January 2025 - Revolutionary Dataset Page Architecture: Implemented comprehensive tabbed interface system for dataset pages with four distinct sections (Dataset Card, Data Studio, Files and versions, Community), complete file management system with CSV storage and download functionality, enhanced data visualization with scrollable content areas and sticky pagination, URL state management for deep linking with tab parameters, and modular component architecture ready for future community features*
+*Latest Update: January 2025 - Advanced Dataset Analytics Implementation: Deployed comprehensive dataset statistics system featuring real-time resolution distribution analysis with interactive expandable displays, automatic neural network training compatibility validation (64px divisibility check), prompt length analytics for text-to-image datasets, server-side performance optimization with efficient database queries, and color-coded visual feedback system. Enhanced Dataset Card component with professional statistics dashboard, progress bars, and seamless integration with CSV upload workflow for automatic statistics refresh.*
 
-*Previous Update: January 2025 - Administrative Panel Implementation: Added comprehensive admin panel with complete user and dataset management capabilities, enhanced authentication architecture with centralized JWT management and axios interceptors, democratized dataset creation for all authenticated users, resolved critical authentication bugs and URL duplication issues, implemented centralized authentication context for consistent user state management across all components*
+*January 2025 - Revolutionary Dataset Page Architecture: Implemented comprehensive tabbed interface system for dataset pages with four distinct sections (Dataset Card, Data Studio, Files and versions, Community), complete file management system with CSV storage and download functionality, enhanced data visualization with scrollable content areas and sticky pagination, URL state management for deep linking with tab parameters, and modular component architecture ready for future community features*
+
+*January 2025 - Administrative Panel Implementation: Added comprehensive admin panel with complete user and dataset management capabilities, enhanced authentication architecture with centralized JWT management and axios interceptors, democratized dataset creation for all authenticated users, resolved critical authentication bugs and URL duplication issues, implemented centralized authentication context for consistent user state management across all components*
 
 *January 2025 - Major feature expansion including comprehensive internationalization system with localization bug fixes, enhanced user management with role-based filtering, advanced three-tab dataset discovery system, performance optimization with lazy loading, and revolutionary navigation architecture with complete user role coverage*
 

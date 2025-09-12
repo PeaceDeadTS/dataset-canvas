@@ -10,6 +10,14 @@ Dataset Canvas is a comprehensive web application inspired by Hugging Face's Dat
 
 ## 🆕 Latest Updates (January 2025)
 
+### 📊 Advanced Dataset Analytics (NEW)
+- **Comprehensive Statistics API**: New `/api/datasets/:id/statistics` endpoint providing detailed dataset analysis
+- **Resolution Distribution Analysis**: Real-time breakdown of image resolutions with percentage calculations
+- **Interactive Statistics Display**: Expandable resolution lists with progress bars and visual feedback
+- **Training Compatibility Validation**: Automatic check for neural network training requirements (64px divisibility)
+- **Prompt Length Analytics**: Average prompt length calculation for text-to-image datasets
+- **Smart Visual Indicators**: Color-coded compatibility warnings and success messages
+
 ### ⚡ Administrative Panel
 - **New Admin Interface**: Comprehensive `/admin` panel exclusively for administrators
 - **Complete User Management**: Change roles, delete users, view system statistics
@@ -81,11 +89,16 @@ Dataset Canvas is a comprehensive web application inspired by Hugging Face's Dat
   - Professional UI with modern tabbed interface and data tables
 - **Full Localization**: Complete translation support for all admin features
 
-### 📊 Dataset Management
+### 📊 Dataset Management & Analytics
 - **Universal Dataset Creation**: All authenticated users can create and manage datasets
 - **Complete CRUD operations** for datasets with proper authorization controls
 - **Public/Private dataset support** with intelligent visibility controls
 - **CSV data upload** with intelligent parsing (filename, url, width, height, prompt columns)
+- **Advanced Dataset Statistics**: Comprehensive analytics including:
+  - **Resolution Distribution**: Real-time analysis of image resolutions with percentage breakdowns and interactive expansion
+  - **Training Compatibility Check**: Automatic validation for neural network training (64px divisibility check)
+  - **Prompt Analytics**: Average prompt length calculation for text-to-image datasets
+  - **Interactive Statistics Display**: Expandable resolution lists with progress bars and visual indicators
 - **Advanced pagination system** with URL parameter support (`?p=22`, customizable items per page: 10/25/50/100)
 - **Smart dataset organization** with separate sections for private and public datasets
 - **Administrative Override**: Admins can manage any dataset regardless of ownership
@@ -240,6 +253,7 @@ Start both servers simultaneously:
 ### Dataset Endpoints
 - `GET /api/datasets` - List datasets (with role-based filtering and sorting)
 - `GET /api/datasets/:id` - Get dataset details with paginated images
+- `GET /api/datasets/:id/statistics` - Get comprehensive dataset statistics (resolution distribution, prompt analytics, training compatibility)
 - `POST /api/datasets` - Create new dataset (Developer/Admin)
 - `PUT /api/datasets/:id` - Update dataset (Owner/Admin)
 - `DELETE /api/datasets/:id` - Delete dataset (Owner/Admin)
