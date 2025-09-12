@@ -75,6 +75,7 @@
     "avg_prompt_length": "Средняя длина промпта",
     "resolution_distribution": "Распределение разрешений",
     "and_more_resolutions": "...и ещё {{count}} разрешений",
+    "show_less_resolutions": "Показать меньше разрешений",
     "training_compatible": "Совместимо с обучением",
     "training_warning": "Предупреждение о совместимости с обучением",
     "divisibility_details": "{{compatible}} из {{total}} изображений имеют размеры, делящиеся на 64",

@@ -28,6 +28,7 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
   const [uploading, setUploading] = useState(false);
   const [statistics, setStatistics] = useState<DatasetStatistics | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [showAllResolutions, setShowAllResolutions] = useState(false);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -173,25 +174,38 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
                 <div>
                   <h4 className="text-sm font-medium mb-3">{t('pages:dataset.resolution_distribution')}</h4>
                   <div className="space-y-2">
-                    {statistics.resolutionStats.slice(0, 5).map(({ resolution, count, percentage }) => (
-                      <div key={resolution} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <span className="text-sm font-mono truncate">{resolution}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {count} {t('common:pairs')}, {percentage}%
-                          </span>
+                    {statistics.resolutionStats
+                      .slice(0, showAllResolutions ? statistics.resolutionStats.length : 5)
+                      .map(({ resolution, count, percentage }) => (
+                        <div key={resolution} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <span className="text-sm font-mono truncate">{resolution}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {count} {t('common:pairs')}, {percentage}%
+                            </span>
+                          </div>
+                          <div className="w-20">
+                            <Progress value={percentage} className="h-2" />
+                          </div>
                         </div>
-                        <div className="w-20">
-                          <Progress value={percentage} className="h-2" />
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    
+                    {/* Toggle button for showing more/less resolutions */}
                     {statistics.resolutionStats.length > 5 && (
-                      <p className="text-xs text-muted-foreground text-center mt-2">
-                        {t('pages:dataset.and_more_resolutions', { 
-                          count: statistics.resolutionStats.length - 5 
-                        })}
-                      </p>
+                      <div className="text-center mt-3">
+                        <button
+                          onClick={() => setShowAllResolutions(!showAllResolutions)}
+                          className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors"
+                        >
+                          {showAllResolutions ? (
+                            t('pages:dataset.show_less_resolutions')
+                          ) : (
+                            t('pages:dataset.and_more_resolutions', { 
+                              count: statistics.resolutionStats.length - 5 
+                            })
+                          )}
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>

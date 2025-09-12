@@ -75,6 +75,7 @@
     "avg_prompt_length": "Avg. Prompt Length",
     "resolution_distribution": "Resolution Distribution",
     "and_more_resolutions": "...and {{count}} more resolutions",
+    "show_less_resolutions": "Show less resolutions",
     "training_compatible": "Training Compatible",
     "training_warning": "Training Compatibility Warning",
     "divisibility_details": "{{compatible}} of {{total}} images have dimensions divisible by 64",
