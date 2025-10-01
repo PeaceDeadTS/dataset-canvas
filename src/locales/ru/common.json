@@ -65,5 +65,6 @@
   "register_success": "Регистрация прошла успешно! Теперь войдите в систему.",
   "register_failed": "Не удалось зарегистрироваться",
   "dataset_create_success": "Датасет успешно создан!",
-  "dataset_create_failed": "Не удалось создать датасет"
+  "dataset_create_failed": "Не удалось создать датасет",
+  "remember_me": "Запомнить меня"
 }

@@ -65,5 +65,6 @@
   "register_success": "Registered successfully! Please login.",
   "register_failed": "Failed to register",
   "dataset_create_success": "Dataset created successfully!",
-  "dataset_create_failed": "Failed to create dataset"
+  "dataset_create_failed": "Failed to create dataset",
+  "remember_me": "Remember me"
 }

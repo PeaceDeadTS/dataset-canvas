@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -17,6 +18,7 @@ export function AuthPage() {
   const [activeTab, setActiveTab] = useState('login');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [registerUsername, setRegisterUsername] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
@@ -29,6 +31,7 @@ export function AuthPage() {
       const response = await axios.post(`${API_URL}/login`, {
         email: loginEmail,
         password: loginPassword,
+        rememberMe: rememberMe,
       });
       localStorage.setItem('token', response.data.token);
       toast.success(t('common:login_success'));
@@ -92,6 +95,10 @@ export function AuthPage() {
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="login-password">{t('common:password')}</Label>
                     <Input id="login-password" type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required disabled={loading} />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="remember-me" checked={rememberMe} onCheckedChange={(checked) => setRememberMe(checked === true)} disabled={loading} />
+                    <Label htmlFor="remember-me" className="text-sm font-normal cursor-pointer">{t('common:remember_me')}</Label>
                   </div>
                   <Button type="submit" disabled={loading}>{loading ? t('pages:auth.logging_in') : t('pages:auth.login')}</Button>
                 </div>

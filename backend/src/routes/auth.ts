@@ -47,7 +47,7 @@ router.post('/register', async (req, res) => {
 
 // POST /api/auth/login
 router.post('/login', async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
 
   if (!email || !password) {
     return res.status(400).send('Email and password are required');
@@ -61,11 +61,13 @@ router.post('/login', async (req: Request, res: Response) => {
     const validPassword = await bcrypt.compare(req.body.password, user.password);
     if (!validPassword) return res.status(401).send('Invalid credentials');
 
-    // Sign JWT
+    // Sign JWT with different expiration time based on rememberMe
+    // If rememberMe is true, token lasts 30 days, otherwise 1 hour
+    const expiresIn = rememberMe ? '30d' : '1h';
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role, username: user.username },
       process.env.JWT_SECRET!,
-      { expiresIn: '1h' }
+      { expiresIn }
     );
 
     res.json({ token });
