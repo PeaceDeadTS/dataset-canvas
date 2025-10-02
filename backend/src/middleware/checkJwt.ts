@@ -16,13 +16,20 @@ export const checkJwt = (req: Request, res: Response, next: NextFunction) => {
     jwtPayload = <any>jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
     
     // Важнейшее исправление: добавляем данные в req.user
-    const { userId, username, email, role } = jwtPayload;
+    const { userId, username, email, role, exp, iat } = jwtPayload;
     req.user = { userId, username, email, role };
 
-    // Обновляем токен
-    const newToken = jwt.sign({ userId, username, email, role }, process.env.JWT_SECRET || 'your_jwt_secret', {
-      expiresIn: '1h',
-    });
+    // Обновляем токен с сохранением оригинального времени истечения
+    // Вычисляем оставшееся время до истечения токена
+    const currentTime = Math.floor(Date.now() / 1000);
+    const remainingTime = exp - currentTime;
+    
+    // Пересоздаем токен с тем же временем истечения (в секундах)
+    const newToken = jwt.sign(
+      { userId, username, email, role }, 
+      process.env.JWT_SECRET || 'your_jwt_secret', 
+      { expiresIn: remainingTime }
+    );
     res.setHeader('token', newToken);
 
   } catch (error) {
@@ -45,12 +52,18 @@ export const checkJwtOptional = (req: Request, res: Response, next: NextFunction
         res.locals.jwtPayload = jwtPayload;
 
         // ВАЖНО: Устанавливаем req.user для авторизованных пользователей
-        const { userId, username, email, role } = jwtPayload;
+        const { userId, username, email, role, exp } = jwtPayload;
         req.user = { userId, username, email, role };
 
-        const newToken = jwt.sign({ userId, username, email, role }, process.env.JWT_SECRET || 'your_jwt_secret', {
-            expiresIn: '1h',
-        });
+        // Обновляем токен с сохранением оригинального времени истечения
+        const currentTime = Math.floor(Date.now() / 1000);
+        const remainingTime = exp - currentTime;
+        
+        const newToken = jwt.sign(
+            { userId, username, email, role }, 
+            process.env.JWT_SECRET || 'your_jwt_secret', 
+            { expiresIn: remainingTime }
+        );
         res.setHeader('token', newToken);
     } catch (error: any) {
         // If token is invalid, just proceed without user info
