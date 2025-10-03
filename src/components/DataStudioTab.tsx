@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Dataset, DatasetImage } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,6 +16,61 @@ interface DataStudioTabProps {
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
 }
+
+// Компонент для ленивой загрузки изображений
+const LazyImage: React.FC<{ 
+  src: string; 
+  alt: string; 
+  className?: string;
+  onClick?: (e: React.MouseEvent) => void;
+}> = ({ src, alt, className, onClick }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (!imgRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        rootMargin: '50px', // Начинаем загрузку за 50px до появления в viewport
+      }
+    );
+
+    observer.observe(imgRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  return (
+    <div className={`relative ${className || ''}`} ref={imgRef}>
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-muted animate-pulse rounded" />
+      )}
+      {isInView && (
+        <img
+          src={src}
+          alt={alt}
+          className={className}
+          loading="lazy"
+          onLoad={() => setIsLoaded(true)}
+          onClick={onClick}
+          style={{ opacity: isLoaded ? 1 : 0, transition: 'opacity 0.3s' }}
+        />
+      )}
+    </div>
+  );
+};
 
 export const DataStudioTab: React.FC<DataStudioTabProps> = ({
   dataset,
@@ -148,7 +203,11 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                           <TableCell className="py-4 overflow-hidden text-ellipsis">{image.filename}</TableCell>
                           <TableCell className="py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
                             <div className="flex flex-col items-center gap-2 w-full min-w-0">
-                              <img src={image.url} alt={image.filename} className="h-16 w-16 object-cover rounded flex-shrink-0" />
+                              <LazyImage 
+                                src={image.url} 
+                                alt={image.filename} 
+                                className="h-16 w-16 object-cover rounded flex-shrink-0" 
+                              />
                               <a 
                                 href={image.url}
                                 target="_blank"
@@ -177,7 +236,8 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                              <img 
                                src={image.url} 
                                alt={image.filename} 
-                               className="max-w-full max-h-[50vh] object-contain rounded-md" 
+                               className="max-w-full max-h-[50vh] object-contain rounded-md"
+                               loading="lazy"
                              />
                            </div>
                            <div className="text-sm space-y-2 min-w-0">
@@ -228,6 +288,7 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
             src={selectedImage.url} 
             alt={selectedImage.filename} 
             className="max-w-[90vw] max-h-[90vh] object-contain"
+            loading="lazy"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
