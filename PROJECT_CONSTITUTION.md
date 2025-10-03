@@ -48,6 +48,15 @@ The project is architected with a distinct frontend and backend.
     *   **`checkJwt`**: Enforces authentication, returning 401 if no valid token is provided, sets `req.user` for authorized access
     *   **`checkJwtOptional`**: Allows optional authentication, properly sets `req.user` for authenticated requests while allowing anonymous access, essential for private dataset visibility logic
 *   **Token Management**: Upon successful login, the server issues a token containing the user's `id`, `username`, `email`, and `role`. The client stores this token in `localStorage` and includes it in the `Authorization` header for all subsequent API requests.
+*   **Remember Me Functionality**: Advanced session persistence system for long-term user sessions:
+    *   **Flexible Token Expiration**: Tokens have different lifetimes based on user preference - 1 hour for standard login, 30 days for "Remember Me" sessions
+    *   **Smart Token Preservation**: JWT middleware intelligently preserves original token expiration time during automatic refresh cycles, preventing premature session termination
+    *   **Seamless User Experience**: Users with "Remember Me" enabled remain authenticated across browser sessions and page refreshes for up to 30 days
+    *   **Security Balance**: Short-lived tokens for temporary sessions (1 hour) provide security for shared devices, while long-lived tokens (30 days) offer convenience for personal devices
+*   **Token Refresh Architecture**: Sophisticated token management system that maintains session integrity:
+    *   **Automatic Refresh**: On every authenticated API request, middleware regenerates tokens with preserved expiration time
+    *   **Expiration Preservation**: New tokens maintain the original expiration timestamp from the initial login, respecting "Remember Me" settings
+    *   **Client-Side Sync**: Axios interceptors automatically capture refreshed tokens from response headers and update `localStorage`
 *   **Role-Based Access Control (RBAC)**: The system defines three user roles with dataset-specific permissions:
     1.  `Administrator`: Full control over all users and datasets, including private datasets of other users, access to admin panel
     2.  `Developer`: Can create datasets and manage their own (both public and private)
@@ -154,6 +163,11 @@ During development, several critical issues were identified and resolved:
 *   **URL Duplication Bug**: Fixed critical bug where API URLs were duplicated (e.g., `/api/api/datasets`) due to conflicting base URL configurations, causing 404 errors.
 *   **React Navigation Error**: Resolved React error #300 during logout by replacing window.location.href with proper React Router navigation, preventing component lifecycle conflicts.
 *   **Global Authentication Context**: Implemented centralized AuthContext to replace multiple useAuth hook instances, ensuring consistent user state across all components and preventing authentication desynchronization issues.
+*   **Session Persistence Issue**: Resolved critical session management bug where users were unexpectedly logged out after page refresh:
+    *   **Root Cause**: JWT middleware was overwriting long-lived tokens with fixed 1-hour expiration on every API request, ignoring the original "Remember Me" setting
+    *   **Impact**: Users who selected "Remember Me" (30-day tokens) were forcibly logged out after 1 hour due to automatic token regeneration
+    *   **Solution**: Implemented intelligent token refresh mechanism that extracts and preserves original expiration timestamp (`exp`) from incoming JWT, then regenerates tokens with the same remaining lifetime
+    *   **Result**: "Remember Me" functionality now works as intended - users stay authenticated for 30 days across browser sessions and page refreshes, while standard logins maintain 1-hour security for shared devices
 
 ---
 
@@ -161,7 +175,10 @@ During development, several critical issues were identified and resolved:
 
 This section provides a summary of the core features implemented in the application.
 
-*   **Full User Authentication**: Implemented complete user registration and login flow (`/api/auth/register`, `/api/auth/login`) using JWT and password hashing (`bcrypt`).
+*   **Full User Authentication**: Implemented complete user registration and login flow (`/api/auth/register`, `/api/auth/login`) using JWT and password hashing (`bcrypt`) with advanced session management:
+    *   **Remember Me Support**: User-controlled session persistence with checkbox on login form
+    *   **Flexible Token Lifetime**: 1-hour tokens for standard login (secure for shared devices), 30-day tokens for "Remember Me" sessions (convenience for personal devices)
+    *   **Frontend Integration**: Complete UI implementation with translated checkbox labels (English/Russian) and proper state management
 *   **Role-Based Access Control (RBAC)**: Developed a full RBAC system (Administrator, Developer, User) that governs all API actions with proper middleware implementation.
 *   **CRUD API for Datasets**: Built a full CRUD API (`/api/datasets`) that respects RBAC rules for creating, reading, updating, and deleting datasets. The API properly handles user relations and authorization for private datasets. Enhanced with comprehensive statistics endpoint (`/api/datasets/:id/statistics`) providing:
     *   **Resolution Distribution Analytics**: Server-side calculation of image resolution statistics with percentage breakdowns and frequency sorting
@@ -243,11 +260,13 @@ This section provides a summary of the core features implemented in the applicat
     *   **Audit and Logging**: All administrative actions are tracked and logged with detailed information for security and compliance
     *   **Professional UI**: Modern tabbed interface with data tables, role badges, and intuitive action buttons
     *   **Complete Localization**: Full translation support for all admin panel features in English and Russian
-*   **Enhanced Authentication Architecture**: Robust authentication system with advanced JWT management:
+*   **Enhanced Authentication Architecture**: Robust authentication system with advanced JWT management and session persistence:
     *   **Centralized Auth Context**: Single source of truth for user authentication state across all components using React Context
-    *   **Automatic Token Management**: Axios interceptors automatically handle JWT token injection and refresh cycles
+    *   **Automatic Token Management**: Axios interceptors automatically handle JWT token injection and intelligent refresh cycles that preserve original expiration times
+    *   **Remember Me Functionality**: Complete implementation of long-term session support with user-controlled token lifetime (1 hour for standard login, 30 days with "Remember Me" checkbox)
+    *   **Smart Token Refresh**: Sophisticated middleware that regenerates tokens on every API request while maintaining the original expiration timestamp, ensuring "Remember Me" sessions persist correctly
     *   **Smart Error Handling**: Automatic logout and redirect on authentication failures with proper error messaging
-    *   **Session Persistence**: Secure token storage with automatic expiration handling and validation
+    *   **Session Persistence**: Secure token storage with automatic expiration handling, validation, and seamless synchronization between backend refresh and frontend storage
 *   **Universal Dataset Creation**: Democratized dataset creation allowing all authenticated users to create and manage datasets:
     *   **Role Accessibility**: Removed Developer-only restriction, now all user roles can create datasets
     *   **Consistent UI**: Updated all interface elements to reflect the new permission model
@@ -288,7 +307,9 @@ This section provides a summary of the core features implemented in the applicat
 
 ## Document Version History
 
-*Latest Update: January 2025 - Advanced Dataset Analytics Implementation: Deployed comprehensive dataset statistics system featuring real-time resolution distribution analysis with interactive expandable displays, automatic neural network training compatibility validation (64px divisibility check), prompt length analytics for text-to-image datasets, server-side performance optimization with efficient database queries, and color-coded visual feedback system. Enhanced Dataset Card component with professional statistics dashboard, progress bars, and seamless integration with CSV upload workflow for automatic statistics refresh.*
+*Latest Update: January 2025 - Session Persistence & Remember Me Implementation: Resolved critical session management bug and implemented comprehensive "Remember Me" functionality with flexible token expiration (1 hour standard, 30 days with Remember Me), intelligent token refresh middleware that preserves original expiration timestamps, complete frontend integration with checkbox control, and seamless synchronization between backend token generation and frontend storage. Enhanced authentication architecture documentation with detailed token management flows and session persistence mechanisms.*
+
+*January 2025 - Advanced Dataset Analytics Implementation: Deployed comprehensive dataset statistics system featuring real-time resolution distribution analysis with interactive expandable displays, automatic neural network training compatibility validation (64px divisibility check), prompt length analytics for text-to-image datasets, server-side performance optimization with efficient database queries, and color-coded visual feedback system. Enhanced Dataset Card component with professional statistics dashboard, progress bars, and seamless integration with CSV upload workflow for automatic statistics refresh.*
 
 *January 2025 - Revolutionary Dataset Page Architecture: Implemented comprehensive tabbed interface system for dataset pages with four distinct sections (Dataset Card, Data Studio, Files and versions, Community), complete file management system with CSV storage and download functionality, enhanced data visualization with scrollable content areas and sticky pagination, URL state management for deep linking with tab parameters, and modular component architecture ready for future community features*
 
