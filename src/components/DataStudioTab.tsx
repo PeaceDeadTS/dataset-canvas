@@ -172,9 +172,9 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
     try {
       const cleanUrl = url.split('?')[0];
       const parts = cleanUrl.split('.');
-      return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : 'Unknown';
+      return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : t('common:imageDetails.unknown');
     } catch {
-      return 'Unknown';
+      return t('common:imageDetails.unknown');
     }
   };
 
@@ -311,12 +311,12 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                              />
                            </div>
                            <div className="text-sm space-y-2 min-w-0">
-                            <p><strong>Filename:</strong> {image.filename}</p>
-                            <p><strong>File extension:</strong> {getFileExtension(image.url)}</p>
-                            <p><strong>Dimensions:</strong> {image.width} × {image.height} pixels</p>
-                            <p><strong>Aspect ratio:</strong> {formatAspectRatio(image.width, image.height)}</p>
+                            <p><strong>{t('common:imageDetails.filename')}:</strong> {image.filename}</p>
+                            <p><strong>{t('common:imageDetails.fileExtension')}:</strong> {getFileExtension(image.url)}</p>
+                            <p><strong>{t('common:imageDetails.dimensions')}:</strong> {image.width} × {image.height} {t('common:imageDetails.pixels')}</p>
+                            <p><strong>{t('common:imageDetails.aspectRatio')}:</strong> {formatAspectRatio(image.width, image.height)}</p>
                             <div>
-                              <p><strong>URL:</strong></p>
+                              <p><strong>{t('common:imageDetails.url')}:</strong></p>
                               <a 
                                 href={image.url}
                                 target="_blank"
@@ -328,7 +328,7 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                             </div>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <p><strong>Prompt:</strong></p>
+                                <p><strong>{t('common:imageDetails.prompt')}:</strong></p>
                                 {hasPermission('edit_caption') && !isEditingCaption && (
                                   <Button
                                     variant="outline"
@@ -352,7 +352,7 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                                 </p>
                               )}
                             </div>
-                            <p className="font-mono text-xs break-all"><strong>Key:</strong> {image.img_key}</p>
+                            <p className="font-mono text-xs break-all"><strong>{t('common:imageDetails.key')}:</strong> {image.img_key}</p>
                             
                             {hasPermission('edit_caption') && (
                               <>

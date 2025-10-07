@@ -107,5 +107,16 @@
     "daysAgo": "{{count}} day ago",
     "daysAgo_other": "{{count}} days ago",
     "showing": "Showing {{start}} to {{end}} of {{total}} changes"
+  },
+  "imageDetails": {
+    "filename": "Filename",
+    "fileExtension": "File extension",
+    "dimensions": "Dimensions",
+    "aspectRatio": "Aspect ratio",
+    "url": "URL",
+    "prompt": "Prompt",
+    "key": "Key",
+    "unknown": "Unknown",
+    "pixels": "pixels"
   }
 }

@@ -107,5 +107,16 @@
     "daysAgo": "{{count}} день назад",
     "daysAgo_other": "{{count}} дней назад",
     "showing": "Показаны изменения с {{start}} по {{end}} из {{total}}"
+  },
+  "imageDetails": {
+    "filename": "Имя файла",
+    "fileExtension": "Расширение файла",
+    "dimensions": "Размеры",
+    "aspectRatio": "Соотношение сторон",
+    "url": "URL",
+    "prompt": "Промпт",
+    "key": "Ключ",
+    "unknown": "Неизвестно",
+    "pixels": "пикселей"
   }
 }
