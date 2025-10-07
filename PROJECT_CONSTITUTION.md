@@ -342,12 +342,32 @@ This section provides a summary of the core features implemented in the applicat
     *   **Access Control Integration**: Permission checks on both frontend (UI visibility) and backend (API validation)
     *   **Audit Trail**: All caption modifications logged with user ID, old/new values, and timestamps for compliance and accountability
     *   **Full Localization**: Complete i18n support for all UI components (English/Russian) including editor, history list, and diff viewer
+*   **User Edit History System**: MediaWiki-inspired user contribution tracking system for transparency and accountability:
+    *   **User Profile Edits Tab**: Dedicated tab in user profiles (`/users/:username?tab=edits`) displaying all caption edits made by the user
+    *   **Backend API Endpoint**: RESTful API endpoint (`GET /api/users/:id/edits`) with pagination support (page, limit parameters)
+    *   **Comprehensive Edit Display**: Each edit shows dataset name, image key (UUID), timestamp with relative formatting, and diff preview
+    *   **Expandable Diff Viewer**: Click-to-expand interface showing full MediaWiki-style color-coded differences between old and new captions
+    *   **Pagination Support**: Efficient pagination with configurable items per page (default 20, max 100) and proper page navigation
+    *   **Deep Linking**: Direct links from edits to specific datasets and Data Studio views for context
+    *   **TypeScript Type Safety**: Full type definitions for UserEdit interface and PaginatedResponse generic type
+*   **Recent Changes System**: Global activity monitoring inspired by MediaWiki's Recent Changes for community transparency:
+    *   **Dedicated Page**: Standalone page (`/recent-changes`) accessible from Community navigation menu showing site-wide caption edits
+    *   **Backend API Endpoint**: Global endpoint (`GET /api/recent-changes`) aggregating edits from all users with pagination
+    *   **Rich Metadata Display**: Shows editor username, dataset name, dataset owner, image key, and relative timestamps for each change
+    *   **Advanced Query Joins**: Efficient database queries with proper join operations to User, DatasetImage, and Dataset entities
+    *   **Activity Timeline**: Chronologically ordered list of edits (newest first) with expandable diff viewers
+    *   **User Attribution**: Clear attribution showing "User edited Dataset" with clickable links to both user profiles and datasets
+    *   **Navigation Integration**: Prominent placement in Community menu with descriptive subtitle about tracking caption edits
+    *   **Performance Optimization**: Server-side pagination limiting results to 50 per page for optimal performance
+    *   **Complete Localization**: Full i18n support with relative time formatting ("2 hours ago", "3 days ago") in English and Russian
 
 ---
 
 ## Document Version History
 
-*Latest Update: October 2025 - Granular Permissions System & Advanced Caption Editing: Implemented comprehensive permission management system inspired by MediaWiki with flexible Permission entity supporting unlimited permission types, many-to-many user-permission relationships, administrator override capabilities, and dedicated admin interface with full localization. Deployed professional caption editing functionality with inline editor, MediaWiki-style diff viewer with color-coded changes, complete revision history tracking, expandable history list component, and full audit trail. Backend includes permission middleware for access control, API endpoints for permission management, and caption edit history storage with proper foreign key constraints. Frontend features contextual edit buttons, character count, keyboard shortcuts, real-time UI updates, permission-based UI visibility, and complete internationalization support for all new components (CaptionEditor, CaptionHistoryList, DiffViewer) in English and Russian languages.*
+*Latest Update: October 2025 - User Edit History & Recent Changes System: Implemented MediaWiki-inspired contribution tracking and global activity monitoring for complete transparency and accountability. Deployed User Edit History system with dedicated profile tab showing all user caption edits with pagination, expandable diff viewers, and deep linking to datasets. Created Recent Changes page accessible from Community menu for site-wide edit monitoring with rich metadata display including editor, dataset owner, timestamps, and expandable diffs. Backend includes two new API endpoints (`/api/users/:id/edits` and `/api/recent-changes`) with efficient database queries using proper joins to User, DatasetImage, and Dataset entities. Frontend features new UserEditsTab component integrated into user profiles with URL state management, standalone RecentChanges page with comprehensive filtering, lazy-loaded routes for performance, and complete localization in English and Russian with relative time formatting. System provides full audit trail visibility for community-driven caption improvements.*
+
+*October 2025 - Granular Permissions System & Advanced Caption Editing: Implemented comprehensive permission management system inspired by MediaWiki with flexible Permission entity supporting unlimited permission types, many-to-many user-permission relationships, administrator override capabilities, and dedicated admin interface with full localization. Deployed professional caption editing functionality with inline editor, MediaWiki-style diff viewer with color-coded changes, complete revision history tracking, expandable history list component, and full audit trail. Backend includes permission middleware for access control, API endpoints for permission management, and caption edit history storage with proper foreign key constraints. Frontend features contextual edit buttons, character count, keyboard shortcuts, real-time UI updates, permission-based UI visibility, and complete internationalization support for all new components (CaptionEditor, CaptionHistoryList, DiffViewer) in English and Russian languages.*
 
 *October 2025 - Image Loading Performance Optimization: Resolved critical image loading performance issue in Data Studio when displaying 100+ images. Implemented comprehensive lazy loading system using Intersection Observer API with custom LazyImage component, viewport buffering (50px), native browser lazy loading integration, animated skeleton placeholders, and smooth CSS transitions. System now efficiently handles large datasets without browser connection throttling issues, providing smooth progressive loading during scrolling.*
 
