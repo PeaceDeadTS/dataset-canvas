@@ -88,3 +88,60 @@ export interface DatasetStatistics {
     avgPromptLength: number;
     divisibilityCheck: DivisibilityCheck;
 }
+
+// User Edit types for caption editing history
+export interface UserEdit {
+    id: string;
+    oldCaption: string;
+    newCaption: string;
+    createdAt: string;
+    image: {
+        id: number;
+        img_key: string;
+        url: string;
+    };
+    dataset: {
+        id: string;
+        name: string;
+    };
+    user: {
+        id: string;
+        username: string;
+    } | null;
+}
+
+// Recent Change types (extended UserEdit with dataset owner info)
+export interface RecentChange {
+    id: string;
+    oldCaption: string;
+    newCaption: string;
+    createdAt: string;
+    image: {
+        id: number;
+        img_key: string;
+        url: string;
+    };
+    dataset: {
+        id: string;
+        name: string;
+        owner: {
+            id: string;
+            username: string;
+        } | null;
+    };
+    user: {
+        id: string;
+        username: string;
+    } | null;
+}
+
+// Pagination response type
+export interface PaginatedResponse<T> {
+    edits: T[];
+    pagination: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    };
+}

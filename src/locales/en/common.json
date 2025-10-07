@@ -66,5 +66,46 @@
   "register_failed": "Failed to register",
   "dataset_create_success": "Dataset created successfully!",
   "dataset_create_failed": "Failed to create dataset",
-  "remember_me": "Remember me"
+  "remember_me": "Remember me",
+  "pageOf": "Page {{page}} of {{total}}",
+  "userProfile": {
+    "datasetsTab": "Datasets",
+    "editsTab": "Edits",
+    "myPrivateDatasets": "My Private Datasets",
+    "myPublicDatasets": "My Public Datasets",
+    "userPublicDatasets": "{{username}}'s Public Datasets",
+    "noPublicDatasetsOwn": "You haven't created any public datasets yet.",
+    "noPublicDatasetsOther": "{{username}} hasn't created any public datasets yet.",
+    "cannotLoadEdits": "Cannot load edit history"
+  },
+  "userEdits": {
+    "noEdits": "No edits yet",
+    "showDiff": "Show differences",
+    "showLess": "Show less",
+    "justNow": "just now",
+    "minutesAgo": "{{count}} minute ago",
+    "minutesAgo_other": "{{count}} minutes ago",
+    "hoursAgo": "{{count}} hour ago",
+    "hoursAgo_other": "{{count}} hours ago",
+    "daysAgo": "{{count}} day ago",
+    "daysAgo_other": "{{count}} days ago",
+    "showing": "Showing {{start}} to {{end}} of {{total}} edits"
+  },
+  "recentChanges": {
+    "title": "Recent Changes",
+    "description": "Track caption edits across all datasets in the system",
+    "noChanges": "No recent changes",
+    "edited": "edited",
+    "datasetBy": "Dataset by",
+    "showDiff": "Show differences",
+    "showLess": "Show less",
+    "justNow": "just now",
+    "minutesAgo": "{{count}} minute ago",
+    "minutesAgo_other": "{{count}} minutes ago",
+    "hoursAgo": "{{count}} hour ago",
+    "hoursAgo_other": "{{count}} hours ago",
+    "daysAgo": "{{count}} day ago",
+    "daysAgo_other": "{{count}} days ago",
+    "showing": "Showing {{start}} to {{end}} of {{total}} changes"
+  }
 }

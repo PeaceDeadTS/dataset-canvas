@@ -22,6 +22,8 @@
   "users_regular_description": "Обычные пользователи системы",
   "users_admins": "Администраторы",
   "users_admins_description": "Администраторы системы с полными правами",
+  "recent_changes": "Недавние изменения",
+  "recent_changes_description": "Отслеживание недавних правок описаний во всех датасетах",
   "users_my_profile": "Мой профиль",
   "users_my_profile_description": "Просмотр и редактирование вашего профиля",
   "overview": "Обзор",

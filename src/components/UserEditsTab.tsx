@@ -1,0 +1,200 @@
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import axios from '@/lib/axios';
+import { UserEdit, PaginatedResponse } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, ChevronLeft, ChevronRight, FileEdit } from 'lucide-react';
+import { DiffViewer } from '@/components/DiffViewer';
+
+interface UserEditsTabProps {
+  userId: string;
+}
+
+const UserEditsTab = ({ userId }: UserEditsTabProps) => {
+  const { t } = useTranslation();
+  const [data, setData] = useState<PaginatedResponse<UserEdit> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [expandedEditId, setExpandedEditId] = useState<string | null>(null);
+  const limit = 20;
+
+  useEffect(() => {
+    const fetchEdits = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get<PaginatedResponse<UserEdit>>(
+          `/users/${userId}/edits?page=${page}&limit=${limit}`
+        );
+        setData(response.data);
+      } catch (err) {
+        console.error('Failed to fetch user edits:', err);
+        setError('Failed to load user edits');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEdits();
+  }, [userId, page]);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return t('userEdits.justNow');
+    if (diffMins < 60) return t('userEdits.minutesAgo', { count: diffMins });
+    if (diffHours < 24) return t('userEdits.hoursAgo', { count: diffHours });
+    if (diffDays < 7) return t('userEdits.daysAgo', { count: diffDays });
+    
+    return date.toLocaleDateString();
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-32 w-full" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-destructive">{error}</p>
+      </div>
+    );
+  }
+
+  if (!data || data.edits.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <FileEdit className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+        <p className="text-muted-foreground text-lg">{t('userEdits.noEdits')}</p>
+      </div>
+    );
+  }
+
+  const { edits, pagination } = data;
+
+  return (
+    <div className="space-y-6">
+      {/* Edits List */}
+      <div className="space-y-4">
+        {edits.map((edit) => (
+          <div
+            key={edit.id}
+            className="bg-card border border-border rounded-lg p-4 space-y-3"
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-3 mb-2">
+                  <Link 
+                    to={`/datasets/${edit.dataset.id}?tab=data-studio`}
+                    className="text-lg font-semibold hover:text-primary transition-colors"
+                  >
+                    {edit.dataset.name}
+                  </Link>
+                  <Badge variant="outline" className="text-xs">
+                    {edit.image.img_key}
+                  </Badge>
+                </div>
+                
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  <span>{formatDate(edit.createdAt)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Diff Preview */}
+            <div className="bg-muted/30 rounded p-3">
+              {expandedEditId === edit.id ? (
+                <div>
+                  <DiffViewer 
+                    oldText={edit.oldCaption} 
+                    newText={edit.newCaption} 
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setExpandedEditId(null)}
+                    className="mt-2"
+                  >
+                    {t('userEdits.showLess')}
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {edit.newCaption}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setExpandedEditId(edit.id)}
+                    className="mt-2"
+                  >
+                    {t('userEdits.showDiff')}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-border pt-4">
+          <div className="text-sm text-muted-foreground">
+            {t('userEdits.showing', {
+              start: (pagination.page - 1) * pagination.limit + 1,
+              end: Math.min(pagination.page * pagination.limit, pagination.total),
+              total: pagination.total
+            })}
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(page - 1)}
+              disabled={page === 1}
+            >
+              <ChevronLeft className="w-4 h-4" />
+              {t('common.previous')}
+            </Button>
+
+            <span className="text-sm px-3">
+              {t('common.pageOf', { page: pagination.page, total: pagination.totalPages })}
+            </span>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(page + 1)}
+              disabled={page === pagination.totalPages}
+            >
+              {t('common.next')}
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default UserEditsTab;
+

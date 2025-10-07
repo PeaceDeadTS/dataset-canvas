@@ -66,5 +66,46 @@
   "register_failed": "Не удалось зарегистрироваться",
   "dataset_create_success": "Датасет успешно создан!",
   "dataset_create_failed": "Не удалось создать датасет",
-  "remember_me": "Запомнить меня"
+  "remember_me": "Запомнить меня",
+  "pageOf": "Страница {{page}} из {{total}}",
+  "userProfile": {
+    "datasetsTab": "Датасеты",
+    "editsTab": "Правки",
+    "myPrivateDatasets": "Мои приватные датасеты",
+    "myPublicDatasets": "Мои публичные датасеты",
+    "userPublicDatasets": "Публичные датасеты пользователя {{username}}",
+    "noPublicDatasetsOwn": "Вы еще не создали ни одного публичного датасета.",
+    "noPublicDatasetsOther": "У пользователя {{username}} еще нет публичных датасетов.",
+    "cannotLoadEdits": "Не удалось загрузить историю правок"
+  },
+  "userEdits": {
+    "noEdits": "Правок пока нет",
+    "showDiff": "Показать различия",
+    "showLess": "Свернуть",
+    "justNow": "только что",
+    "minutesAgo": "{{count}} минуту назад",
+    "minutesAgo_other": "{{count}} минут назад",
+    "hoursAgo": "{{count}} час назад",
+    "hoursAgo_other": "{{count}} часов назад",
+    "daysAgo": "{{count}} день назад",
+    "daysAgo_other": "{{count}} дней назад",
+    "showing": "Показаны правки с {{start}} по {{end}} из {{total}}"
+  },
+  "recentChanges": {
+    "title": "Недавние изменения",
+    "description": "Отслеживание правок описаний во всех датасетах системы",
+    "noChanges": "Недавних изменений нет",
+    "edited": "отредактировал(а)",
+    "datasetBy": "Датасет от",
+    "showDiff": "Показать различия",
+    "showLess": "Свернуть",
+    "justNow": "только что",
+    "minutesAgo": "{{count}} минуту назад",
+    "minutesAgo_other": "{{count}} минут назад",
+    "hoursAgo": "{{count}} час назад",
+    "hoursAgo_other": "{{count}} часов назад",
+    "daysAgo": "{{count}} день назад",
+    "daysAgo_other": "{{count}} дней назад",
+    "showing": "Показаны изменения с {{start}} по {{end}} из {{total}}"
+  }
 }

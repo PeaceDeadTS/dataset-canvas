@@ -220,6 +220,12 @@ export function AppHeader() {
                     >
                       {t('navigation:users_admins_description')}
                     </ListItem>
+                    <ListItem
+                      title={t('navigation:recent_changes')}
+                      href="/recent-changes"
+                    >
+                      {t('navigation:recent_changes_description')}
+                    </ListItem>
                     {user && (
                       <ListItem
                         title={t('navigation:users_my_profile')}

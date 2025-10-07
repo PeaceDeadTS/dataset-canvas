@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import axios from '@/lib/axios';
 import { AppHeader } from "@/components/AppHeader";
 import { DatasetListItem } from "@/components/DatasetListItem";
+import UserEditsTab from "@/components/UserEditsTab";
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { Dataset } from "@/types";
 import { Badge } from '@/components/ui/badge';
-import { Calendar, User as UserIcon, Mail } from 'lucide-react';
+import { Calendar, User as UserIcon, Mail, Database, FileEdit } from 'lucide-react';
 
 const API_URL = '/users';
 
 interface UserProfile {
+  id?: string;
   username: string;
   email?: string;
   role: string;
@@ -25,10 +29,13 @@ interface UserPageData {
 
 const UserPage = () => {
   const { username } = useParams<{ username: string }>();
+  const { t } = useTranslation();
   const { user: currentUser } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<UserPageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const activeTab = searchParams.get('tab') || 'datasets';
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -139,44 +146,78 @@ const UserPage = () => {
           </div>
         </section>
 
-        {/* Datasets Sections */}
-        {isOwnProfile && privateDatasets.length > 0 && (
-          <section>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">My Private Datasets</h2>
-              <Badge variant="secondary">{privateDatasets.length} datasets</Badge>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {privateDatasets.map(dataset => (
-                <DatasetListItem key={dataset.id} dataset={dataset} />
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Tabs Section */}
+        <Tabs 
+          value={activeTab} 
+          onValueChange={(value) => setSearchParams({ tab: value })}
+          className="space-y-6"
+        >
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="datasets" className="flex items-center space-x-2">
+              <Database className="w-4 h-4" />
+              <span>{t('userProfile.datasetsTab')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="edits" className="flex items-center space-x-2">
+              <FileEdit className="w-4 h-4" />
+              <span>{t('userProfile.editsTab')}</span>
+            </TabsTrigger>
+          </TabsList>
 
-        <section>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">
-              {isOwnProfile ? 'My Public Datasets' : `${data.user.username}'s Public Datasets`}
-            </h2>
-            <Badge variant="outline">{publicDatasets.length} datasets</Badge>
-          </div>
-          
-          {publicDatasets.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {publicDatasets.map(dataset => (
-                <DatasetListItem key={dataset.id} dataset={dataset} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">
-                {isOwnProfile ? 'You haven\'t created any public datasets yet.' : 
-                 `${data.user.username} hasn't created any public datasets yet.`}
-              </p>
-            </div>
-          )}
-        </section>
+          {/* Datasets Tab */}
+          <TabsContent value="datasets" className="space-y-8">
+            {isOwnProfile && privateDatasets.length > 0 && (
+              <section>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">{t('userProfile.myPrivateDatasets')}</h2>
+                  <Badge variant="secondary">{privateDatasets.length} {t('common.datasets')}</Badge>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {privateDatasets.map(dataset => (
+                    <DatasetListItem key={dataset.id} dataset={dataset} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <section>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">
+                  {isOwnProfile 
+                    ? t('userProfile.myPublicDatasets')
+                    : t('userProfile.userPublicDatasets', { username: data.user.username })}
+                </h2>
+                <Badge variant="outline">{publicDatasets.length} {t('common.datasets')}</Badge>
+              </div>
+              
+              {publicDatasets.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {publicDatasets.map(dataset => (
+                    <DatasetListItem key={dataset.id} dataset={dataset} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground text-lg">
+                    {isOwnProfile 
+                      ? t('userProfile.noPublicDatasetsOwn')
+                      : t('userProfile.noPublicDatasetsOther', { username: data.user.username })}
+                  </p>
+                </div>
+              )}
+            </section>
+          </TabsContent>
+
+          {/* Edits Tab */}
+          <TabsContent value="edits">
+            {data.user.id ? (
+              <UserEditsTab userId={data.user.id} />
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">{t('userProfile.cannotLoadEdits')}</p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

@@ -22,6 +22,8 @@
   "users_regular_description": "Regular system users", 
   "users_admins": "Administrators", 
   "users_admins_description": "System administrators with full rights",
+  "recent_changes": "Recent Changes",
+  "recent_changes_description": "Track recent caption edits across all datasets",
   "users_my_profile": "My Profile",
   "users_my_profile_description": "View and edit your profile",
   "overview": "Overview",
