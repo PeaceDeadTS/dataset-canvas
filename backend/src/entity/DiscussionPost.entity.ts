@@ -30,8 +30,8 @@ export class DiscussionPost {
   @JoinColumn({ name: 'author_id' })
   author!: User;
 
-  @Column({ name: 'author_id' })
-  authorId!: number;
+  @Column({ name: 'author_id', type: 'uuid' })
+  authorId!: string;
 
   @Column({ type: 'text' })
   content!: string;
@@ -53,8 +53,8 @@ export class DiscussionPost {
   @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
   deletedAt!: Date | null;
 
-  @Column({ name: 'deleted_by_id', nullable: true })
-  deletedById!: number | null;
+  @Column({ name: 'deleted_by_id', type: 'uuid', nullable: true })
+  deletedById!: string | null;
 
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'deleted_by_id' })

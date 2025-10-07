@@ -150,9 +150,9 @@ export interface PaginatedResponse<T> {
 export interface Discussion {
     id: number;
     title: string;
-    datasetId: number;
+    datasetId: string;
     dataset?: Dataset;
-    authorId: number;
+    authorId: string;
     author?: User;
     posts?: DiscussionPost[];
     isLocked: boolean;
@@ -168,14 +168,14 @@ export interface DiscussionPost {
     id: number;
     discussionId: number;
     discussion?: Discussion;
-    authorId: number;
+    authorId: string;
     author?: User;
     content: string;
     replyToId: number | null;
     replyTo?: DiscussionPost | null;
     isDeleted: boolean;
     deletedAt: string | null;
-    deletedById: number | null;
+    deletedById: string | null;
     deletedBy?: User | null;
     createdAt: string;
     updatedAt: string;
@@ -186,7 +186,7 @@ export interface DiscussionEditHistory {
     id: number;
     postId: number;
     post?: DiscussionPost;
-    editorId: number;
+    editorId: string;
     editor?: User;
     oldContent: string;
     newContent: string;

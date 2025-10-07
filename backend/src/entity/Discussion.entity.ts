@@ -24,15 +24,15 @@ export class Discussion {
   @JoinColumn({ name: 'dataset_id' })
   dataset!: Dataset;
 
-  @Column({ name: 'dataset_id' })
-  datasetId!: number;
+  @Column({ name: 'dataset_id', type: 'uuid' })
+  datasetId!: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'author_id' })
   author!: User;
 
-  @Column({ name: 'author_id' })
-  authorId!: number;
+  @Column({ name: 'author_id', type: 'uuid' })
+  authorId!: string;
 
   @OneToMany(() => DiscussionPost, (post) => post.discussion, { cascade: true })
   posts!: DiscussionPost[];

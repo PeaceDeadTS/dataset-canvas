@@ -27,8 +27,8 @@ export class DiscussionEditHistory {
   @JoinColumn({ name: 'editor_id' })
   editor!: User;
 
-  @Column({ name: 'editor_id' })
-  editorId!: number;
+  @Column({ name: 'editor_id', type: 'uuid' })
+  editorId!: string;
 
   @Column({ name: 'old_content', type: 'text' })
   oldContent!: string;
