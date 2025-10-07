@@ -361,11 +361,78 @@ This section provides a summary of the core features implemented in the applicat
     *   **Performance Optimization**: Server-side pagination limiting results to 50 per page for optimal performance
     *   **Complete Localization**: Full i18n support with relative time formatting ("2 hours ago", "3 days ago") in English and Russian
 
+### 5.8. Discussion System (Partially Implemented)
+
+*   **Backend Infrastructure (Fully Implemented)**: Complete discussion system infrastructure with robust database schema and API endpoints:
+    *   **Entity Architecture**: Three TypeORM entities (`Discussion`, `DiscussionPost`, `DiscussionEditHistory`) with proper foreign key relationships using UUID for users/datasets and auto-increment IDs for discussions/posts
+    *   **Database Schema**: MariaDB tables with proper indexes on frequently queried fields (dataset_id, author_id, created_at), cascading deletes for data integrity, and soft delete support for posts
+    *   **Comprehensive API**: RESTful endpoints covering full CRUD operations:
+        *   `GET /api/datasets/:id/discussions` - List all discussions for a dataset
+        *   `POST /api/datasets/:id/discussions` - Create new discussion with initial post
+        *   `GET /api/discussions/:id` - Get single discussion with all posts and replies
+        *   `POST /api/discussions/:id/posts` - Add reply to discussion
+        *   `PATCH /api/posts/:id` - Edit post with automatic history tracking
+        *   `GET /api/posts/:id/history` - Retrieve post edit history
+        *   `DELETE /api/discussions/:id` - Delete discussion (admin only)
+        *   `DELETE /api/posts/:id` - Soft delete post
+        *   `PATCH /api/discussions/:id/lock` - Lock/unlock discussion
+        *   `PATCH /api/discussions/:id/pin` - Pin/unpin discussion
+    *   **Permission System**: Six granular permissions integrated into existing permission framework:
+        *   `read_discussions` - Read discussions and posts (default: all users)
+        *   `create_discussions` - Create new discussion threads (default: authenticated users)
+        *   `reply_to_discussions` - Reply to discussions (default: authenticated users)
+        *   `edit_own_posts` - Edit own posts (default: authenticated users)
+        *   `edit_all_posts` - Edit any post (default: administrators only)
+        *   `delete_discussions` - Delete threads and posts (default: administrators only)
+    *   **Middleware Protection**: Custom `checkDiscussionPermission` middleware with automatic administrator bypass and granular access control
+    *   **Recent Changes Integration (Backend)**: Extended Recent Changes API to aggregate discussion activity alongside caption edits:
+        *   Support for four activity types: `caption_edit`, `discussion_created`, `discussion_post`, `post_edit`
+        *   Unified change interface with proper timestamps and user attribution
+        *   Efficient database queries with proper joins to related entities
+    *   **User Activity Tracking (Backend)**: Extended User Edits API to include discussion contributions in user profiles
+
+*   **Frontend Implementation (Basic Functionality)**: Core UI components for discussion interaction:
+    *   **DiscussionList Component**: Card-based list displaying discussions with metadata (post count, last activity, pinned/locked badges), empty state with call-to-action, and integration with create dialog
+    *   **CreateDiscussionDialog Component**: Modal dialog for creating discussions with title and initial post content, validation, and loading states
+    *   **DiscussionThread Component**: Full thread view showing discussion header with back navigation, all posts in chronological order, reply functionality with inline editor, and proper loading/error states
+    *   **DiscussionPostComponent**: Individual post display with user avatar placeholder, timestamp with relative time formatting, reply quotation support, action buttons (reply/edit/delete), and soft-delete indicator
+    *   **PostEditor Component**: Rich text editor for posts with reply quotation display, character count, keyboard shortcuts (Ctrl+Enter to submit, Esc to cancel), and submit/cancel actions
+    *   **Navigation Integration**: Seamless switching between discussion list and individual thread views within CommunityTab, with proper state management and data refresh
+
+*   **Features NOT Yet Implemented**:
+    *   **Frontend Edit Functionality**: Post editing UI not connected to backend API
+    *   **Post Edit History Display**: `PostEditHistory` component not created, no UI for viewing revision history with diffs
+    *   **Admin Moderation Tools**: Lock/Pin/Delete buttons visible but not functional in frontend
+    *   **Recent Changes Integration (Frontend)**: Recent Changes page doesn't display discussion activity types
+    *   **User Profile Integration (Frontend)**: User Edits tab doesn't show discussion contributions
+    *   **Admin Panel Integration**: Permission management for discussion permissions not added to admin interface
+    *   **Real-time Updates**: No WebSocket or polling for live discussion updates
+    *   **Rich Text Formatting**: Plain text only, no markdown/formatting support
+    *   **Notifications**: No notification system for replies or mentions
+    *   **Search**: No search functionality within discussions
+    *   **Moderation Queue**: No moderation tools for flagged content
+
+*   **Technical Implementation Details**:
+    *   **Type Safety**: Complete TypeScript type definitions for all discussion entities with proper UUID/number type handling
+    *   **Localization**: Full i18n support for all discussion UI elements in English and Russian
+    *   **Error Handling**: Comprehensive error handling with user-friendly toast notifications
+    *   **Responsive Design**: Mobile-friendly UI with adaptive layouts using Tailwind CSS
+    *   **Performance**: Efficient database queries with proper indexing and relation loading
+
+*   **Known Issues and Limitations**:
+    *   Edit functionality partially implemented (backend ready, frontend incomplete)
+    *   Post edit history tracking works but no UI to display it
+    *   Admin moderation features (lock/pin/delete) need frontend integration
+    *   Discussion activity not yet integrated into Recent Changes and User Edits pages
+    *   Permission management for discussion permissions not in admin panel
+
 ---
 
 ## Document Version History
 
-*Latest Update: October 2025 - User Edit History & Recent Changes System: Implemented MediaWiki-inspired contribution tracking and global activity monitoring for complete transparency and accountability. Deployed User Edit History system with dedicated profile tab showing all user caption edits with pagination, expandable diff viewers, and deep linking to datasets. Created Recent Changes page accessible from Community menu for site-wide edit monitoring with rich metadata display including editor, dataset owner, timestamps, and expandable diffs. Backend includes two new API endpoints (`/api/users/:id/edits` and `/api/recent-changes`) with efficient database queries using proper joins to User, DatasetImage, and Dataset entities. Frontend features new UserEditsTab component integrated into user profiles with URL state management, standalone RecentChanges page with comprehensive filtering, lazy-loaded routes for performance, and complete localization in English and Russian with relative time formatting. System provides full audit trail visibility for community-driven caption improvements.*
+*Latest Update: January 2025 - Discussion System Implementation: Deployed comprehensive discussion system with complete backend infrastructure including three TypeORM entities (Discussion, DiscussionPost, DiscussionEditHistory), full RESTful API with 10 endpoints covering CRUD operations, granular permission system with six distinct permissions integrated into existing framework, custom middleware for access control, and extended Recent Changes/User Edits APIs to track discussion activity. Frontend implementation includes five core components (DiscussionList, CreateDiscussionDialog, DiscussionThread, DiscussionPostComponent, PostEditor) providing basic discussion functionality with create, view, and reply capabilities. System features nested replies with quotations, soft delete support, lock/pin functionality (backend ready), complete internationalization, and responsive design. Known limitations include incomplete edit UI integration, missing post edit history display component, non-functional admin moderation buttons in frontend, and pending integration of discussion activity into Recent Changes and User Edits pages. Backend fully production-ready with robust database schema, proper indexes, cascading deletes, and comprehensive error handling.*
+
+*October 2025 - User Edit History & Recent Changes System: Implemented MediaWiki-inspired contribution tracking and global activity monitoring for complete transparency and accountability. Deployed User Edit History system with dedicated profile tab showing all user caption edits with pagination, expandable diff viewers, and deep linking to datasets. Created Recent Changes page accessible from Community menu for site-wide edit monitoring with rich metadata display including editor, dataset owner, timestamps, and expandable diffs. Backend includes two new API endpoints (`/api/users/:id/edits` and `/api/recent-changes`) with efficient database queries using proper joins to User, DatasetImage, and Dataset entities. Frontend features new UserEditsTab component integrated into user profiles with URL state management, standalone RecentChanges page with comprehensive filtering, lazy-loaded routes for performance, and complete localization in English and Russian with relative time formatting. System provides full audit trail visibility for community-driven caption improvements.*
 
 *October 2025 - Granular Permissions System & Advanced Caption Editing: Implemented comprehensive permission management system inspired by MediaWiki with flexible Permission entity supporting unlimited permission types, many-to-many user-permission relationships, administrator override capabilities, and dedicated admin interface with full localization. Deployed professional caption editing functionality with inline editor, MediaWiki-style diff viewer with color-coded changes, complete revision history tracking, expandable history list component, and full audit trail. Backend includes permission middleware for access control, API endpoints for permission management, and caption edit history storage with proper foreign key constraints. Frontend features contextual edit buttons, character count, keyboard shortcuts, real-time UI updates, permission-based UI visibility, and complete internationalization support for all new components (CaptionEditor, CaptionHistoryList, DiffViewer) in English and Russian languages.*
 
