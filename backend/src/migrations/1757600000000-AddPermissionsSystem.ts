@@ -6,7 +6,7 @@ export class AddPermissionsSystem1757600000000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         // Создаем таблицу permissions
         await queryRunner.query(`CREATE TABLE \`permissions\` (
-            \`id\` varchar(36) NOT NULL, 
+            \`id\` uuid NOT NULL, 
             \`name\` varchar(100) NOT NULL, 
             \`displayName\` varchar(255) NOT NULL, 
             \`description\` text NULL, 
@@ -18,8 +18,8 @@ export class AddPermissionsSystem1757600000000 implements MigrationInterface {
 
         // Создаем таблицу связи user_permissions (many-to-many)
         await queryRunner.query(`CREATE TABLE \`user_permissions\` (
-            \`userId\` varchar(36) NOT NULL, 
-            \`permissionId\` varchar(36) NOT NULL, 
+            \`userId\` uuid NOT NULL, 
+            \`permissionId\` uuid NOT NULL, 
             INDEX \`IDX_user_permissions_userId\` (\`userId\`), 
             INDEX \`IDX_user_permissions_permissionId\` (\`permissionId\`), 
             PRIMARY KEY (\`userId\`, \`permissionId\`)
@@ -27,9 +27,9 @@ export class AddPermissionsSystem1757600000000 implements MigrationInterface {
 
         // Создаем таблицу caption_edit_history
         await queryRunner.query(`CREATE TABLE \`caption_edit_history\` (
-            \`id\` varchar(36) NOT NULL, 
+            \`id\` uuid NOT NULL, 
             \`imageId\` int NOT NULL, 
-            \`userId\` varchar(36) NULL, 
+            \`userId\` uuid NULL, 
             \`oldCaption\` text NOT NULL, 
             \`newCaption\` text NOT NULL, 
             \`createdAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), 
