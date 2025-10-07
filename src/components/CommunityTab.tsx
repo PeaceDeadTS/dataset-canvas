@@ -32,7 +32,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
                 <MessageSquare className="h-8 w-8 text-blue-500 mr-4" />
                 <div>
                   <div className="text-2xl font-bold">0</div>
-                  <p className="text-sm text-muted-foreground">Discussions</p>
+                  <p className="text-sm text-muted-foreground">{t('common:community.discussions')}</p>
                 </div>
               </CardContent>
             </Card>
@@ -42,7 +42,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
                 <Users className="h-8 w-8 text-green-500 mr-4" />
                 <div>
                   <div className="text-2xl font-bold">0</div>
-                  <p className="text-sm text-muted-foreground">Contributors</p>
+                  <p className="text-sm text-muted-foreground">{t('common:community.contributors')}</p>
                 </div>
               </CardContent>
             </Card>
@@ -52,7 +52,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
                 <Heart className="h-8 w-8 text-red-500 mr-4" />
                 <div>
                   <div className="text-2xl font-bold">0</div>
-                  <p className="text-sm text-muted-foreground">Likes</p>
+                  <p className="text-sm text-muted-foreground">{t('common:community.likes')}</p>
                 </div>
               </CardContent>
             </Card>
@@ -63,18 +63,18 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5" />
-                Discussions
+                {t('common:community.discussionsTitle')}
               </CardTitle>
               <CardDescription>
-                Share your thoughts and ask questions about this dataset
+                {t('common:community.discussionsDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-12 text-muted-foreground">
                 <MessageSquare className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-semibold mb-2">No discussions yet</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('common:community.noDiscussionsYet')}</h3>
                 <p className="text-sm max-w-md mx-auto">
-                  Start a conversation about this dataset. Share your insights, ask questions, or discuss potential improvements.
+                  {t('common:community.noDiscussionsDescription')}
                 </p>
               </div>
             </CardContent>
@@ -83,18 +83,18 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
           {/* Community Guidelines */}
           <Card>
             <CardHeader>
-              <CardTitle>Community Guidelines</CardTitle>
+              <CardTitle>{t('common:community.guidelinesTitle')}</CardTitle>
               <CardDescription>
-                Help us maintain a respectful and constructive environment
+                {t('common:community.guidelinesDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Be respectful and constructive in all interactions</li>
-                <li>• Stay on topic and relevant to the dataset</li>
-                <li>• Provide helpful feedback and suggestions</li>
-                <li>• Report any inappropriate content or behavior</li>
-                <li>• Follow our terms of service and privacy policy</li>
+                <li>• {t('common:community.guidelineRespectful')}</li>
+                <li>• {t('common:community.guidelineOnTopic')}</li>
+                <li>• {t('common:community.guidelineHelpful')}</li>
+                <li>• {t('common:community.guidelineReport')}</li>
+                <li>• {t('common:community.guidelineTerms')}</li>
               </ul>
             </CardContent>
           </Card>

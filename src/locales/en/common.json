@@ -118,5 +118,21 @@
     "key": "Key",
     "unknown": "Unknown",
     "pixels": "pixels"
+  },
+  "community": {
+    "discussions": "Discussions",
+    "contributors": "Contributors",
+    "likes": "Likes",
+    "discussionsTitle": "Discussions",
+    "discussionsDescription": "Share your thoughts and ask questions about this dataset",
+    "noDiscussionsYet": "No discussions yet",
+    "noDiscussionsDescription": "Start a conversation about this dataset. Share your insights, ask questions, or discuss potential improvements.",
+    "guidelinesTitle": "Community Guidelines",
+    "guidelinesDescription": "Help us maintain a respectful and constructive environment",
+    "guidelineRespectful": "Be respectful and constructive in all interactions",
+    "guidelineOnTopic": "Stay on topic and relevant to the dataset",
+    "guidelineHelpful": "Provide helpful feedback and suggestions",
+    "guidelineReport": "Report any inappropriate content or behavior",
+    "guidelineTerms": "Follow our terms of service and privacy policy"
   }
 }
