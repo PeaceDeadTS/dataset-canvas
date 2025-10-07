@@ -49,18 +49,18 @@ export const CaptionEditor: React.FC<CaptionEditorProps> = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 w-full">
       <Textarea
         value={caption}
         onChange={(e) => setCaption(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="min-h-[150px] resize-y"
+        className="min-h-[120px] sm:min-h-[150px] md:min-h-[180px] resize-y w-full"
         placeholder={t('pages:dataset.caption_editor_placeholder')}
         autoFocus
         disabled={isSaving}
       />
       
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-muted-foreground">
         <span>
           {caption.length} {t('pages:dataset.caption_editor_characters')}
         </span>
@@ -69,7 +69,7 @@ export const CaptionEditor: React.FC<CaptionEditorProps> = ({
         </span>
       </div>
 
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
         <Button
           variant="outline"
           size="sm"

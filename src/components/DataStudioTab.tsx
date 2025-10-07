@@ -294,23 +294,23 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                           <TableCell className="py-4 overflow-hidden text-ellipsis">{image.prompt}</TableCell>
                         </TableRow>
                       </DialogTrigger>
-                      <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
+                      <DialogContent className="w-[95vw] sm:w-[90vw] md:w-[85vw] lg:w-[80vw] lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl max-h-[90vh] overflow-hidden">
                         <DialogHeader>
                           <DialogTitle>{selectedImageForDialog?.filename || image.filename}</DialogTitle>
                           <DialogDescription>
                             {t('pages:dataset.image_details')}
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="grid gap-4 py-4 max-h-[calc(90vh-8rem)] overflow-y-auto">
-                           <div className="flex justify-center">
+                        <div className="grid gap-4 py-4 max-h-[calc(90vh-10rem)] overflow-y-auto">
+                           <div className="flex justify-center w-full">
                              <img 
                                src={image.url} 
                                alt={image.filename} 
-                               className="max-w-full max-h-[50vh] object-contain rounded-md"
+                               className="max-w-full max-h-[40vh] sm:max-h-[45vh] md:max-h-[50vh] object-contain rounded-md"
                                loading="lazy"
                              />
                            </div>
-                           <div className="text-sm space-y-2 min-w-0">
+                           <div className="text-sm space-y-2 w-full min-w-0">
                             <p><strong>{t('common:imageDetails.filename')}:</strong> {image.filename}</p>
                             <p><strong>{t('common:imageDetails.fileExtension')}:</strong> {getFileExtension(image.url)}</p>
                             <p><strong>{t('common:imageDetails.dimensions')}:</strong> {image.width} × {image.height} {t('common:imageDetails.pixels')}</p>
