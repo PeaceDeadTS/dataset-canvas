@@ -19,8 +19,8 @@ router.get(
   checkJwtOptional,
   async (req, res) => {
     try {
-      const datasetId = Number(req.params.datasetId);
-      const userId = req.user?.id;
+      const datasetId = req.params.datasetId;
+      const userId = req.user?.userId;
 
       // Check if dataset exists and user has access
       const datasetRepository = AppDataSource.manager.getRepository(Dataset);
@@ -99,8 +99,8 @@ router.post(
   checkDiscussionPermission('create_discussions'),
   async (req, res) => {
     try {
-      const datasetId = Number(req.params.datasetId);
-      const userId = req.user!.id;
+      const datasetId = req.params.datasetId;
+      const userId = req.user!.userId;
       const { title, content } = req.body;
 
       if (!title || !content) {
@@ -161,7 +161,7 @@ router.post(
 router.get('/discussions/:id', checkJwtOptional, async (req, res) => {
   try {
     const discussionId = Number(req.params.id);
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
 
     const discussionRepository =
       AppDataSource.manager.getRepository(Discussion);
@@ -218,7 +218,7 @@ router.post(
   async (req, res) => {
     try {
       const discussionId = Number(req.params.id);
-      const userId = req.user!.id;
+      const userId = req.user!.userId;
       const { content, replyToId } = req.body;
 
       if (!content) {
@@ -278,7 +278,7 @@ router.patch(
   async (req, res) => {
     try {
       const postId = Number(req.params.id);
-      const userId = req.user!.id;
+      const userId = req.user!.userId;
       const { content } = req.body;
 
       if (!content) {
@@ -355,7 +355,7 @@ router.delete(
   async (req, res) => {
     try {
       const discussionId = Number(req.params.id);
-      const userId = req.user!.id;
+      const userId = req.user!.userId;
 
       const discussionRepository =
         AppDataSource.manager.getRepository(Discussion);
@@ -389,7 +389,7 @@ router.delete(
   async (req, res) => {
     try {
       const postId = Number(req.params.id);
-      const userId = req.user!.id;
+      const userId = req.user!.userId;
 
       const postRepository = AppDataSource.manager.getRepository(DiscussionPost);
       const post = await postRepository.findOne({

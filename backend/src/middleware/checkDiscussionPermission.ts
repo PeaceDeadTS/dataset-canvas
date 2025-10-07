@@ -11,7 +11,7 @@ import { DiscussionPost } from '../entity/DiscussionPost.entity';
 export const checkDiscussionPermission = (permissionName: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.userId;
 
       if (!userId) {
         return res.status(401).json({ message: 'Authentication required' });
@@ -63,7 +63,7 @@ export const checkCanEditPost = async (
   next: NextFunction
 ) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     const postId = Number(req.params.postId || req.params.id);
 
     if (!userId) {
@@ -97,7 +97,7 @@ export const checkCanEditPost = async (
 
     // Check if user can edit all posts
     const canEditAll = user.permissions?.some(
-      (p) => p.name === 'edit_all_posts'
+      (p) => p.name === ('edit_all_posts' as any)
     );
     if (canEditAll) {
       return next();
@@ -105,7 +105,7 @@ export const checkCanEditPost = async (
 
     // Check if user is the author and has edit_own_posts permission
     const canEditOwn = user.permissions?.some(
-      (p) => p.name === 'edit_own_posts'
+      (p) => p.name === ('edit_own_posts' as any)
     );
     if (canEditOwn && post.authorId === userId) {
       return next();
@@ -134,7 +134,7 @@ export const DEFAULT_DISCUSSION_PERMISSIONS = [
 /**
  * Grant default discussion permissions to a user
  */
-export const grantDefaultDiscussionPermissions = async (userId: number) => {
+export const grantDefaultDiscussionPermissions = async (userId: string) => {
   const permissionRepository = AppDataSource.manager.getRepository(Permission);
   const userRepository = AppDataSource.manager.getRepository(User);
 
@@ -148,7 +148,7 @@ export const grantDefaultDiscussionPermissions = async (userId: number) => {
   }
 
   const defaultPermissions = await permissionRepository.find({
-    where: DEFAULT_DISCUSSION_PERMISSIONS.map((name) => ({ name })),
+    where: DEFAULT_DISCUSSION_PERMISSIONS.map((name) => ({ name: name as any })),
   });
 
   // Add only permissions that user doesn't already have

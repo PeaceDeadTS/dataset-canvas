@@ -13,8 +13,8 @@ interface UnifiedChange {
   type: 'caption_edit' | 'discussion_created' | 'discussion_post' | 'post_edit';
   id: string;
   timestamp: Date;
-  user: { id: number; username: string } | null;
-  dataset: { id: number; name: string; owner: { id: number; username: string } | null };
+  user: { id: string; username: string } | null;
+  dataset: { id: string; name: string; owner: { id: string; username: string } | null };
   data: any;
 }
 
