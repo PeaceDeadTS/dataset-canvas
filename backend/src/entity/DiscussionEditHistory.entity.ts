@@ -12,31 +12,31 @@ import { User } from './User.entity';
 @Entity('discussion_edit_history')
 export class DiscussionEditHistory {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ManyToOne(() => DiscussionPost, (post) => post.editHistory, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'post_id' })
-  post: DiscussionPost;
+  post!: DiscussionPost;
 
   @Column({ name: 'post_id' })
-  postId: number;
+  postId!: number;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'editor_id' })
-  editor: User;
+  editor!: User;
 
   @Column({ name: 'editor_id' })
-  editorId: number;
+  editorId!: number;
 
   @Column({ name: 'old_content', type: 'text' })
-  oldContent: string;
+  oldContent!: string;
 
   @Column({ name: 'new_content', type: 'text' })
-  newContent: string;
+  newContent!: string;
 
   @CreateDateColumn({ name: 'edited_at' })
-  editedAt: Date;
+  editedAt!: Date;
 }
 

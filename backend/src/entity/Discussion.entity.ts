@@ -15,39 +15,39 @@ import { DiscussionPost } from './DiscussionPost.entity';
 @Entity('discussions')
 export class Discussion {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ type: 'varchar', length: 255 })
-  title: string;
+  title!: string;
 
   @ManyToOne(() => Dataset, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'dataset_id' })
-  dataset: Dataset;
+  dataset!: Dataset;
 
   @Column({ name: 'dataset_id' })
-  datasetId: number;
+  datasetId!: number;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'author_id' })
-  author: User;
+  author!: User;
 
   @Column({ name: 'author_id' })
-  authorId: number;
+  authorId!: number;
 
   @OneToMany(() => DiscussionPost, (post) => post.discussion, { cascade: true })
-  posts: DiscussionPost[];
+  posts!: DiscussionPost[];
 
   @Column({ name: 'is_locked', default: false })
-  isLocked: boolean;
+  isLocked!: boolean;
 
   @Column({ name: 'is_pinned', default: false })
-  isPinned: boolean;
+  isPinned!: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   // Computed fields for display
   postCount?: number;
