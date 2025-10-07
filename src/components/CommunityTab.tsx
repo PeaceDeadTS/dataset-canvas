@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dataset } from '@/types';
+import { Dataset, Discussion } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Users, Heart } from 'lucide-react';
+import { DiscussionList } from './DiscussionList';
+import { CreateDiscussionDialog } from './CreateDiscussionDialog';
+import axios from '../lib/axios';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../hooks/use-toast';
 
 interface CommunityTabProps {
   dataset: Dataset;
@@ -12,6 +17,43 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
   dataset,
 }) => {
   const { t } = useTranslation(['pages', 'common']);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [discussions, setDiscussions] = useState<Discussion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [selectedDiscussionId, setSelectedDiscussionId] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetchDiscussions();
+  }, [dataset.id]);
+
+  const fetchDiscussions = async () => {
+    try {
+      const response = await axios.get(`/api/datasets/${dataset.id}/discussions`);
+      setDiscussions(response.data);
+    } catch (error) {
+      console.error('Failed to fetch discussions:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateDiscussion = async (title: string, content: string) => {
+    try {
+      await axios.post(`/api/datasets/${dataset.id}/discussions`, { title, content });
+      toast({ title: t('common:discussions.discussionCreateSuccess') });
+      await fetchDiscussions();
+    } catch (error) {
+      console.error('Failed to create discussion:', error);
+      toast({ 
+        title: t('common:discussions.discussionCreateFailed'), 
+        variant: 'destructive' 
+      });
+    }
+  };
+
+  const canCreateDiscussion = !!user; // Simplified permission check
 
   return (
     <div className="h-full overflow-y-auto">
@@ -70,15 +112,24 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                <MessageSquare className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-semibold mb-2">{t('common:community.noDiscussionsYet')}</h3>
-                <p className="text-sm max-w-md mx-auto">
-                  {t('common:community.noDiscussionsDescription')}
-                </p>
-              </div>
+              {isLoading ? (
+                <div className="text-center py-12">{t('common:loading')}</div>
+              ) : (
+                <DiscussionList
+                  discussions={discussions}
+                  onSelectDiscussion={setSelectedDiscussionId}
+                  onCreateDiscussion={() => setShowCreateDialog(true)}
+                  canCreate={canCreateDiscussion}
+                />
+              )}
             </CardContent>
           </Card>
+
+          <CreateDiscussionDialog
+            open={showCreateDialog}
+            onOpenChange={setShowCreateDialog}
+            onCreateDiscussion={handleCreateDiscussion}
+          />
 
           {/* Community Guidelines */}
           <Card>

@@ -145,3 +145,70 @@ export interface PaginatedResponse<T> {
         totalPages: number;
     };
 }
+
+// Discussion types
+export interface Discussion {
+    id: number;
+    title: string;
+    datasetId: number;
+    dataset?: Dataset;
+    authorId: number;
+    author?: User;
+    posts?: DiscussionPost[];
+    isLocked: boolean;
+    isPinned: boolean;
+    createdAt: string;
+    updatedAt: string;
+    postCount?: number;
+    lastPostAt?: string;
+    lastPostAuthor?: User;
+}
+
+export interface DiscussionPost {
+    id: number;
+    discussionId: number;
+    discussion?: Discussion;
+    authorId: number;
+    author?: User;
+    content: string;
+    replyToId: number | null;
+    replyTo?: DiscussionPost | null;
+    isDeleted: boolean;
+    deletedAt: string | null;
+    deletedById: number | null;
+    deletedBy?: User | null;
+    createdAt: string;
+    updatedAt: string;
+    editCount?: number;
+}
+
+export interface DiscussionEditHistory {
+    id: number;
+    postId: number;
+    post?: DiscussionPost;
+    editorId: number;
+    editor?: User;
+    oldContent: string;
+    newContent: string;
+    editedAt: string;
+}
+
+// Unified change types for Recent Changes and User Edits
+export interface UnifiedChange {
+    type: 'caption_edit' | 'discussion_created' | 'discussion_post' | 'post_edit';
+    id: string;
+    timestamp: string;
+    user?: { id: number; username: string } | null;
+    dataset?: { id: number; name: string; owner?: { id: number; username: string } | null };
+    data: any;
+}
+
+export interface UnifiedChangesResponse {
+    changes: UnifiedChange[];
+    pagination: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    };
+}

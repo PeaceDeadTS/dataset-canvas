@@ -3,6 +3,9 @@ import { AppDataSource } from '../data-source';
 import { User, UserRole } from '../entity/User.entity';
 import { Dataset } from '../entity/Dataset.entity';
 import { CaptionEditHistory } from '../entity/CaptionEditHistory.entity';
+import { Discussion } from '../entity/Discussion.entity';
+import { DiscussionPost } from '../entity/DiscussionPost.entity';
+import { DiscussionEditHistory } from '../entity/DiscussionEditHistory.entity';
 import { checkJwtOptional, checkJwt } from '../middleware/checkJwt';
 import logger from '../logger';
 
@@ -135,59 +138,161 @@ router.get('/:username', checkJwtOptional, async (req: Request, res: Response) =
   }
 });
 
-// GET /api/users/:id/edits - Get user's caption edits with pagination
+// GET /api/users/:id/edits - Get user's edits (caption edits and discussion activity) with pagination
 router.get('/:id/edits', checkJwtOptional, async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { page = '1', limit = '20' } = req.query;
+  const { page = '1', limit = '20', type = 'all' } = req.query;
 
   const pageNum = Math.max(1, parseInt(page as string, 10));
   const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10)));
-  const skip = (pageNum - 1) * limitNum;
 
   try {
-    // Get user edits with all necessary information
-    const [edits, total] = await captionEditHistoryRepository
-      .createQueryBuilder('edit')
-      .leftJoinAndSelect('edit.user', 'user')
-      .leftJoinAndSelect('edit.image', 'image')
-      .leftJoinAndSelect('image.dataset', 'dataset')
-      .where('edit.userId = :userId', { userId: id })
-      .orderBy('edit.createdAt', 'DESC')
-      .skip(skip)
-      .take(limitNum)
-      .getManyAndCount();
+    const userId = parseInt(id, 10);
+    const changes: any[] = [];
 
-    // Format response
-    const formattedEdits = edits.map(edit => ({
-      id: edit.id,
-      oldCaption: edit.oldCaption,
-      newCaption: edit.newCaption,
-      createdAt: edit.createdAt,
-      image: {
-        id: edit.image.id,
-        img_key: edit.image.img_key,
-        url: edit.image.url
-      },
-      dataset: {
-        id: edit.image.dataset.id,
-        name: edit.image.dataset.name
-      },
-      user: edit.user ? {
-        id: edit.user.id,
-        username: edit.user.username
-      } : null
-    }));
+    // Get caption edits
+    if (type === 'all' || type === 'caption_edit') {
+      const captionEdits = await captionEditHistoryRepository
+        .createQueryBuilder('edit')
+        .leftJoinAndSelect('edit.user', 'user')
+        .leftJoinAndSelect('edit.image', 'image')
+        .leftJoinAndSelect('image.dataset', 'dataset')
+        .where('edit.userId = :userId', { userId })
+        .orderBy('edit.createdAt', 'DESC')
+        .limit(limitNum * 2)
+        .getMany();
+
+      captionEdits.forEach((edit) => {
+        changes.push({
+          type: 'caption_edit',
+          id: `caption_${edit.id}`,
+          timestamp: edit.createdAt,
+          data: {
+            id: edit.id,
+            oldCaption: edit.oldCaption,
+            newCaption: edit.newCaption,
+            image: {
+              id: edit.image.id,
+              img_key: edit.image.img_key,
+              url: edit.image.url,
+            },
+            dataset: {
+              id: edit.image.dataset.id,
+              name: edit.image.dataset.name,
+            },
+          },
+        });
+      });
+    }
+
+    // Get created discussions
+    if (type === 'all' || type === 'discussion_created') {
+      const discussions = await AppDataSource.getRepository(Discussion)
+        .createQueryBuilder('discussion')
+        .leftJoinAndSelect('discussion.dataset', 'dataset')
+        .where('discussion.authorId = :userId', { userId })
+        .orderBy('discussion.createdAt', 'DESC')
+        .limit(limitNum * 2)
+        .getMany();
+
+      discussions.forEach((discussion) => {
+        changes.push({
+          type: 'discussion_created',
+          id: `discussion_${discussion.id}`,
+          timestamp: discussion.createdAt,
+          data: {
+            discussionId: discussion.id,
+            title: discussion.title,
+            dataset: {
+              id: discussion.dataset.id,
+              name: discussion.dataset.name,
+            },
+          },
+        });
+      });
+    }
+
+    // Get discussion posts
+    if (type === 'all' || type === 'discussion_post') {
+      const posts = await AppDataSource.getRepository(DiscussionPost)
+        .createQueryBuilder('post')
+        .leftJoinAndSelect('post.discussion', 'discussion')
+        .leftJoinAndSelect('discussion.dataset', 'dataset')
+        .where('post.authorId = :userId', { userId })
+        .andWhere('post.isDeleted = :isDeleted', { isDeleted: false })
+        .orderBy('post.createdAt', 'DESC')
+        .limit(limitNum * 2)
+        .getMany();
+
+      posts.forEach((post) => {
+        changes.push({
+          type: 'discussion_post',
+          id: `post_${post.id}`,
+          timestamp: post.createdAt,
+          data: {
+            postId: post.id,
+            discussionId: post.discussionId,
+            discussionTitle: post.discussion.title,
+            content: post.content,
+            replyToId: post.replyToId,
+            dataset: {
+              id: post.discussion.dataset.id,
+              name: post.discussion.dataset.name,
+            },
+          },
+        });
+      });
+    }
+
+    // Get post edits
+    if (type === 'all' || type === 'post_edit') {
+      const postEdits = await AppDataSource.getRepository(DiscussionEditHistory)
+        .createQueryBuilder('edit')
+        .leftJoinAndSelect('edit.post', 'post')
+        .leftJoinAndSelect('post.discussion', 'discussion')
+        .leftJoinAndSelect('discussion.dataset', 'dataset')
+        .where('edit.editorId = :userId', { userId })
+        .orderBy('edit.editedAt', 'DESC')
+        .limit(limitNum * 2)
+        .getMany();
+
+      postEdits.forEach((edit) => {
+        changes.push({
+          type: 'post_edit',
+          id: `post_edit_${edit.id}`,
+          timestamp: edit.editedAt,
+          data: {
+            postId: edit.postId,
+            discussionId: edit.post.discussionId,
+            discussionTitle: edit.post.discussion.title,
+            oldContent: edit.oldContent,
+            newContent: edit.newContent,
+            dataset: {
+              id: edit.post.discussion.dataset.id,
+              name: edit.post.discussion.dataset.name,
+            },
+          },
+        });
+      });
+    }
+
+    // Sort all changes by timestamp
+    changes.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+    // Paginate
+    const total = changes.length;
+    const skip = (pageNum - 1) * limitNum;
+    const paginatedChanges = changes.slice(skip, skip + limitNum);
 
     res.json({
-      edits: formattedEdits,
+      changes: paginatedChanges,
       pagination: {
         total,
         page: pageNum,
         limit: limitNum,
-        totalPages: Math.ceil(total / limitNum)
-      }
+        totalPages: Math.ceil(total / limitNum),
+      },
     });
-
   } catch (error) {
     logger.error(`Failed to get user edits for user ${id}`, { error });
     res.status(500).json({ error: 'Internal Server Error' });

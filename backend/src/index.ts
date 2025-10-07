@@ -7,13 +7,14 @@ import datasetsRoutes from './routes/datasets';
 import usersRoutes from './routes/users';
 import permissionsRoutes from './routes/permissions';
 import recentChangesRoutes from './routes/recent-changes';
+import discussionsRoutes from './routes/discussions';
 import logger from './logger';
 
 const app = express();
 
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173', // Явно указываем разрешенный источник
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Разрешаем все нужные методы
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Разрешаем все нужные методы
   allowedHeaders: ['Content-Type', 'Authorization'], // Разрешаем необходимые заголовки
   exposedHeaders: ['token'], // Указываем, что фронтенд может читать заголовок 'token'
 }));
@@ -24,6 +25,7 @@ app.use('/api/datasets', datasetsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/permissions', permissionsRoutes);
 app.use('/api/recent-changes', recentChangesRoutes);
+app.use('/api', discussionsRoutes);
 
 // Глобальный обработчик ошибок (должен идти последним)
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
