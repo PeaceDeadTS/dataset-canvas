@@ -150,7 +150,7 @@ export default function AdminPanel() {
     } catch (error) {
       console.error('Error loading permissions:', error);
       toast({
-        title: 'Ошибка при загрузке прав',
+        title: t('admin:error_loading_permissions'),
         variant: "destructive"
       });
     } finally {
@@ -181,12 +181,12 @@ export default function AdminPanel() {
       ));
       
       toast({
-        title: 'Право успешно выдано',
+        title: t('admin:success_permission_granted'),
       });
     } catch (error: any) {
       console.error('Error granting permission:', error);
       toast({
-        title: error.response?.data?.message || 'Ошибка при выдаче права',
+        title: error.response?.data?.message || t('admin:error_granting_permission'),
         variant: "destructive"
       });
     }
@@ -205,12 +205,12 @@ export default function AdminPanel() {
       ));
       
       toast({
-        title: 'Право успешно отозвано',
+        title: t('admin:success_permission_revoked'),
       });
     } catch (error: any) {
       console.error('Error revoking permission:', error);
       toast({
-        title: error.response?.data?.message || 'Ошибка при отзыве права',
+        title: error.response?.data?.message || t('admin:error_revoking_permission'),
         variant: "destructive"
       });
     }
@@ -342,7 +342,7 @@ export default function AdminPanel() {
             </TabsTrigger>
             <TabsTrigger value="permissions" className="flex items-center gap-2">
               <Key className="h-4 w-4" />
-              Управление правами
+              {t('admin:permissions_management_tab')}
             </TabsTrigger>
           </TabsList>
 
@@ -538,9 +538,9 @@ export default function AdminPanel() {
           <TabsContent value="permissions" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Управление правами доступа</CardTitle>
+                <CardTitle>{t('admin:permissions_management_title')}</CardTitle>
                 <CardDescription>
-                  Выдача и отзыв специальных прав для пользователей
+                  {t('admin:permissions_management_subtitle')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -552,16 +552,16 @@ export default function AdminPanel() {
                   </div>
                 ) : users.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">Пользователи не найдены</p>
+                    <p className="text-muted-foreground">{t('admin:no_users_found')}</p>
                   </div>
                 ) : (
                   <div className="rounded-md border">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Пользователь</TableHead>
-                          <TableHead>Роль</TableHead>
-                          <TableHead>Действия</TableHead>
+                          <TableHead>{t('admin:permissions_table_user')}</TableHead>
+                          <TableHead>{t('admin:permissions_table_role')}</TableHead>
+                          <TableHead>{t('admin:permissions_table_actions')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -589,7 +589,7 @@ export default function AdminPanel() {
                                 disabled={u.id === user.id}
                               >
                                 <Key className="h-4 w-4 mr-1" />
-                                Управление правами
+                                {t('admin:manage_permissions')}
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -647,12 +647,12 @@ export default function AdminPanel() {
         <Dialog open={permissionDialogOpen} onOpenChange={setPermissionDialogOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Управление правами пользователя</DialogTitle>
+              <DialogTitle>{t('admin:permission_dialog_title')}</DialogTitle>
               <DialogDescription>
-                Пользователь: {selectedUserForPermission?.username}
+                {t('admin:permission_dialog_user')}: {selectedUserForPermission?.username}
                 {selectedUserForPermission?.role === 'Administrator' && (
                   <span className="block mt-2 text-sm text-amber-600">
-                    ⚠️ Администраторы имеют все права автоматически
+                    {t('admin:permission_dialog_admin_warning')}
                   </span>
                 )}
               </DialogDescription>
@@ -680,16 +680,16 @@ export default function AdminPanel() {
                         <div className="flex-1">
                           <div className="font-medium">{permission.displayName}</div>
                           <div className="text-sm text-muted-foreground">
-                            {permission.description || 'Нет описания'}
+                            {permission.description || t('admin:no_description')}
                           </div>
                           <div className="text-xs text-muted-foreground mt-1">
-                            Код: {permission.name}
+                            {t('admin:permission_code')}: {permission.name}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           {hasPermission ? (
                             <>
-                              <Badge variant="default">Выдано</Badge>
+                              <Badge variant="default">{t('admin:permission_granted')}</Badge>
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -697,7 +697,7 @@ export default function AdminPanel() {
                                 disabled={isAdmin}
                               >
                                 <X className="h-4 w-4 mr-1" />
-                                Отозвать
+                                {t('admin:permission_revoke')}
                               </Button>
                             </>
                           ) : (
@@ -707,7 +707,7 @@ export default function AdminPanel() {
                               onClick={() => handleGrantPermission(selectedUserForPermission!.id, permission.name)}
                             >
                               <Plus className="h-4 w-4 mr-1" />
-                              Выдать
+                              {t('admin:permission_grant')}
                             </Button>
                           )}
                         </div>
@@ -723,7 +723,7 @@ export default function AdminPanel() {
                 variant="outline"
                 onClick={() => setPermissionDialogOpen(false)}
               >
-                Закрыть
+                {t('admin:permission_close')}
               </Button>
             </DialogFooter>
           </DialogContent>
