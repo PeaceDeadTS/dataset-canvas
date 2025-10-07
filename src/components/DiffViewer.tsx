@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface DiffViewerProps {
   oldText: string;
@@ -65,6 +66,7 @@ const computeDiff = (oldText: string, newText: string): DiffPart[] => {
 };
 
 export const DiffViewer: React.FC<DiffViewerProps> = ({ oldText, newText }) => {
+  const { t } = useTranslation(['pages']);
   const diff = computeDiff(oldText, newText);
   
   return (
@@ -73,7 +75,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ oldText, newText }) => {
       <div className="border rounded-lg p-3 bg-red-50 dark:bg-red-950/20">
         <div className="text-xs font-semibold text-red-700 dark:text-red-400 mb-2 flex items-center gap-1">
           <span className="inline-block w-2 h-2 bg-red-500 rounded-full"></span>
-          Было
+          {t('pages:dataset.diff_was')}
         </div>
         <div className="text-sm leading-relaxed whitespace-pre-wrap">
           {diff.map((part, index) => {
@@ -103,7 +105,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ oldText, newText }) => {
       <div className="border rounded-lg p-3 bg-green-50 dark:bg-green-950/20">
         <div className="text-xs font-semibold text-green-700 dark:text-green-400 mb-2 flex items-center gap-1">
           <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
-          Стало
+          {t('pages:dataset.diff_became')}
         </div>
         <div className="text-sm leading-relaxed whitespace-pre-wrap">
           {diff.map((part, index) => {
@@ -133,11 +135,11 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ oldText, newText }) => {
       <div className="text-xs text-muted-foreground flex items-center gap-4">
         <span className="flex items-center gap-1">
           <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
-          +{diff.filter(p => p.type === 'added').reduce((acc, p) => acc + p.value.length, 0)} символов
+          {t('pages:dataset.diff_added_chars', { count: diff.filter(p => p.type === 'added').reduce((acc, p) => acc + p.value.length, 0) })}
         </span>
         <span className="flex items-center gap-1">
           <span className="inline-block w-2 h-2 bg-red-500 rounded-full"></span>
-          -{diff.filter(p => p.type === 'removed').reduce((acc, p) => acc + p.value.length, 0)} символов
+          {t('pages:dataset.diff_removed_chars', { count: diff.filter(p => p.type === 'removed').reduce((acc, p) => acc + p.value.length, 0) })}
         </span>
       </div>
     </div>

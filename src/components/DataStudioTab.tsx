@@ -143,14 +143,14 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
       setIsEditingCaption(false);
 
       toast({
-        title: 'Caption обновлен',
-        description: 'Изменения успешно сохранены',
+        title: t('pages:dataset.caption_updated'),
+        description: t('pages:dataset.caption_update_success'),
       });
     } catch (error: any) {
       console.error('Error saving caption:', error);
       toast({
-        title: 'Ошибка',
-        description: error.response?.data?.message || 'Не удалось сохранить caption',
+        title: t('common:error'),
+        description: error.response?.data?.message || t('pages:dataset.caption_update_error'),
         variant: 'destructive',
       });
       throw error;
@@ -336,7 +336,7 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                                     onClick={() => setIsEditingCaption(true)}
                                   >
                                     <Edit className="h-4 w-4 mr-1" />
-                                    Редактировать
+                                    {t('pages:dataset.edit_caption')}
                                   </Button>
                                 )}
                               </div>

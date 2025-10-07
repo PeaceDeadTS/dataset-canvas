@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CaptionHistoryEntry } from '@/types';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
@@ -14,13 +15,14 @@ export const CaptionHistoryList: React.FC<CaptionHistoryListProps> = ({
   history,
   currentCaption,
 }) => {
+  const { t } = useTranslation(['pages']);
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (history.length === 0) {
     return (
       <div className="text-center py-4 text-sm text-muted-foreground">
-        История изменений пуста
+        {t('pages:dataset.history_empty')}
       </div>
     );
   }
@@ -36,12 +38,12 @@ export const CaptionHistoryList: React.FC<CaptionHistoryListProps> = ({
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'только что';
-    if (diffMins < 60) return `${diffMins} мин. назад`;
-    if (diffHours < 24) return `${diffHours} ч. назад`;
-    if (diffDays < 7) return `${diffDays} дн. назад`;
+    if (diffMins < 1) return t('pages:dataset.history_just_now');
+    if (diffMins < 60) return t('pages:dataset.history_minutes_ago', { count: diffMins });
+    if (diffHours < 24) return t('pages:dataset.history_hours_ago', { count: diffHours });
+    if (diffDays < 7) return t('pages:dataset.history_days_ago', { count: diffDays });
     
-    return date.toLocaleDateString('ru-RU', {
+    return date.toLocaleDateString(undefined, {
       day: 'numeric',
       month: 'short',
       year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
@@ -55,7 +57,7 @@ export const CaptionHistoryList: React.FC<CaptionHistoryListProps> = ({
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold flex items-center gap-2">
           <Clock className="h-4 w-4" />
-          История изменений ({history.length})
+          {t('pages:dataset.history_title')} ({history.length})
         </h4>
       </div>
 
@@ -76,9 +78,9 @@ export const CaptionHistoryList: React.FC<CaptionHistoryListProps> = ({
                     <div className="flex items-center gap-2 text-sm">
                       <User className="h-3 w-3 flex-shrink-0" />
                       <span className="font-medium">
-                        {entry.user?.username || 'Удаленный пользователь'}
+                        {entry.user?.username || t('pages:dataset.history_deleted_user')}
                       </span>
-                      <span className="text-muted-foreground">изменил caption</span>
+                      <span className="text-muted-foreground">{t('pages:dataset.history_user_edited')}</span>
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
                       {formatDate(entry.createdAt)}
@@ -118,7 +120,7 @@ export const CaptionHistoryList: React.FC<CaptionHistoryListProps> = ({
           onClick={() => setIsExpanded(true)}
           className="w-full"
         >
-          Показать еще ({history.length - 3})
+          {t('pages:dataset.history_show_more', { count: history.length - 3 })}
         </Button>
       )}
 
@@ -129,7 +131,7 @@ export const CaptionHistoryList: React.FC<CaptionHistoryListProps> = ({
           onClick={() => setIsExpanded(false)}
           className="w-full"
         >
-          Свернуть
+          {t('pages:dataset.history_collapse')}
         </Button>
       )}
     </div>

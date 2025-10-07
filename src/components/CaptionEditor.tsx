@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Loader2, Save, X } from 'lucide-react';
@@ -14,6 +15,7 @@ export const CaptionEditor: React.FC<CaptionEditorProps> = ({
   onSave,
   onCancel,
 }) => {
+  const { t } = useTranslation(['pages']);
   const [caption, setCaption] = useState(initialCaption);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -53,17 +55,17 @@ export const CaptionEditor: React.FC<CaptionEditorProps> = ({
         onChange={(e) => setCaption(e.target.value)}
         onKeyDown={handleKeyDown}
         className="min-h-[150px] resize-y"
-        placeholder="Введите описание изображения..."
+        placeholder={t('pages:dataset.caption_editor_placeholder')}
         autoFocus
         disabled={isSaving}
       />
       
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>
-          {caption.length} символов
+          {caption.length} {t('pages:dataset.caption_editor_characters')}
         </span>
         <span className="text-xs">
-          💡 Ctrl+Enter - сохранить, Esc - отмена
+          {t('pages:dataset.caption_editor_hint')}
         </span>
       </div>
 
@@ -75,7 +77,7 @@ export const CaptionEditor: React.FC<CaptionEditorProps> = ({
           disabled={isSaving}
         >
           <X className="h-4 w-4 mr-1" />
-          Отмена
+          {t('pages:dataset.caption_cancel')}
         </Button>
         <Button
           size="sm"
@@ -85,12 +87,12 @@ export const CaptionEditor: React.FC<CaptionEditorProps> = ({
           {isSaving ? (
             <>
               <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-              Сохранение...
+              {t('pages:dataset.caption_saving')}
             </>
           ) : (
             <>
               <Save className="h-4 w-4 mr-1" />
-              Сохранить
+              {t('pages:dataset.caption_save')}
             </>
           )}
         </Button>
