@@ -72,6 +72,13 @@ The project is architected with a distinct frontend and backend.
 
 *   **Framework**: Built with React 18 and Vite for a fast development experience with optimized builds and hot module replacement.
 *   **Performance Optimization**: Implements lazy loading for all pages with React.lazy() and Suspense, reducing main bundle size from 504KB to 313KB (gzipped from 158KB to 101KB). Automatic code splitting creates optimized chunks for better loading performance.
+*   **Image Loading Optimization**: Advanced lazy loading system for efficient handling of large image datasets:
+    *   **Intersection Observer API**: Custom LazyImage component using Intersection Observer to load images only when they enter the viewport
+    *   **Native Lazy Loading**: Browser-level lazy loading with `loading="lazy"` attribute for additional optimization
+    *   **Viewport Buffering**: Pre-loading images 50px before they become visible for smooth scrolling experience
+    *   **Loading States**: Visual feedback with animated skeleton placeholders during image load
+    *   **Smooth Transitions**: CSS transitions for graceful image appearance with opacity fade-in
+    *   **Performance at Scale**: Optimized to handle 100+ images per page without browser connection throttling issues
 *   **Styling**: Utilizes Tailwind CSS for utility-first styling, with `shadcn/ui` for a pre-built, accessible component library. Implements responsive design patterns and modern CSS layout techniques (Flexbox, Grid).
 *   **Internationalization (i18n)**: Complete multilingual support using react-i18next with:
     *   **Language Detection**: Automatic browser language detection with localStorage persistence for user preferences
@@ -168,6 +175,11 @@ During development, several critical issues were identified and resolved:
     *   **Impact**: Users who selected "Remember Me" (30-day tokens) were forcibly logged out after 1 hour due to automatic token regeneration
     *   **Solution**: Implemented intelligent token refresh mechanism that extracts and preserves original expiration timestamp (`exp`) from incoming JWT, then regenerates tokens with the same remaining lifetime
     *   **Result**: "Remember Me" functionality now works as intended - users stay authenticated for 30 days across browser sessions and page refreshes, while standard logins maintain 1-hour security for shared devices
+*   **Image Loading Performance Issue**: Resolved critical performance problem when displaying 100+ images in Data Studio:
+    *   **Root Cause**: Browser connection limits (6-8 concurrent HTTP requests per domain) caused image loading to stall during scrolling, as browsers would cancel pending requests for off-screen images and queue new ones for visible content
+    *   **Impact**: Users experienced frozen image loading when scrolling through large datasets; images would remain in loading state until manual interaction (clicking) triggered request resumption
+    *   **Solution**: Implemented comprehensive lazy loading system using Intersection Observer API with custom LazyImage component that only initiates image loading when elements are near or within the viewport (50px buffer zone), combined with native browser lazy loading (`loading="lazy"`) and visual loading states
+    *   **Result**: Smooth, performant image loading even with 100+ images per page; images load progressively as user scrolls without overwhelming browser connection pool or causing load interruptions
 
 ---
 
@@ -287,11 +299,18 @@ This section provides a summary of the core features implemented in the applicat
         *   **Performance Optimized**: Statistics computed server-side with efficient database queries and cached results
     *   **Upload Integration**: Seamless CSV upload functionality directly integrated into the dataset card with automatic statistics refresh
     *   **Privacy Indicators**: Clear visual indicators for public/private dataset status with appropriate icons
-*   **Enhanced Data Studio Interface**: Improved data visualization and interaction system:
+*   **Enhanced Data Studio Interface**: Improved data visualization and interaction system with advanced performance optimization:
     *   **Optimized Table Layout**: Professional data table with proper column sizing and sticky headers
     *   **Advanced Image Previews**: Interactive image thumbnails with modal dialogs for detailed inspection
     *   **Smart Aspect Ratio Display**: Intelligent aspect ratio calculation with standard format detection
     *   **Scrollable Content Area**: Properly implemented scrolling with persistent pagination controls
+    *   **Lazy Loading System**: Comprehensive image lazy loading architecture for handling 100+ images efficiently:
+        *   Custom LazyImage component with Intersection Observer API for viewport-based loading
+        *   Intelligent pre-loading with 50px buffer zone for smooth scrolling experience
+        *   Animated skeleton placeholders providing visual feedback during image load
+        *   Native browser lazy loading integration for additional optimization
+        *   Smooth CSS transitions for graceful image appearance
+        *   Performance optimized to overcome browser connection throttling limitations
 *   **Comprehensive File Management System**: Complete CSV file storage and retrieval architecture:
     *   **Backend File Storage**: Robust file storage system with dedicated `DatasetFile` entity and proper file organization
     *   **Secure File Handling**: Files stored in protected upload directories with unique naming and metadata tracking
@@ -307,7 +326,9 @@ This section provides a summary of the core features implemented in the applicat
 
 ## Document Version History
 
-*Latest Update: January 2025 - Session Persistence & Remember Me Implementation: Resolved critical session management bug and implemented comprehensive "Remember Me" functionality with flexible token expiration (1 hour standard, 30 days with Remember Me), intelligent token refresh middleware that preserves original expiration timestamps, complete frontend integration with checkbox control, and seamless synchronization between backend token generation and frontend storage. Enhanced authentication architecture documentation with detailed token management flows and session persistence mechanisms.*
+*Latest Update: October 2025 - Image Loading Performance Optimization: Resolved critical image loading performance issue in Data Studio when displaying 100+ images. Implemented comprehensive lazy loading system using Intersection Observer API with custom LazyImage component, viewport buffering (50px), native browser lazy loading integration, animated skeleton placeholders, and smooth CSS transitions. System now efficiently handles large datasets without browser connection throttling issues, providing smooth progressive loading during scrolling.*
+
+*January 2025 - Session Persistence & Remember Me Implementation: Resolved critical session management bug and implemented comprehensive "Remember Me" functionality with flexible token expiration (1 hour standard, 30 days with Remember Me), intelligent token refresh middleware that preserves original expiration timestamps, complete frontend integration with checkbox control, and seamless synchronization between backend token generation and frontend storage. Enhanced authentication architecture documentation with detailed token management flows and session persistence mechanisms.*
 
 *January 2025 - Advanced Dataset Analytics Implementation: Deployed comprehensive dataset statistics system featuring real-time resolution distribution analysis with interactive expandable displays, automatic neural network training compatibility validation (64px divisibility check), prompt length analytics for text-to-image datasets, server-side performance optimization with efficient database queries, and color-coded visual feedback system. Enhanced Dataset Card component with professional statistics dashboard, progress bars, and seamless integration with CSV upload workflow for automatic statistics refresh.*
 
