@@ -1,0 +1,202 @@
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Discussion, DiscussionPost } from '../types';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { ArrowLeft, Lock, Pin, MessageSquare } from 'lucide-react';
+import { DiscussionPostComponent } from './DiscussionPostComponent';
+import { PostEditor } from './PostEditor';
+import axios from '../lib/axios';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../hooks/use-toast';
+
+interface DiscussionThreadProps {
+  discussionId: number;
+  onBack: () => void;
+}
+
+export function DiscussionThread({
+  discussionId,
+  onBack,
+}: DiscussionThreadProps) {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [discussion, setDiscussion] = useState<Discussion & { posts: DiscussionPost[] } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [replyTo, setReplyTo] = useState<{ postId: number; username: string; content: string } | null>(null);
+
+  useEffect(() => {
+    fetchDiscussion();
+  }, [discussionId]);
+
+  const fetchDiscussion = async () => {
+    try {
+      const response = await axios.get(`/discussions/${discussionId}`);
+      setDiscussion(response.data);
+    } catch (error) {
+      console.error('Failed to fetch discussion:', error);
+      toast({
+        title: t('common:error'),
+        description: 'Failed to load discussion',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReply = async (content: string) => {
+    try {
+      await axios.post(`/discussions/${discussionId}/posts`, {
+        content,
+        replyToId: replyTo?.postId || null,
+      });
+      toast({ title: t('common:discussions.postCreateSuccess') });
+      setReplyTo(null);
+      await fetchDiscussion();
+    } catch (error) {
+      console.error('Failed to create post:', error);
+      toast({
+        title: t('common:discussions.postCreateFailed'),
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleEditPost = async (postId: number) => {
+    // TODO: Implement edit functionality
+    console.log('Edit post:', postId);
+  };
+
+  const handleDeletePost = async (postId: number) => {
+    if (!confirm(t('common:discussions.confirmDeletePost'))) return;
+
+    try {
+      await axios.delete(`/posts/${postId}`);
+      toast({ title: t('common:discussions.postDeleteSuccess') });
+      await fetchDiscussion();
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      toast({
+        title: t('common:discussions.postDeleteFailed'),
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleReplyToPost = (postId: number, username: string) => {
+    const post = discussion?.posts.find((p) => p.id === postId);
+    if (post) {
+      setReplyTo({ postId, username, content: post.content });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p>{t('common:loading')}</p>
+      </div>
+    );
+  }
+
+  if (!discussion) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">{t('common:error')}</p>
+        <Button onClick={onBack} className="mt-4">
+          {t('common:back')}
+        </Button>
+      </div>
+    );
+  }
+
+  const canReply = !!user && !discussion.isLocked;
+  const canEdit = (postId: number) => {
+    const post = discussion.posts.find((p) => p.id === postId);
+    return user && post && (user.role === 'Administrator' || post.authorId === user.id);
+  };
+  const canDelete = user?.role === 'Administrator';
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="mb-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('common:back')}
+          </Button>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-2xl font-bold">{discussion.title}</h2>
+            {discussion.isPinned && (
+              <Badge variant="secondary">
+                <Pin className="h-3 w-3 mr-1" />
+                {t('common:discussions.pinned')}
+              </Badge>
+            )}
+            {discussion.isLocked && (
+              <Badge variant="outline">
+                <Lock className="h-3 w-3 mr-1" />
+                {t('common:discussions.locked')}
+              </Badge>
+            )}
+          </div>
+
+          <p className="text-sm text-muted-foreground mt-2">
+            {t('common:discussions.startedBy', { username: discussion.author?.username })}
+            {' · '}
+            <MessageSquare className="inline h-3 w-3" />
+            {' '}
+            {t('common:discussions.posts', { count: discussion.posts.length })}
+          </p>
+        </div>
+      </div>
+
+      {/* Posts */}
+      <div className="space-y-4">
+        {discussion.posts.map((post) => (
+          <DiscussionPostComponent
+            key={post.id}
+            post={post}
+            canEdit={canEdit(post.id)}
+            canDelete={canDelete}
+            onEdit={handleEditPost}
+            onDelete={handleDeletePost}
+            onReply={handleReplyToPost}
+          />
+        ))}
+      </div>
+
+      {/* Reply editor */}
+      {canReply && (
+        <div className="mt-6">
+          <PostEditor
+            replyTo={replyTo ? { username: replyTo.username, content: replyTo.content } : null}
+            onSubmit={handleReply}
+            onCancel={replyTo ? () => setReplyTo(null) : undefined}
+          />
+        </div>
+      )}
+
+      {!canReply && discussion.isLocked && (
+        <p className="text-center text-muted-foreground py-4">
+          {t('common:discussions.discussionLocked')}
+        </p>
+      )}
+
+      {!canReply && !discussion.isLocked && !user && (
+        <p className="text-center text-muted-foreground py-4">
+          {t('common:discussions.loginToReply')}
+        </p>
+      )}
+    </div>
+  );
+}
+

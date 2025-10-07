@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { MessageSquare, Users, Heart } from 'lucide-react';
 import { DiscussionList } from './DiscussionList';
 import { CreateDiscussionDialog } from './CreateDiscussionDialog';
+import { DiscussionThread } from './DiscussionThread';
 import axios from '../lib/axios';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/use-toast';
@@ -53,7 +54,30 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
     }
   };
 
+  const handleSelectDiscussion = (discussionId: number) => {
+    setSelectedDiscussionId(discussionId);
+  };
+
+  const handleBackToList = () => {
+    setSelectedDiscussionId(null);
+    fetchDiscussions(); // Refresh the list
+  };
+
   const canCreateDiscussion = !!user; // Simplified permission check
+
+  // If a discussion is selected, show the thread view
+  if (selectedDiscussionId) {
+    return (
+      <div className="h-full overflow-y-auto">
+        <div className="container mx-auto px-4 py-6" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+          <DiscussionThread
+            discussionId={selectedDiscussionId}
+            onBack={handleBackToList}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-y-auto">
@@ -117,7 +141,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
               ) : (
                 <DiscussionList
                   discussions={discussions}
-                  onSelectDiscussion={setSelectedDiscussionId}
+                  onSelectDiscussion={handleSelectDiscussion}
                   onCreateDiscussion={() => setShowCreateDialog(true)}
                   canCreate={canCreateDiscussion}
                 />
