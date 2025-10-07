@@ -13,6 +13,9 @@ import { User, UserRole } from '../entity/User.entity';
 import { checkJwt, checkJwtOptional } from '../middleware/checkJwt';
 import { DatasetImage } from '../entity/DatasetImage.entity';
 import { DatasetFile } from '../entity/DatasetFile.entity';
+import { CaptionEditHistory } from '../entity/CaptionEditHistory.entity';
+import { checkPermission } from '../middleware/checkPermission';
+import { PermissionType } from '../entity/Permission.entity';
 import logger from '../logger';
 
 const router = Router();
@@ -568,6 +571,168 @@ router.get('/:id/statistics', checkJwtOptional, async (req: Request, res: Respon
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+/**
+ * PUT /api/datasets/:datasetId/images/:imageId/caption
+ * Редактировать caption изображения (требуется право edit_caption)
+ */
+router.put(
+  '/:datasetId/images/:imageId/caption',
+  checkJwt,
+  checkPermission(PermissionType.EDIT_CAPTION),
+  async (req: Request, res: Response) => {
+    const { datasetId, imageId } = req.params;
+    const { caption } = req.body;
+    const userId = req.user!.userId;
+
+    if (caption === undefined || caption === null) {
+      return res.status(400).json({ 
+        message: 'Необходимо указать новый caption' 
+      });
+    }
+
+    try {
+      // Проверяем существование датасета
+      const dataset = await datasetRepository.findOne({
+        where: { id: datasetId },
+      });
+
+      if (!dataset) {
+        return res.status(404).json({ message: 'Датасет не найден' });
+      }
+
+      // Получаем изображение
+      const image = await imageRepository.findOne({
+        where: { 
+          id: parseInt(imageId),
+          dataset: { id: datasetId },
+        },
+        relations: ['dataset'],
+      });
+
+      if (!image) {
+        return res.status(404).json({ message: 'Изображение не найдено' });
+      }
+
+      const oldCaption = image.prompt;
+
+      // Проверяем, изменился ли caption
+      if (oldCaption === caption) {
+        return res.status(400).json({ 
+          message: 'Новый caption идентичен текущему' 
+        });
+      }
+
+      // Сохраняем историю изменений
+      const historyRepository = AppDataSource.manager.getRepository(CaptionEditHistory);
+      const historyEntry = historyRepository.create({
+        imageId: image.id,
+        userId: userId,
+        oldCaption: oldCaption,
+        newCaption: caption,
+      });
+      await historyRepository.save(historyEntry);
+
+      // Обновляем caption
+      image.prompt = caption;
+      await imageRepository.save(image);
+
+      logger.info('Caption edited', {
+        userId,
+        username: req.user?.username,
+        datasetId,
+        imageId,
+      });
+
+      res.json({ 
+        message: 'Caption успешно обновлен',
+        image: {
+          id: image.id,
+          caption: image.prompt,
+        }
+      });
+    } catch (error) {
+      logger.error('Error editing caption', { error, datasetId, imageId });
+      res.status(500).json({ message: 'Ошибка при редактировании caption' });
+    }
+  }
+);
+
+/**
+ * GET /api/datasets/:datasetId/images/:imageId/caption-history
+ * Получить историю правок caption изображения
+ */
+router.get(
+  '/:datasetId/images/:imageId/caption-history',
+  checkJwtOptional,
+  async (req: Request, res: Response) => {
+    const { datasetId, imageId } = req.params;
+    const userId = req.user?.userId;
+    const userRole = req.user?.role;
+
+    try {
+      // Проверяем существование датасета
+      const dataset = await datasetRepository.findOne({
+        where: { id: datasetId },
+      });
+
+      if (!dataset) {
+        return res.status(404).json({ message: 'Датасет не найден' });
+      }
+
+      // Проверяем доступ к датасету
+      const isAdmin = userRole === UserRole.ADMIN;
+      const isOwner = userId && dataset.userId === userId;
+      const isPublic = dataset.isPublic;
+
+      if (!isPublic && !isOwner && !isAdmin) {
+        return res.status(403).json({ 
+          message: 'Доступ к этому датасету запрещен' 
+        });
+      }
+
+      // Получаем изображение
+      const image = await imageRepository.findOne({
+        where: { 
+          id: parseInt(imageId),
+          dataset: { id: datasetId },
+        },
+      });
+
+      if (!image) {
+        return res.status(404).json({ message: 'Изображение не найдено' });
+      }
+
+      // Получаем историю изменений
+      const historyRepository = AppDataSource.manager.getRepository(CaptionEditHistory);
+      const history = await historyRepository.find({
+        where: { imageId: image.id },
+        relations: ['user'],
+        order: { createdAt: 'DESC' },
+      });
+
+      const formattedHistory = history.map(entry => ({
+        id: entry.id,
+        oldCaption: entry.oldCaption,
+        newCaption: entry.newCaption,
+        createdAt: entry.createdAt,
+        user: entry.user ? {
+          id: entry.user.id,
+          username: entry.user.username,
+        } : null,
+      }));
+
+      res.json({
+        imageId: image.id,
+        currentCaption: image.prompt,
+        history: formattedHistory,
+      });
+    } catch (error) {
+      logger.error('Error fetching caption history', { error, datasetId, imageId });
+      res.status(500).json({ message: 'Ошибка при получении истории правок' });
+    }
+  }
+);
 
 
 export default router;

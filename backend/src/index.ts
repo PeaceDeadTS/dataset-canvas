@@ -5,6 +5,7 @@ import { AppDataSource } from './data-source'; // Импортируем AppData
 import authRoutes from './routes/auth';
 import datasetsRoutes from './routes/datasets';
 import usersRoutes from './routes/users';
+import permissionsRoutes from './routes/permissions';
 import logger from './logger';
 
 const app = express();
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/datasets', datasetsRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/permissions', permissionsRoutes);
 
 // Глобальный обработчик ошибок (должен идти последним)
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

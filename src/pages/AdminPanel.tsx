@@ -55,7 +55,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, UserCog, Shield, Database } from "lucide-react";
+import { Trash2, UserCog, Shield, Database, Key, Plus, X } from "lucide-react";
+import { Permission } from "@/types";
 
 interface AdminUser {
   id: string;
@@ -64,6 +65,7 @@ interface AdminUser {
   role: 'Administrator' | 'Developer' | 'User';
   createdAt: string;
   publicDatasetCount: number;
+  permissions?: string[];
 }
 
 interface AdminDataset {
@@ -90,6 +92,12 @@ export default function AdminPanel() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [newRole, setNewRole] = useState<string>('');
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  
+  // Permissions management state
+  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [permissionsLoading, setPermissionsLoading] = useState(true);
+  const [permissionDialogOpen, setPermissionDialogOpen] = useState(false);
+  const [selectedUserForPermission, setSelectedUserForPermission] = useState<AdminUser | null>(null);
 
   // Проверка прав доступа
   if (!user || user.role !== 'Administrator') {
@@ -99,6 +107,7 @@ export default function AdminPanel() {
   useEffect(() => {
     loadUsers();
     loadDatasets();
+    loadPermissions();
   }, []);
 
   const loadUsers = async () => {
@@ -131,6 +140,95 @@ export default function AdminPanel() {
     } finally {
       setDatasetsLoading(false);
     }
+  };
+
+  const loadPermissions = async () => {
+    try {
+      setPermissionsLoading(true);
+      const response = await axios.get('/permissions');
+      setPermissions(response.data);
+    } catch (error) {
+      console.error('Error loading permissions:', error);
+      toast({
+        title: 'Ошибка при загрузке прав',
+        variant: "destructive"
+      });
+    } finally {
+      setPermissionsLoading(false);
+    }
+  };
+
+  const loadUserPermissions = async (userId: string) => {
+    try {
+      const response = await axios.get(`/permissions/user/${userId}`);
+      return response.data.permissions || [];
+    } catch (error) {
+      console.error('Error loading user permissions:', error);
+      return [];
+    }
+  };
+
+  const handleGrantPermission = async (userId: string, permissionName: string) => {
+    try {
+      await axios.post('/permissions/grant', { userId, permissionName });
+      
+      // Обновляем права пользователя
+      const updatedPermissions = await loadUserPermissions(userId);
+      setUsers(users.map(u => 
+        u.id === userId 
+          ? { ...u, permissions: updatedPermissions }
+          : u
+      ));
+      
+      toast({
+        title: 'Право успешно выдано',
+      });
+    } catch (error: any) {
+      console.error('Error granting permission:', error);
+      toast({
+        title: error.response?.data?.message || 'Ошибка при выдаче права',
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRevokePermission = async (userId: string, permissionName: string) => {
+    try {
+      await axios.post('/permissions/revoke', { userId, permissionName });
+      
+      // Обновляем права пользователя
+      const updatedPermissions = await loadUserPermissions(userId);
+      setUsers(users.map(u => 
+        u.id === userId 
+          ? { ...u, permissions: updatedPermissions }
+          : u
+      ));
+      
+      toast({
+        title: 'Право успешно отозвано',
+      });
+    } catch (error: any) {
+      console.error('Error revoking permission:', error);
+      toast({
+        title: error.response?.data?.message || 'Ошибка при отзыве права',
+        variant: "destructive"
+      });
+    }
+  };
+
+  const openPermissionDialog = async (userToManage: AdminUser) => {
+    if (userToManage.id === user.id) {
+      toast({
+        title: t('admin:cannot_modify_self'),
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Загружаем права пользователя
+    const userPermissions = await loadUserPermissions(userToManage.id);
+    setSelectedUserForPermission({ ...userToManage, permissions: userPermissions });
+    setPermissionDialogOpen(true);
   };
 
   const handleRoleChange = async () => {
@@ -233,7 +331,7 @@ export default function AdminPanel() {
         </div>
 
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="users" className="flex items-center gap-2">
               <UserCog className="h-4 w-4" />
               {t('admin:user_management_tab')}
@@ -241,6 +339,10 @@ export default function AdminPanel() {
             <TabsTrigger value="datasets" className="flex items-center gap-2">
               <Database className="h-4 w-4" />
               {t('admin:dataset_management_tab')}
+            </TabsTrigger>
+            <TabsTrigger value="permissions" className="flex items-center gap-2">
+              <Key className="h-4 w-4" />
+              Управление правами
             </TabsTrigger>
           </TabsList>
 
@@ -432,6 +534,73 @@ export default function AdminPanel() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="permissions" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Управление правами доступа</CardTitle>
+                <CardDescription>
+                  Выдача и отзыв специальных прав для пользователей
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {usersLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : users.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Пользователи не найдены</p>
+                  </div>
+                ) : (
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Пользователь</TableHead>
+                          <TableHead>Роль</TableHead>
+                          <TableHead>Действия</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {users.map((u) => (
+                          <TableRow key={u.id}>
+                            <TableCell>
+                              <div>
+                                <div className="font-medium">{u.username}</div>
+                                <div className="text-sm text-muted-foreground">{u.email || '-'}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                u.role === 'Administrator' ? 'destructive' : 
+                                u.role === 'Developer' ? 'default' : 'secondary'
+                              }>
+                                {t(`admin:role_${u.role.toLowerCase()}`)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openPermissionDialog(u)}
+                                disabled={u.id === user.id}
+                              >
+                                <Key className="h-4 w-4 mr-1" />
+                                Управление правами
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {/* Role Change Dialog */}
@@ -469,6 +638,92 @@ export default function AdminPanel() {
                 disabled={!newRole || newRole === selectedUser?.role}
               >
                 {t('admin:save')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Permission Management Dialog */}
+        <Dialog open={permissionDialogOpen} onOpenChange={setPermissionDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Управление правами пользователя</DialogTitle>
+              <DialogDescription>
+                Пользователь: {selectedUserForPermission?.username}
+                {selectedUserForPermission?.role === 'Administrator' && (
+                  <span className="block mt-2 text-sm text-amber-600">
+                    ⚠️ Администраторы имеют все права автоматически
+                  </span>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-4 space-y-4">
+              {permissionsLoading ? (
+                <div className="space-y-2">
+                  {[...Array(3)].map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {permissions.map((permission) => {
+                    const hasPermission = selectedUserForPermission?.permissions?.includes(permission.name) || 
+                                        selectedUserForPermission?.role === 'Administrator';
+                    const isAdmin = selectedUserForPermission?.role === 'Administrator';
+                    
+                    return (
+                      <div
+                        key={permission.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <div className="font-medium">{permission.displayName}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {permission.description || 'Нет описания'}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Код: {permission.name}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {hasPermission ? (
+                            <>
+                              <Badge variant="default">Выдано</Badge>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRevokePermission(selectedUserForPermission!.id, permission.name)}
+                                disabled={isAdmin}
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                Отозвать
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => handleGrantPermission(selectedUserForPermission!.id, permission.name)}
+                            >
+                              <Plus className="h-4 w-4 mr-1" />
+                              Выдать
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setPermissionDialogOpen(false)}
+              >
+                Закрыть
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -324,9 +324,31 @@ This section provides a summary of the core features implemented in the applicat
 
 ---
 
+*   **Granular Permissions System**: Revolutionary permission management architecture inspired by MediaWiki:
+    *   **Permission Entities**: Flexible permissions system with separate Permission entity supporting unlimited permission types
+    *   **Many-to-Many Relationships**: User-Permission associations stored in dedicated junction table with proper foreign key constraints
+    *   **Built-in Permissions**: Initial permission `edit_caption` for dataset caption editing with extensible framework for future permissions
+    *   **Administrator Override**: Administrators automatically inherit all permissions without explicit grants for streamlined management
+    *   **API Endpoints**: Comprehensive REST API for permission management (`/api/permissions/*`) with grant/revoke operations
+    *   **Permission Middleware**: Backend middleware for fine-grained access control validation with automatic admin bypass
+    *   **Admin Interface**: Dedicated permissions management tab in admin panel with user-friendly permission assignment UI
+*   **Advanced Caption Editing System**: Professional-grade caption modification functionality with complete audit trail:
+    *   **Inline Caption Editor**: React component with textarea, character count, keyboard shortcuts (Ctrl+Enter to save, Esc to cancel)
+    *   **Edit Button**: Contextual edit button displayed in image detail modal only for users with `edit_caption` permission
+    *   **Caption History Tracking**: Complete revision history stored in `caption_edit_history` table with timestamps and user attribution
+    *   **MediaWiki-Style Diff Viewer**: Visual diff display with color-coded additions (green) and deletions (red) showing word-level changes
+    *   **History List Component**: Expandable revision history with relative timestamps ("2 hours ago") and click-to-expand diff viewing
+    *   **Real-time Updates**: Automatic UI refresh after caption edits with immediate reflection in dataset view
+    *   **Access Control Integration**: Permission checks on both frontend (UI visibility) and backend (API validation)
+    *   **Audit Trail**: All caption modifications logged with user ID, old/new values, and timestamps for compliance and accountability
+
+---
+
 ## Document Version History
 
-*Latest Update: October 2025 - Image Loading Performance Optimization: Resolved critical image loading performance issue in Data Studio when displaying 100+ images. Implemented comprehensive lazy loading system using Intersection Observer API with custom LazyImage component, viewport buffering (50px), native browser lazy loading integration, animated skeleton placeholders, and smooth CSS transitions. System now efficiently handles large datasets without browser connection throttling issues, providing smooth progressive loading during scrolling.*
+*Latest Update: October 2025 - Granular Permissions System & Advanced Caption Editing: Implemented comprehensive permission management system inspired by MediaWiki with flexible Permission entity supporting unlimited permission types, many-to-many user-permission relationships, administrator override capabilities, and dedicated admin interface. Deployed professional caption editing functionality with inline editor, MediaWiki-style diff viewer with color-coded changes, complete revision history tracking, expandable history list component, and full audit trail. Backend includes permission middleware for access control, API endpoints for permission management, and caption edit history storage. Frontend features contextual edit buttons, character count, keyboard shortcuts, real-time UI updates, and permission-based UI visibility.*
+
+*October 2025 - Image Loading Performance Optimization: Resolved critical image loading performance issue in Data Studio when displaying 100+ images. Implemented comprehensive lazy loading system using Intersection Observer API with custom LazyImage component, viewport buffering (50px), native browser lazy loading integration, animated skeleton placeholders, and smooth CSS transitions. System now efficiently handles large datasets without browser connection throttling issues, providing smooth progressive loading during scrolling.*
 
 *January 2025 - Session Persistence & Remember Me Implementation: Resolved critical session management bug and implemented comprehensive "Remember Me" functionality with flexible token expiration (1 hour standard, 30 days with Remember Me), intelligent token refresh middleware that preserves original expiration timestamps, complete frontend integration with checkbox control, and seamless synchronization between backend token generation and frontend storage. Enhanced authentication architecture documentation with detailed token management flows and session persistence mechanisms.*
 

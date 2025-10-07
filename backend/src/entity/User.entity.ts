@@ -5,9 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Dataset } from './Dataset.entity';
+import { Permission } from './Permission.entity';
 
 export enum UserRole {
   ADMIN = 'Administrator',
@@ -22,6 +25,14 @@ export class User {
 
   @OneToMany(() => Dataset, (dataset) => dataset.user)
   datasets!: Dataset[];
+
+  @ManyToMany(() => Permission, (permission) => permission.users)
+  @JoinTable({
+    name: 'user_permissions',
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'permissionId', referencedColumnName: 'id' },
+  })
+  permissions!: Permission[];
 
   @Column({ unique: true, type: 'varchar' })
   username!: string;

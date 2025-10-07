@@ -3,6 +3,25 @@ export interface User {
     username: string;
     email: string; // This was missing and caused the crash
     role: 'Administrator' | 'Developer' | 'User';
+    permissions?: string[];
+}
+
+export interface Permission {
+    id: string;
+    name: string;
+    displayName: string;
+    description?: string;
+}
+
+export interface CaptionHistoryEntry {
+    id: string;
+    oldCaption: string;
+    newCaption: string;
+    createdAt: string;
+    user: {
+        id: string;
+        username: string;
+    } | null;
 }
 
 export interface DatasetImage {

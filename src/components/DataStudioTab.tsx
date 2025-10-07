@@ -1,9 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Dataset, DatasetImage } from '@/types';
+import { Dataset, DatasetImage, CaptionHistoryEntry } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Edit, Loader2 } from 'lucide-react';
+import { CaptionEditor } from './CaptionEditor';
+import { CaptionHistoryList } from './CaptionHistoryList';
+import { useUserPermissions } from '@/hooks/use-user-permissions';
+import axios from '@/lib/axios';
+import { useToast } from '@/hooks/use-toast';
 
 interface DataStudioTabProps {
   dataset: Dataset;
@@ -84,8 +92,14 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
   onLimitChange,
 }) => {
   const { t } = useTranslation(['pages', 'common']);
+  const { toast } = useToast();
+  const { hasPermission } = useUserPermissions();
   const [selectedImage, setSelectedImage] = useState<DatasetImage | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isEditingCaption, setIsEditingCaption] = useState(false);
+  const [captionHistory, setCaptionHistory] = useState<CaptionHistoryEntry[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [selectedImageForDialog, setSelectedImageForDialog] = useState<DatasetImage | null>(null);
 
   const openLightbox = (image: DatasetImage) => {
     setSelectedImage(image);
@@ -95,6 +109,62 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
   const closeLightbox = () => {
     setIsLightboxOpen(false);
     setSelectedImage(null);
+  };
+
+  const loadCaptionHistory = async (imageId: number) => {
+    setLoadingHistory(true);
+    try {
+      const response = await axios.get(
+        `/datasets/${dataset.id}/images/${imageId}/caption-history`
+      );
+      setCaptionHistory(response.data.history || []);
+    } catch (error) {
+      console.error('Error loading caption history:', error);
+      setCaptionHistory([]);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleSaveCaption = async (imageId: number, newCaption: string) => {
+    try {
+      await axios.put(
+        `/datasets/${dataset.id}/images/${imageId}/caption`,
+        { caption: newCaption }
+      );
+
+      // Обновляем изображение в локальном состоянии
+      const updatedImage = { ...selectedImageForDialog!, prompt: newCaption };
+      setSelectedImageForDialog(updatedImage);
+
+      // Перезагружаем историю
+      await loadCaptionHistory(imageId);
+
+      setIsEditingCaption(false);
+
+      toast({
+        title: 'Caption обновлен',
+        description: 'Изменения успешно сохранены',
+      });
+    } catch (error: any) {
+      console.error('Error saving caption:', error);
+      toast({
+        title: 'Ошибка',
+        description: error.response?.data?.message || 'Не удалось сохранить caption',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
+  const handleOpenDialog = async (image: DatasetImage) => {
+    setSelectedImageForDialog(image);
+    setIsEditingCaption(false);
+    
+    // Загружаем историю правок
+    if (hasPermission('edit_caption')) {
+      await loadCaptionHistory(image.id);
+    }
   };
 
   // Функция для получения расширения файла из URL
@@ -195,7 +265,7 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                 </TableHeader>
                 <TableBody>
                   {images.map((image) => (
-                    <Dialog key={image.id}>
+                    <Dialog key={image.id} onOpenChange={(open) => { if (open) handleOpenDialog(image); }}>
                       <DialogTrigger asChild>
                         <TableRow className="cursor-pointer">
                           <TableCell className="py-4 text-center">{image.row_number}</TableCell>
@@ -226,7 +296,7 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                       </DialogTrigger>
                       <DialogContent className="max-w-[90vw] max-h-[90vh] w-auto overflow-hidden">
                         <DialogHeader>
-                          <DialogTitle>{image.filename}</DialogTitle>
+                          <DialogTitle>{selectedImageForDialog?.filename || image.filename}</DialogTitle>
                           <DialogDescription>
                             {t('pages:dataset.image_details')}
                           </DialogDescription>
@@ -256,11 +326,49 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                                 {image.url}
                               </a>
                             </div>
-                            <div>
-                              <p><strong>Prompt:</strong></p>
-                              <p className="text-muted-foreground break-words max-w-full">{image.prompt}</p>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <p><strong>Prompt:</strong></p>
+                                {hasPermission('edit_caption') && !isEditingCaption && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setIsEditingCaption(true)}
+                                  >
+                                    <Edit className="h-4 w-4 mr-1" />
+                                    Редактировать
+                                  </Button>
+                                )}
+                              </div>
+                              {isEditingCaption ? (
+                                <CaptionEditor
+                                  initialCaption={selectedImageForDialog?.prompt || image.prompt}
+                                  onSave={(newCaption) => handleSaveCaption(image.id, newCaption)}
+                                  onCancel={() => setIsEditingCaption(false)}
+                                />
+                              ) : (
+                                <p className="text-muted-foreground break-words max-w-full">
+                                  {selectedImageForDialog?.prompt || image.prompt}
+                                </p>
+                              )}
                             </div>
                             <p className="font-mono text-xs break-all"><strong>Key:</strong> {image.img_key}</p>
+                            
+                            {hasPermission('edit_caption') && (
+                              <>
+                                <Separator className="my-4" />
+                                {loadingHistory ? (
+                                  <div className="flex items-center justify-center py-4">
+                                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                  </div>
+                                ) : (
+                                  <CaptionHistoryList
+                                    history={captionHistory}
+                                    currentCaption={selectedImageForDialog?.prompt || image.prompt}
+                                  />
+                                )}
+                              </>
+                            )}
                            </div>
                         </div>
                       </DialogContent>
