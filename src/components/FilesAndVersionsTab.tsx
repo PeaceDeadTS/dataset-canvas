@@ -92,10 +92,10 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Dataset Files
+                {t('pages:dataset.dataset_files')}
               </CardTitle>
               <CardDescription>
-                Original CSV files and dataset versions
+                {t('pages:dataset.dataset_files_description')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -151,15 +151,15 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
           {/* Version History (placeholder) */}
           <Card>
             <CardHeader>
-              <CardTitle>Version History</CardTitle>
+              <CardTitle>{t('pages:dataset.version_history')}</CardTitle>
               <CardDescription>
-                Track changes and updates to your dataset
+                {t('pages:dataset.version_history_description')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8 text-muted-foreground">
                 <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Version history coming soon</p>
+                <p>{t('pages:dataset.version_history_coming_soon')}</p>
               </div>
             </CardContent>
           </Card>
