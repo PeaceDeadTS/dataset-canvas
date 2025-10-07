@@ -30,7 +30,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
 
   const fetchDiscussions = async () => {
     try {
-      const response = await axios.get(`/api/datasets/${dataset.id}/discussions`);
+      const response = await axios.get(`/datasets/${dataset.id}/discussions`);
       setDiscussions(response.data);
     } catch (error) {
       console.error('Failed to fetch discussions:', error);
@@ -41,7 +41,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
 
   const handleCreateDiscussion = async (title: string, content: string) => {
     try {
-      await axios.post(`/api/datasets/${dataset.id}/discussions`, { title, content });
+      await axios.post(`/datasets/${dataset.id}/discussions`, { title, content });
       toast({ title: t('common:discussions.discussionCreateSuccess') });
       await fetchDiscussions();
     } catch (error) {
