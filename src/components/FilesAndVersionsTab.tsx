@@ -67,7 +67,10 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    const date = new Date(dateString);
+    const dateStr = date.toLocaleDateString();
+    const timeStr = date.toLocaleTimeString();
+    return `${dateStr} ${timeStr}`;
   };
 
   const formatFileSize = (bytes: number) => {
