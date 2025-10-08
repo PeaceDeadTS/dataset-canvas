@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import '@/lib/i18n';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CreateDatasetProvider } from '@/contexts/CreateDatasetContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { GlobalCreateDatasetDialog } from '@/components/GlobalCreateDatasetDialog';
 
 // Lazy загрузка страниц
@@ -41,31 +42,33 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <CreateDatasetProvider>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/datasets" element={<AllDatasetsPage />} />
-                <Route path="/datasets/:id" element={<DatasetPage />} />
-                <Route path="/users" element={<UsersPage />} />
-                <Route path="/users/:username" element={<UserPage />} />
-                <Route path="/admin" element={<AdminPanelPage />} />
-                <Route path="/recent-changes" element={<RecentChangesPage />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-            <GlobalCreateDatasetDialog />
-          </CreateDatasetProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <CreateDatasetProvider>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<AuthPage />} />
+                  <Route path="/datasets" element={<AllDatasetsPage />} />
+                  <Route path="/datasets/:id" element={<DatasetPage />} />
+                  <Route path="/users" element={<UsersPage />} />
+                  <Route path="/users/:username" element={<UserPage />} />
+                  <Route path="/admin" element={<AdminPanelPage />} />
+                  <Route path="/recent-changes" element={<RecentChangesPage />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+              <GlobalCreateDatasetDialog />
+            </CreateDatasetProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

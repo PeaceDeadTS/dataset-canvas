@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +29,7 @@ import { useCreateDataset } from "@/contexts/CreateDatasetContext";
 import { cn } from "@/lib/utils";
 import { Database, Users, Home, BarChart3, Settings, Shield } from "lucide-react";
 import { LanguageSelector } from './LanguageSelector';
+import { SettingsDialog } from './SettingsDialog';
 
 const ListItem = ({ className, title, href, children, ...props }: {
   className?: string;
@@ -98,6 +100,7 @@ export function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation(['navigation', 'common']);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -331,6 +334,14 @@ export function AppHeader() {
                 </DropdownMenuSub>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
+                  className="flex items-center gap-2 cursor-pointer"
+                  onClick={() => setSettingsOpen(true)}
+                >
+                  <Settings className="h-4 w-4" />
+                  {t('common:settings')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
                   className="text-red-600 focus:text-red-600 cursor-pointer"
                   onClick={handleLogout}
                 >
@@ -346,6 +357,9 @@ export function AppHeader() {
           )}
         </div>
       </div>
+      
+      {/* Settings Dialog */}
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </header>
   );
 }

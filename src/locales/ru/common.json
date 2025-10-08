@@ -159,6 +159,24 @@
     "unlikeSuccess": "Лайк убран!",
     "toggleError": "Не удалось обновить статус лайка"
   },
+  "settings": {
+    "title": "Настройки",
+    "appearance": "Внешний вид",
+    "theme": "Тема",
+    "themeDescription": "Выберите тему оформления интерфейса приложения",
+    "themeLight": "Светлая",
+    "themeDark": "Темная",
+    "themeSystem": "Системная",
+    "themeLightDescription": "Светлая тема с яркими цветами",
+    "themeDarkDescription": "Темная тема для снижения нагрузки на глаза",
+    "themeSystemDescription": "Следовать настройкам системы",
+    "preferences": "Настройки",
+    "language": "Язык",
+    "languageDescription": "Выберите предпочитаемый язык интерфейса",
+    "about": "О программе",
+    "version": "Версия",
+    "closeSettings": "Закрыть настройки"
+  },
   "discussions": {
     "newDiscussion": "Новое обсуждение",
     "createDiscussion": "Создать обсуждение",

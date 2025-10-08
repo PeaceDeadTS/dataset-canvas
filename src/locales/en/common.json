@@ -159,6 +159,24 @@
     "unlikeSuccess": "Unliked successfully!",
     "toggleError": "Failed to update like status"
   },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "themeDescription": "Select the theme for the application interface",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "themeLightDescription": "Light theme with bright colors",
+    "themeDarkDescription": "Dark theme for reduced eye strain",
+    "themeSystemDescription": "Follow system preferences",
+    "preferences": "Preferences",
+    "language": "Language",
+    "languageDescription": "Select your preferred language",
+    "about": "About",
+    "version": "Version",
+    "closeSettings": "Close settings"
+  },
   "discussions": {
     "newDiscussion": "New Discussion",
     "createDiscussion": "Create Discussion",
