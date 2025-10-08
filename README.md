@@ -6,9 +6,19 @@
 [![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)](https://expressjs.com/)
 [![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)](https://mariadb.org/)
 
-Dataset Canvas is a comprehensive web application inspired by Hugging Face's Data Studio, designed for professional dataset management and visualization. Built with modern technologies and international accessibility in mind, it provides a robust platform for managing image datasets with advanced features like multilingual support, comprehensive administrative panel, enhanced authentication architecture, role-based access control, CSV data imports, and intelligent image metadata processing.
+Dataset Canvas is a comprehensive web application inspired by Hugging Face's Data Studio, designed for professional dataset management and visualization. Built with modern technologies and international accessibility in mind, it provides a robust platform for managing image datasets with advanced features like multilingual support, personalized theme system, granular permissions, discussion system, comprehensive administrative panel, enhanced authentication architecture, role-based access control, CSV data imports, and intelligent image metadata processing.
 
-## 🆕 Latest Updates (January 2025)
+## 🆕 Latest Updates (October 2025)
+
+### 🎨 Personalized Theme System (NEW)
+- **Database-persisted preferences**: Each user's theme settings stored in database, eliminating cross-user conflicts
+- **Three theme modes**: Light, Dark, and System (follows OS preferences) with smooth transitions
+- **Professional dark theme**: Inspired by GitHub Dark, Discord, and VS Code with balanced contrast for reduced eye strain
+- **Hybrid storage**: Authenticated users get server-side persistence, anonymous users use localStorage fallback
+- **Settings dialog**: Modern interface for theme selection and preferences with extensible architecture
+- **Real-time synchronization**: Theme changes apply immediately with automatic API sync
+
+## 🆕 Previous Major Updates (2025)
 
 ### 📊 Advanced Dataset Analytics (NEW)
 - **Comprehensive Statistics API**: New `/api/datasets/:id/statistics` endpoint providing detailed dataset analysis
@@ -129,16 +139,75 @@ Dataset Canvas is a comprehensive web application inspired by Hugging Face's Dat
 - **Intelligent code splitting**: Automatic chunk optimization for faster loading
 - **Progressive loading**: Improved initial load times with optimized resource distribution
 
+### 🎨 Personalized Settings & Theming
+- **Per-user theme preferences**: Database-stored themes ensure consistent experience across devices and sessions
+- **Three theme options**: Light, Dark, and System (automatically follows OS preferences)
+- **Professional dark theme**: Carefully crafted color palette inspired by industry leaders (GitHub, Discord, VS Code)
+- **Smooth transitions**: Instant theme switching without page reload using CSS variables
+- **Settings dialog**: Modern modal interface with theme selection, language preferences, and future extensibility
+- **Hybrid storage approach**: Server-side persistence for authenticated users, localStorage for anonymous visitors
+- **API-driven**: Dedicated REST endpoints (`GET/PATCH /api/users/me/settings`) for preferences management
+
+### 🔐 Granular Permissions System
+- **MediaWiki-inspired architecture**: Flexible permission system supporting unlimited permission types
+- **Many-to-many relationships**: User-permission associations with dedicated junction tables
+- **Built-in permissions**: Comprehensive set including discussion management, caption editing, and content moderation
+- **Default permissions**: Automatic assignment during registration (read/create/reply to discussions, edit own posts)
+- **Administrator override**: Admins automatically inherit all permissions without explicit grants
+- **Admin panel integration**: Full permission management interface with real-time status indicators and grant/revoke actions
+
+### 💬 Discussion System
+- **Complete discussion infrastructure**: Three TypeORM entities with proper relationships and cascading deletes
+- **Full CRUD operations**: 10 RESTful API endpoints covering all discussion functionality
+- **Nested reply support**: Thread-style conversations with quotations and visual hierarchy
+- **Edit history tracking**: MediaWiki-style diff viewer with color-coded changes for all post edits
+- **Moderation tools**: Lock/unlock, pin/unpin discussions, soft delete posts with admin controls
+- **Permission-based access**: Six granular permissions controlling discussion participation
+- **Real-time UI**: URL-based navigation, expandable threads, clickable usernames, and visual indicators
+
+### ✏️ Advanced Caption Editing
+- **Inline caption editor**: React component with textarea, character count, and keyboard shortcuts (Ctrl+Enter, Esc)
+- **Complete revision history**: All caption changes tracked in database with timestamps and user attribution
+- **MediaWiki-style diff viewer**: Visual comparison with color-coded additions (green) and deletions (red)
+- **Permission-based access**: Edit button displayed only for users with `edit_caption` permission
+- **Audit trail**: Full history of all modifications for compliance and accountability
+- **Real-time updates**: Immediate UI refresh after caption edits across dataset views
+
+### 📝 User Activity Tracking
+- **User edit history**: Dedicated profile tab (`/users/:username?tab=edits`) showing all caption modifications
+- **Recent changes page**: Global activity monitor (`/recent-changes`) for site-wide edit tracking
+- **Comprehensive metadata**: Shows editor, dataset, image key, timestamps, and expandable diffs
+- **Pagination support**: Efficient browsing of large edit histories
+- **Deep linking**: Direct links from edits to specific datasets and images
+- **Full localization**: Relative time formatting ("2 hours ago") in English and Russian
+
+### ❤️ Like System
+- **Dataset likes**: GitHub/Telegram-style UI with overlapping avatars and like counts
+- **Post likes**: Like system for discussion posts with compact display
+- **Interactive feedback**: Heart icon with smooth animations (bounce effect, fill transition)
+- **User attribution**: Modal dialogs showing all users who liked with timestamps
+- **Backend validation**: Prevents duplicate likes and self-liking on posts
+- **Real-time updates**: Optimistic UI with automatic counter refresh
+- **Anonymous support**: View-only mode with login prompts for guests
+
+### 📁 File Management System
+- **CSV file storage**: Robust backend system with dedicated `DatasetFile` entity
+- **Secure handling**: Protected upload directories with unique naming and metadata tracking
+- **Download functionality**: Secure file downloads with proper MIME types and authentication
+- **Version tracking**: Infrastructure for managing multiple file versions and upload history
+- **API endpoints**: Dedicated routes for file listing (`/files`) and downloading (`/files/:id/download`)
+
 ### 🛠️ Technical Excellence
 - **Advanced Authentication Architecture**: Centralized auth context with React Context API for consistent state management
 - **Automated HTTP Management**: Axios interceptors for automatic JWT token injection, refresh, and error handling
-- **Database migrations** for safe schema management with TypeORM
+- **Database migrations** for safe schema management with TypeORM (10+ migrations deployed)
 - **Comprehensive testing** with Vitest for both frontend and backend
 - **Type-safe development** with TypeScript throughout and complete i18n integration
 - **Production-ready deployment** with systemd service configuration
 - **Centralized logging** with Winston and detailed audit trails for admin actions
 - **Security-first design**: Built-in safeguards, input validation, and secure session management
 - **Development tools**: ESLint, testing utilities, development servers, and comprehensive error handling
+- **Migration system**: Robust database schema management with 10+ migrations for safe deployments
 
 ## 🚀 Quick Start
 
@@ -262,6 +331,44 @@ Start both servers simultaneously:
 ### User Management Endpoints
 - `GET /api/users` - List all users with sorting and role filtering options (sortBy: username/createdAt/publicDatasetCount, role: ADMIN/DEVELOPER/USER)
 - `GET /api/users/:username` - Get user profile and their datasets
+- `GET /api/users/:id/edits` - Get user's edit history (caption edits and discussion activity) with pagination
+- `GET /api/users/me/settings` - Get current user settings (theme preferences)
+- `PATCH /api/users/me/settings` - Update user settings (theme: light/dark/system)
+- `PUT /api/users/:id/role` - Update user role (Admin only)
+- `DELETE /api/users/:id` - Delete user (Admin only)
+
+### Discussion Endpoints
+- `GET /api/datasets/:id/discussions` - List all discussions for a dataset
+- `POST /api/datasets/:id/discussions` - Create new discussion with initial post
+- `GET /api/discussions/:id` - Get single discussion with all posts and replies
+- `POST /api/discussions/:id/posts` - Add reply to discussion
+- `PATCH /api/posts/:id` - Edit post with automatic history tracking
+- `GET /api/posts/:id/history` - Retrieve post edit history
+- `DELETE /api/discussions/:id` - Delete discussion (admin only)
+- `DELETE /api/posts/:id` - Soft delete post
+- `PATCH /api/discussions/:id/lock` - Lock/unlock discussion
+- `PATCH /api/discussions/:id/pin` - Pin/unpin discussion
+
+### Like Endpoints
+- `GET /api/datasets/:id/likes` - Get all likes for a dataset
+- `POST /api/datasets/:id/likes` - Like a dataset
+- `DELETE /api/datasets/:id/likes` - Unlike a dataset
+- `GET /api/posts/:id/likes` - Get all likes for a post
+- `POST /api/posts/:id/likes` - Like a post
+- `DELETE /api/posts/:id/likes` - Unlike a post
+
+### Permission Endpoints
+- `GET /api/permissions` - List all available permissions
+- `GET /api/permissions/user/:userId` - Get user's permissions
+- `POST /api/permissions/grant` - Grant permission to user
+- `DELETE /api/permissions/revoke` - Revoke permission from user
+
+### Recent Changes Endpoints
+- `GET /api/recent-changes` - Get site-wide recent changes (caption edits and discussion activity) with pagination
+
+### Admin Endpoints
+- `GET /api/admin/datasets` - List all datasets (Admin only)
+- `DELETE /api/admin/datasets/:id` - Force delete any dataset (Admin only)
 
 ### Query Parameters
 - `?page=N` - Pagination page number
