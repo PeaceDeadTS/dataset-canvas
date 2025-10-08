@@ -93,6 +93,18 @@ export function DiscussionPostComponent({
     return formatDistanceToNow(date, { addSuffix: true, locale });
   };
 
+  // Отладка: проверим значения
+  const isOwnPost = user && post.authorId === user.userId;
+  console.log('Post like debug:', {
+    postId: post.id,
+    postAuthorId: post.authorId,
+    postAuthorIdType: typeof post.authorId,
+    userId: user?.userId,
+    userIdType: typeof user?.userId,
+    isOwnPost,
+    canLike: !!user && !!post.authorId && post.authorId !== user.userId
+  });
+
   if (post.isDeleted) {
     return (
       <Card className="p-4 bg-muted/50">

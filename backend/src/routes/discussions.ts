@@ -204,7 +204,13 @@ router.get('/discussions/:id', checkJwtOptional, async (req, res) => {
       .orderBy('post.createdAt', 'ASC')
       .getMany();
 
-    return res.json({ ...discussion, posts });
+    // Explicitly include authorId in response
+    const postsWithAuthorId = posts.map(post => ({
+      ...post,
+      authorId: post.authorId, // Ensure authorId is included
+    }));
+
+    return res.json({ ...discussion, posts: postsWithAuthorId });
   } catch (error) {
     logger.error('Error fetching discussion:', error);
     return res.status(500).json({ message: 'Internal server error' });
