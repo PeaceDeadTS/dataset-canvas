@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { Settings, Trash2, ChevronRight } from "lucide-react";
+import { Trash2, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dataset } from "@/types";
 import axios from '@/lib/axios';
@@ -46,11 +46,6 @@ export function DatasetBreadcrumb({ dataset }: DatasetBreadcrumbProps) {
     }
   };
 
-  const handleSettings = () => {
-    // TODO: Implement settings functionality
-    toast.info(t('pages:dataset.settings_coming_soon'));
-  };
-
   return (
     <div className="sticky top-16 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-4">
@@ -81,15 +76,6 @@ export function DatasetBreadcrumb({ dataset }: DatasetBreadcrumbProps) {
           
           {canManageDataset && (
             <div className="flex items-center space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleSettings}
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                {t('common:settings')}
-              </Button>
-              
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button 

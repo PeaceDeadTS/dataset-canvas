@@ -12,7 +12,7 @@ import { Button } from "./ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dataset } from "@/types";
 import { Badge } from "./ui/badge";
-import { Settings, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import axios from '@/lib/axios';
 import { toast } from "sonner";
@@ -96,11 +96,6 @@ export function DatasetHeader({ dataset }: DatasetHeaderProps) {
                   
                   {canManageDataset && (
                     <div className="flex items-center space-x-2">
-                      <Button variant="outline" size="sm">
-                        <Settings className="w-4 h-4 mr-2" />
-                        Settings
-                      </Button>
-                      
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
