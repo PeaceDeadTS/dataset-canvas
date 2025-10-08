@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { DiscussionPost } from '../types';
+import { DiscussionPost, PostLike } from '../types';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
@@ -9,6 +9,10 @@ import { MessageSquare, Edit, Trash2, Clock, History } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
 import { PostEditHistory } from './PostEditHistory';
+import { PostLikesDisplay } from './PostLikesDisplay';
+import axios from '../lib/axios';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../hooks/use-toast';
 
 interface DiscussionPostComponentProps {
   post: DiscussionPost;
@@ -29,7 +33,60 @@ export function DiscussionPostComponent({
 }: DiscussionPostComponentProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'ru' ? ru : enUS;
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [showHistory, setShowHistory] = useState(false);
+  
+  // Likes state
+  const [likes, setLikes] = useState<PostLike[]>([]);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isLikesLoading, setIsLikesLoading] = useState(false);
+
+  useEffect(() => {
+    fetchLikes();
+  }, [post.id]);
+
+  const fetchLikes = async () => {
+    try {
+      const response = await axios.get(`/posts/${post.id}/likes`);
+      const likesData = response.data as PostLike[];
+      setLikes(likesData);
+      
+      // Check if current user has liked
+      if (user) {
+        const userLike = likesData.find(like => like.user.id === user.userId);
+        setIsLiked(!!userLike);
+      }
+    } catch (error) {
+      console.error('Failed to fetch post likes:', error);
+    }
+  };
+
+  const handleToggleLike = async () => {
+    if (!user) return;
+    
+    setIsLikesLoading(true);
+    try {
+      if (isLiked) {
+        await axios.delete(`/posts/${post.id}/likes`);
+        toast({ title: t('common:likes.unlikeSuccess') });
+      } else {
+        await axios.post(`/posts/${post.id}/likes`);
+        toast({ title: t('common:likes.likeSuccess') });
+      }
+      
+      // Refresh likes
+      await fetchLikes();
+    } catch (error) {
+      console.error('Failed to toggle post like:', error);
+      toast({
+        title: t('common:likes.toggleError'),
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLikesLoading(false);
+    }
+  };
 
   const getRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -123,6 +180,17 @@ export function DiscussionPostComponent({
       {/* Post content */}
       <div className="prose prose-sm max-w-none">
         <p className="whitespace-pre-wrap">{post.content}</p>
+      </div>
+
+      {/* Post likes */}
+      <div className="mt-3 pt-3 border-t">
+        <PostLikesDisplay
+          likes={likes}
+          isLiked={isLiked}
+          isLoading={isLikesLoading}
+          onToggleLike={handleToggleLike}
+          canLike={!!user}
+        />
       </div>
 
       {/* Show history button if post has been edited */}

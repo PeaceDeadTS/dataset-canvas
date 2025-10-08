@@ -42,6 +42,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
   useEffect(() => {
     fetchDiscussions();
     fetchLikes();
+    fetchContributors();
     
     // Check for discussion parameter in URL
     const discussionParam = searchParams.get('discussion');
@@ -81,18 +82,11 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
   };
 
   const fetchContributors = async () => {
-    setIsContributorsLoading(true);
     try {
       const response = await axios.get(`/datasets/${dataset.id}/contributors`);
       setContributors(response.data);
     } catch (error) {
       console.error('Failed to fetch contributors:', error);
-      toast({
-        title: t('common:community.contributorsFetchError'),
-        variant: 'destructive'
-      });
-    } finally {
-      setIsContributorsLoading(false);
     }
   };
 
@@ -124,7 +118,6 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
 
   const handleOpenContributors = () => {
     setShowContributorsDialog(true);
-    fetchContributors();
   };
 
   const handleCreateDiscussion = async (title: string, content: string) => {
@@ -205,7 +198,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
               <CardContent className="flex items-center p-6">
                 <Users className="h-8 w-8 text-green-500 mr-4" />
                 <div>
-                  <div className="text-2xl font-bold">{contributors.length || '?'}</div>
+                  <div className="text-2xl font-bold">{contributors.length}</div>
                   <p className="text-sm text-muted-foreground">{t('common:community.contributors')}</p>
                 </div>
               </CardContent>
@@ -259,7 +252,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
             open={showContributorsDialog}
             onOpenChange={setShowContributorsDialog}
             contributors={contributors}
-            isLoading={isContributorsLoading}
+            isLoading={false}
           />
 
           {/* Community Guidelines */}

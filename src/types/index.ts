@@ -235,3 +235,14 @@ export interface Contributor {
     postsCount: number;
     totalActivity: number;
 }
+
+// Post Like types
+export interface PostLike {
+    id: number;
+    createdAt: string;
+    user: {
+        id: string;
+        username: string;
+        email: string;
+    };
+}

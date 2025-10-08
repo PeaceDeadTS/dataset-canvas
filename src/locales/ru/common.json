@@ -152,6 +152,7 @@
     "unlike": "Убрать лайк с датасета",
     "loginRequired": "Войдите, чтобы поставить лайк",
     "likesTitle": "Лайки",
+    "postLikesTitle": "Лайки поста",
     "noLikes": "Лайков пока нет",
     "likeSuccess": "Лайк успешно поставлен!",
     "unlikeSuccess": "Лайк убран!",

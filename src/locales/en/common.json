@@ -152,6 +152,7 @@
     "unlike": "Unlike this dataset",
     "loginRequired": "Login to like this dataset",
     "likesTitle": "Likes",
+    "postLikesTitle": "Post Likes",
     "noLikes": "No likes yet",
     "likeSuccess": "Liked successfully!",
     "unlikeSuccess": "Unliked successfully!",

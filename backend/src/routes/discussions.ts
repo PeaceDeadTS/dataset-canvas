@@ -3,6 +3,7 @@ import { AppDataSource } from '../data-source';
 import { Discussion } from '../entity/Discussion.entity';
 import { DiscussionPost } from '../entity/DiscussionPost.entity';
 import { DiscussionEditHistory } from '../entity/DiscussionEditHistory.entity';
+import { PostLike } from '../entity/PostLike.entity';
 import { Dataset } from '../entity/Dataset.entity';
 import { checkJwt, checkJwtOptional } from '../middleware/checkJwt';
 import {
@@ -484,6 +485,110 @@ router.patch(
     }
   }
 );
+
+// POST /api/posts/:id/likes - Поставить лайк посту
+router.post('/posts/:id/likes', checkJwt, async (req, res) => {
+  try {
+    const postId = Number(req.params.id);
+    const userId = req.user!.userId;
+
+    const postRepository = AppDataSource.manager.getRepository(DiscussionPost);
+    const post = await postRepository.findOne({
+      where: { id: postId },
+      relations: ['discussion'],
+    });
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    if (post.isDeleted) {
+      return res.status(400).json({ message: 'Cannot like deleted post' });
+    }
+
+    const postLikeRepository = AppDataSource.manager.getRepository(PostLike);
+
+    // Проверяем, не поставлен ли уже лайк
+    const existingLike = await postLikeRepository.findOne({
+      where: { userId, postId }
+    });
+
+    if (existingLike) {
+      return res.status(400).json({ message: 'Вы уже поставили лайк этому посту' });
+    }
+
+    // Создаем новый лайк
+    const like = postLikeRepository.create({
+      userId,
+      postId
+    });
+
+    await postLikeRepository.save(like);
+
+    logger.info('Post like created', { postId, userId });
+    res.status(201).json({ message: 'Лайк добавлен', like });
+  } catch (error) {
+    logger.error('Failed to create post like', { error });
+    res.status(500).json({ message: 'Ошибка при добавлении лайка' });
+  }
+});
+
+// DELETE /api/posts/:id/likes - Убрать лайк с поста
+router.delete('/posts/:id/likes', checkJwt, async (req, res) => {
+  try {
+    const postId = Number(req.params.id);
+    const userId = req.user!.userId;
+
+    const postLikeRepository = AppDataSource.manager.getRepository(PostLike);
+
+    // Ищем лайк
+    const like = await postLikeRepository.findOne({
+      where: { userId, postId }
+    });
+
+    if (!like) {
+      return res.status(404).json({ message: 'Лайк не найден' });
+    }
+
+    await postLikeRepository.remove(like);
+
+    logger.info('Post like removed', { postId, userId });
+    res.json({ message: 'Лайк удален' });
+  } catch (error) {
+    logger.error('Failed to remove post like', { error });
+    res.status(500).json({ message: 'Ошибка при удалении лайка' });
+  }
+});
+
+// GET /api/posts/:id/likes - Получить список лайков поста с пользователями
+router.get('/posts/:id/likes', async (req, res) => {
+  try {
+    const postId = Number(req.params.id);
+
+    const postLikeRepository = AppDataSource.manager.getRepository(PostLike);
+
+    const likes = await postLikeRepository.find({
+      where: { postId },
+      relations: ['user'],
+      order: { createdAt: 'DESC' }
+    });
+
+    const formattedLikes = likes.map(like => ({
+      id: like.id,
+      createdAt: like.createdAt,
+      user: {
+        id: like.user.id,
+        username: like.user.username,
+        email: like.user.email
+      }
+    }));
+
+    res.json(formattedLikes);
+  } catch (error) {
+    logger.error('Failed to fetch post likes', { error });
+    res.status(500).json({ message: 'Ошибка при получении лайков' });
+  }
+});
 
 export default router;
 
