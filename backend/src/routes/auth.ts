@@ -3,10 +3,22 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { AppDataSource } from '../data-source'; // Импортируем AppDataSource
 import { User, UserRole } from '../entity/User.entity';
+import { Permission } from '../entity/Permission.entity';
 import logger from '../logger';
 import { Request, Response } from 'express';
 
 const router = Router();
+
+/**
+ * Базовые привилегии, которые выдаются всем новым пользователям при регистрации
+ * Эти права позволяют пользователям участвовать в обсуждениях и базовых операциях
+ */
+const DEFAULT_USER_PERMISSIONS = [
+  'read_discussions',
+  'create_discussions',
+  'reply_to_discussions',
+  'edit_own_posts',
+];
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
@@ -17,7 +29,8 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    const userRepository = AppDataSource.getRepository(User); // Используем AppDataSource
+    const userRepository = AppDataSource.getRepository(User);
+    const permissionRepository = AppDataSource.getRepository(Permission);
 
     // Check if user already exists
     const existingUser = await userRepository.findOne({ where: [{ username }, { email }] });
@@ -36,7 +49,29 @@ router.post('/register', async (req, res) => {
     user.role = role;
     await user.hashPassword();
 
+    // Для обычных пользователей выдаем базовые привилегии
+    if (role === UserRole.USER) {
+      // Загружаем базовые привилегии из БД
+      const defaultPermissions = await permissionRepository
+        .createQueryBuilder('permission')
+        .where('permission.name IN (:...names)', { names: DEFAULT_USER_PERMISSIONS })
+        .getMany();
+
+      if (defaultPermissions.length > 0) {
+        user.permissions = defaultPermissions;
+        logger.info(`Granted ${defaultPermissions.length} default permissions to new user: ${username}`);
+      } else {
+        logger.warn('No default permissions found in database for new user');
+      }
+    }
+
     await userRepository.save(user);
+
+    logger.info('User registered successfully', { 
+      username, 
+      role, 
+      permissionsGranted: role === UserRole.USER ? DEFAULT_USER_PERMISSIONS.length : 'N/A (admin)' 
+    });
 
     res.status(201).send('User created successfully');
   } catch (error) {
