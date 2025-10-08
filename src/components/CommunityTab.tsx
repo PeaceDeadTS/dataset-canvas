@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dataset, Discussion } from '@/types';
+import { Dataset, Discussion, Like, Contributor } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { MessageSquare, Users, Heart } from 'lucide-react';
+import { MessageSquare, Users } from 'lucide-react';
 import { DiscussionList } from './DiscussionList';
 import { CreateDiscussionDialog } from './CreateDiscussionDialog';
 import { DiscussionThread } from './DiscussionThread';
+import { LikesDisplay } from './LikesDisplay';
+import { ContributorsDialog } from './ContributorsDialog';
 import axios from '../lib/axios';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/use-toast';
@@ -26,9 +28,20 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedDiscussionId, setSelectedDiscussionId] = useState<number | null>(null);
+  
+  // Likes state
+  const [likes, setLikes] = useState<Like[]>([]);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isLikesLoading, setIsLikesLoading] = useState(false);
+  
+  // Contributors state
+  const [contributors, setContributors] = useState<Contributor[]>([]);
+  const [showContributorsDialog, setShowContributorsDialog] = useState(false);
+  const [isContributorsLoading, setIsContributorsLoading] = useState(false);
 
   useEffect(() => {
     fetchDiscussions();
+    fetchLikes();
     
     // Check for discussion parameter in URL
     const discussionParam = searchParams.get('discussion');
@@ -49,6 +62,69 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchLikes = async () => {
+    try {
+      const response = await axios.get(`/datasets/${dataset.id}/likes`);
+      const likesData = response.data as Like[];
+      setLikes(likesData);
+      
+      // Check if current user has liked
+      if (user) {
+        const userLike = likesData.find(like => like.user.id === user.userId);
+        setIsLiked(!!userLike);
+      }
+    } catch (error) {
+      console.error('Failed to fetch likes:', error);
+    }
+  };
+
+  const fetchContributors = async () => {
+    setIsContributorsLoading(true);
+    try {
+      const response = await axios.get(`/datasets/${dataset.id}/contributors`);
+      setContributors(response.data);
+    } catch (error) {
+      console.error('Failed to fetch contributors:', error);
+      toast({
+        title: t('common:community.contributorsFetchError'),
+        variant: 'destructive'
+      });
+    } finally {
+      setIsContributorsLoading(false);
+    }
+  };
+
+  const handleToggleLike = async () => {
+    if (!user) return;
+    
+    setIsLikesLoading(true);
+    try {
+      if (isLiked) {
+        await axios.delete(`/datasets/${dataset.id}/likes`);
+        toast({ title: t('common:likes.unlikeSuccess') });
+      } else {
+        await axios.post(`/datasets/${dataset.id}/likes`);
+        toast({ title: t('common:likes.likeSuccess') });
+      }
+      
+      // Refresh likes
+      await fetchLikes();
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+      toast({
+        title: t('common:likes.toggleError'),
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLikesLoading(false);
+    }
+  };
+
+  const handleOpenContributors = () => {
+    setShowContributorsDialog(true);
+    fetchContributors();
   };
 
   const handleCreateDiscussion = async (title: string, content: string) => {
@@ -116,29 +192,34 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
               <CardContent className="flex items-center p-6">
                 <MessageSquare className="h-8 w-8 text-blue-500 mr-4" />
                 <div>
-                  <div className="text-2xl font-bold">0</div>
+                  <div className="text-2xl font-bold">{discussions.length}</div>
                   <p className="text-sm text-muted-foreground">{t('common:community.discussions')}</p>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card 
+              className="cursor-pointer hover:bg-accent transition-colors"
+              onClick={handleOpenContributors}
+            >
               <CardContent className="flex items-center p-6">
                 <Users className="h-8 w-8 text-green-500 mr-4" />
                 <div>
-                  <div className="text-2xl font-bold">0</div>
+                  <div className="text-2xl font-bold">{contributors.length || '?'}</div>
                   <p className="text-sm text-muted-foreground">{t('common:community.contributors')}</p>
                 </div>
               </CardContent>
             </Card>
             
             <Card>
-              <CardContent className="flex items-center p-6">
-                <Heart className="h-8 w-8 text-red-500 mr-4" />
-                <div>
-                  <div className="text-2xl font-bold">0</div>
-                  <p className="text-sm text-muted-foreground">{t('common:community.likes')}</p>
-                </div>
+              <CardContent className="flex items-center justify-center p-6">
+                <LikesDisplay
+                  likes={likes}
+                  isLiked={isLiked}
+                  isLoading={isLikesLoading}
+                  onToggleLike={handleToggleLike}
+                  canLike={!!user}
+                />
               </CardContent>
             </Card>
           </div>
@@ -172,6 +253,13 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
             open={showCreateDialog}
             onOpenChange={setShowCreateDialog}
             onCreateDiscussion={handleCreateDiscussion}
+          />
+
+          <ContributorsDialog
+            open={showContributorsDialog}
+            onOpenChange={setShowContributorsDialog}
+            contributors={contributors}
+            isLoading={isContributorsLoading}
           />
 
           {/* Community Guidelines */}

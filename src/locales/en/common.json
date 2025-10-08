@@ -130,6 +130,15 @@
     "discussionsDescription": "Share your thoughts and ask questions about this dataset",
     "noDiscussionsYet": "No discussions yet",
     "noDiscussionsDescription": "Start a conversation about this dataset. Share your insights, ask questions, or discuss potential improvements.",
+    "contributorsTitle": "Discussion Contributors",
+    "contributorsDescription": "Users who actively participate in discussions about this dataset",
+    "noContributors": "No contributors yet",
+    "contributorsFetchError": "Failed to load contributors",
+    "discussionsCreated": "Discussions created",
+    "postsCount": "Posts written",
+    "threadsShort": "threads",
+    "postsShort": "posts",
+    "totalActivity": "Total",
     "guidelinesTitle": "Community Guidelines",
     "guidelinesDescription": "Help us maintain a respectful and constructive environment",
     "guidelineRespectful": "Be respectful and constructive in all interactions",
@@ -137,6 +146,16 @@
     "guidelineHelpful": "Provide helpful feedback and suggestions",
     "guidelineReport": "Report any inappropriate content or behavior",
     "guidelineTerms": "Follow our terms of service and privacy policy"
+  },
+  "likes": {
+    "like": "Like this dataset",
+    "unlike": "Unlike this dataset",
+    "loginRequired": "Login to like this dataset",
+    "likesTitle": "Likes",
+    "noLikes": "No likes yet",
+    "likeSuccess": "Liked successfully!",
+    "unlikeSuccess": "Unliked successfully!",
+    "toggleError": "Failed to update like status"
   },
   "discussions": {
     "newDiscussion": "New Discussion",

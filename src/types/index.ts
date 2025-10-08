@@ -212,3 +212,26 @@ export interface UnifiedChangesResponse {
         totalPages: number;
     };
 }
+
+// Like types
+export interface Like {
+    id: number;
+    createdAt: string;
+    user: {
+        id: string;
+        username: string;
+        email: string;
+    };
+}
+
+// Contributor types
+export interface Contributor {
+    user: {
+        id: string;
+        username: string;
+        email: string;
+    };
+    discussionsCreated: number;
+    postsCount: number;
+    totalActivity: number;
+}

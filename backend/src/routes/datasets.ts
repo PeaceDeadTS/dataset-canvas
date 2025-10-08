@@ -16,6 +16,9 @@ import { DatasetFile } from '../entity/DatasetFile.entity';
 import { CaptionEditHistory } from '../entity/CaptionEditHistory.entity';
 import { checkPermission } from '../middleware/checkPermission';
 import { PermissionType } from '../entity/Permission.entity';
+import { Like } from '../entity/Like.entity';
+import { Discussion } from '../entity/Discussion.entity';
+import { DiscussionPost } from '../entity/DiscussionPost.entity';
 import logger from '../logger';
 
 const router = Router();
@@ -733,6 +736,191 @@ router.get(
     }
   }
 );
+
+// POST /api/datasets/:id/likes - Поставить лайк датасету
+router.post('/:id/likes', checkJwt, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = req.user!.userId;
+
+  try {
+    // Проверяем существование датасета
+    const dataset = await datasetRepository.findOne({ where: { id } });
+    if (!dataset) {
+      return res.status(404).json({ message: 'Датасет не найден' });
+    }
+
+    const likeRepository = AppDataSource.manager.getRepository(Like);
+
+    // Проверяем, не поставлен ли уже лайк
+    const existingLike = await likeRepository.findOne({
+      where: { userId, datasetId: id }
+    });
+
+    if (existingLike) {
+      return res.status(400).json({ message: 'Вы уже поставили лайк этому датасету' });
+    }
+
+    // Создаем новый лайк
+    const like = likeRepository.create({
+      userId,
+      datasetId: id
+    });
+
+    await likeRepository.save(like);
+
+    logger.info('Like created', { datasetId: id, userId });
+    res.status(201).json({ message: 'Лайк добавлен', like });
+  } catch (error) {
+    logger.error('Failed to create like', { error, datasetId: id, userId });
+    res.status(500).json({ message: 'Ошибка при добавлении лайка' });
+  }
+});
+
+// DELETE /api/datasets/:id/likes - Убрать лайк с датасета
+router.delete('/:id/likes', checkJwt, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = req.user!.userId;
+
+  try {
+    const likeRepository = AppDataSource.manager.getRepository(Like);
+
+    // Ищем лайк
+    const like = await likeRepository.findOne({
+      where: { userId, datasetId: id }
+    });
+
+    if (!like) {
+      return res.status(404).json({ message: 'Лайк не найден' });
+    }
+
+    await likeRepository.remove(like);
+
+    logger.info('Like removed', { datasetId: id, userId });
+    res.json({ message: 'Лайк удален' });
+  } catch (error) {
+    logger.error('Failed to remove like', { error, datasetId: id, userId });
+    res.status(500).json({ message: 'Ошибка при удалении лайка' });
+  }
+});
+
+// GET /api/datasets/:id/likes - Получить список лайков с пользователями
+router.get('/:id/likes', async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const likeRepository = AppDataSource.manager.getRepository(Like);
+
+    const likes = await likeRepository.find({
+      where: { datasetId: id },
+      relations: ['user'],
+      order: { createdAt: 'DESC' }
+    });
+
+    const formattedLikes = likes.map(like => ({
+      id: like.id,
+      createdAt: like.createdAt,
+      user: {
+        id: like.user.id,
+        username: like.user.username,
+        email: like.user.email
+      }
+    }));
+
+    res.json(formattedLikes);
+  } catch (error) {
+    logger.error('Failed to fetch likes', { error, datasetId: id });
+    res.status(500).json({ message: 'Ошибка при получении лайков' });
+  }
+});
+
+// GET /api/datasets/:id/contributors - Получить статистику участников обсуждений
+router.get('/:id/contributors', async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    // Проверяем существование датасета
+    const dataset = await datasetRepository.findOne({ where: { id } });
+    if (!dataset) {
+      return res.status(404).json({ message: 'Датасет не найден' });
+    }
+
+    const discussionRepository = AppDataSource.manager.getRepository(Discussion);
+    const postRepository = AppDataSource.manager.getRepository(DiscussionPost);
+
+    // Получаем все дискуссии датасета
+    const discussions = await discussionRepository.find({
+      where: { datasetId: id },
+      relations: ['author']
+    });
+
+    if (discussions.length === 0) {
+      return res.json([]);
+    }
+
+    const discussionIds = discussions.map(d => d.id);
+
+    // Получаем все посты из этих дискуссий
+    const posts = await postRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.author', 'author')
+      .where('post.discussionId IN (:...discussionIds)', { discussionIds })
+      .andWhere('post.isDeleted = :isDeleted', { isDeleted: false })
+      .getMany();
+
+    // Собираем статистику по участникам
+    const contributorsMap = new Map<string, {
+      user: User;
+      discussionsCreated: number;
+      postsCount: number;
+    }>();
+
+    // Считаем созданные дискуссии
+    discussions.forEach(discussion => {
+      const userId = discussion.authorId;
+      if (!contributorsMap.has(userId)) {
+        contributorsMap.set(userId, {
+          user: discussion.author,
+          discussionsCreated: 0,
+          postsCount: 0
+        });
+      }
+      contributorsMap.get(userId)!.discussionsCreated++;
+    });
+
+    // Считаем посты
+    posts.forEach(post => {
+      const userId = post.authorId;
+      if (!contributorsMap.has(userId)) {
+        contributorsMap.set(userId, {
+          user: post.author,
+          discussionsCreated: 0,
+          postsCount: 0
+        });
+      }
+      contributorsMap.get(userId)!.postsCount++;
+    });
+
+    // Форматируем результат
+    const contributors = Array.from(contributorsMap.values()).map(contrib => ({
+      user: {
+        id: contrib.user.id,
+        username: contrib.user.username,
+        email: contrib.user.email
+      },
+      discussionsCreated: contrib.discussionsCreated,
+      postsCount: contrib.postsCount,
+      totalActivity: contrib.discussionsCreated + contrib.postsCount
+    }));
+
+    // Сортируем по активности
+    contributors.sort((a, b) => b.totalActivity - a.totalActivity);
+
+    res.json(contributors);
+  } catch (error) {
+    logger.error('Failed to fetch contributors', { error, datasetId: id });
+    res.status(500).json({ message: 'Ошибка при получении статистики участников' });
+  }
+});
 
 
 export default router;
