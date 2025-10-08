@@ -73,7 +73,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
       
       // Check if current user has liked
       if (user) {
-        const userLike = likesData.find(like => like.user.id === user.userId);
+        const userLike = likesData.find(like => like.user.id === user.id);
         setIsLiked(!!userLike);
       }
     } catch (error) {

@@ -54,7 +54,7 @@ export function DiscussionPostComponent({
       
       // Check if current user has liked
       if (user) {
-        const userLike = likesData.find(like => like.user.id === user.userId);
+        const userLike = likesData.find(like => like.user.id === user.id);
         setIsLiked(!!userLike);
       }
     } catch (error) {
@@ -93,17 +93,8 @@ export function DiscussionPostComponent({
     return formatDistanceToNow(date, { addSuffix: true, locale });
   };
 
-  // Отладка: проверим значения
-  const isOwnPost = user && post.authorId === user.userId;
-  console.log('Post like debug:', {
-    postId: post.id,
-    postAuthorId: post.authorId,
-    postAuthorIdType: typeof post.authorId,
-    userId: user?.userId,
-    userIdType: typeof user?.userId,
-    isOwnPost,
-    canLike: !!user && !!post.authorId && post.authorId !== user.userId
-  });
+  // Проверяем, является ли пост собственным
+  const isOwnPost = user && post.authorId === user.id;
 
   if (post.isDeleted) {
     return (
@@ -202,7 +193,7 @@ export function DiscussionPostComponent({
             isLiked={isLiked}
             isLoading={isLikesLoading}
             onToggleLike={handleToggleLike}
-            canLike={!!user && !!post.authorId && post.authorId !== user.userId}
+            canLike={!!user && !!post.authorId && post.authorId !== user.id}
           />
         </div>
       )}
