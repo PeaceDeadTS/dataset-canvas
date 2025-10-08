@@ -10,8 +10,8 @@ import { Request, Response } from 'express';
 const router = Router();
 
 /**
- * Базовые привилегии, которые выдаются всем новым пользователям при регистрации
- * Эти права позволяют пользователям участвовать в обсуждениях и базовых операциях
+ * Default permissions granted to all new users upon registration
+ * These permissions allow users to participate in discussions and basic operations
  */
 const DEFAULT_USER_PERMISSIONS = [
   'read_discussions',
@@ -49,9 +49,9 @@ router.post('/register', async (req, res) => {
     user.role = role;
     await user.hashPassword();
 
-    // Для обычных пользователей выдаем базовые привилегии
+    // Grant default permissions to regular users
     if (role === UserRole.USER) {
-      // Загружаем базовые привилегии из БД
+      // Load default permissions from database
       const defaultPermissions = await permissionRepository
         .createQueryBuilder('permission')
         .where('permission.name IN (:...names)', { names: DEFAULT_USER_PERMISSIONS })

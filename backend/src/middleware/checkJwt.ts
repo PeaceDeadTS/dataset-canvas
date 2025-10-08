@@ -15,16 +15,16 @@ export const checkJwt = (req: Request, res: Response, next: NextFunction) => {
   try {
     jwtPayload = <any>jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
     
-    // Важнейшее исправление: добавляем данные в req.user
+    // Critical fix: add data to req.user
     const { userId, username, email, role, exp, iat } = jwtPayload;
     req.user = { userId, username, email, role };
 
-    // Обновляем токен с сохранением оригинального времени истечения
-    // Вычисляем оставшееся время до истечения токена
+    // Refresh token while preserving original expiration time
+    // Calculate remaining time until token expiration
     const currentTime = Math.floor(Date.now() / 1000);
     const remainingTime = exp - currentTime;
     
-    // Пересоздаем токен с тем же временем истечения (в секундах)
+    // Recreate token with the same expiration time (in seconds)
     const newToken = jwt.sign(
       { userId, username, email, role }, 
       process.env.JWT_SECRET || 'your_jwt_secret', 
@@ -51,11 +51,11 @@ export const checkJwtOptional = (req: Request, res: Response, next: NextFunction
         jwtPayload = <any>jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
         res.locals.jwtPayload = jwtPayload;
 
-        // ВАЖНО: Устанавливаем req.user для авторизованных пользователей
+        // IMPORTANT: Set req.user for authenticated users
         const { userId, username, email, role, exp } = jwtPayload;
         req.user = { userId, username, email, role };
 
-        // Обновляем токен с сохранением оригинального времени истечения
+        // Refresh token while preserving original expiration time
         const currentTime = Math.floor(Date.now() / 1000);
         const remainingTime = exp - currentTime;
         

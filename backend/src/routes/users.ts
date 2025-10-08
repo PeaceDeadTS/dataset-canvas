@@ -35,7 +35,7 @@ router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
 
     // Apply role filter if specified
     if (role && ['USER', 'DEVELOPER', 'ADMIN'].includes(role as string)) {
-      // Преобразуем URL параметр в значение enum
+      // Convert URL parameter to enum value
       const roleMapping: { [key: string]: UserRole } = {
         'ADMIN': UserRole.ADMIN,
         'DEVELOPER': UserRole.DEVELOPER,

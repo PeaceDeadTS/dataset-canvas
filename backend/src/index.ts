@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
-import { AppDataSource } from './data-source'; // Импортируем AppDataSource
+import { AppDataSource } from './data-source'; // Import AppDataSource
 import authRoutes from './routes/auth';
 import datasetsRoutes from './routes/datasets';
 import usersRoutes from './routes/users';
@@ -13,10 +13,10 @@ import logger from './logger';
 const app = express();
 
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173', // Явно указываем разрешенный источник
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Разрешаем все нужные методы
-  allowedHeaders: ['Content-Type', 'Authorization'], // Разрешаем необходимые заголовки
-  exposedHeaders: ['token'], // Указываем, что фронтенд может читать заголовок 'token'
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5173', // Explicitly specify allowed origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allow all required methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allow required headers
+  exposedHeaders: ['token'], // Specify that frontend can read 'token' header
 }));
 app.use(express.json());
 
@@ -27,7 +27,7 @@ app.use('/api/permissions', permissionsRoutes);
 app.use('/api/recent-changes', recentChangesRoutes);
 app.use('/api', discussionsRoutes);
 
-// Глобальный обработчик ошибок (должен идти последним)
+// Global error handler (must be last)
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   logger.error('Global unhandled error', {
     errorMessage: error.message,
@@ -42,7 +42,7 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
 
 export async function startServer() {
   try {
-    await AppDataSource.initialize(); // Используем AppDataSource
+    await AppDataSource.initialize(); // Use AppDataSource
     logger.info('Data Source has been initialized!');
 
     if (process.env.NODE_ENV !== 'test') {
@@ -62,4 +62,4 @@ if (require.main === module) {
   startServer();
 }
 
-export { app }; // Экспортируем только app
+export { app }; // Export only app

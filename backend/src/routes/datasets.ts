@@ -163,7 +163,7 @@ router.post('/', checkJwt, async (req: Request, res: Response) => {
 
     await datasetRepository.save(dataset);
     
-    // Важно: загружаем датасет с user relation для корректного ответа
+    // Important: load dataset with user relation for correct response
     const savedDataset = await datasetRepository.findOne({
       where: { id: dataset.id },
       relations: ['user'],
@@ -644,7 +644,7 @@ router.get('/:id/statistics', checkJwtOptional, async (req: Request, res: Respon
 
 /**
  * PUT /api/datasets/:datasetId/images/:imageId/caption
- * Редактировать caption изображения (требуется право edit_caption)
+ * Edit image caption (requires edit_caption permission)
  */
 router.put(
   '/:datasetId/images/:imageId/caption',
@@ -657,21 +657,21 @@ router.put(
 
     if (caption === undefined || caption === null) {
       return res.status(400).json({ 
-        message: 'Необходимо указать новый caption' 
+        message: 'New caption must be provided' 
       });
     }
 
     try {
-      // Проверяем существование датасета
+      // Check if dataset exists
       const dataset = await datasetRepository.findOne({
         where: { id: datasetId },
       });
 
       if (!dataset) {
-        return res.status(404).json({ message: 'Датасет не найден' });
+        return res.status(404).json({ message: 'Dataset not found' });
       }
 
-      // Получаем изображение
+      // Get image
       const image = await imageRepository.findOne({
         where: { 
           id: parseInt(imageId),
@@ -681,19 +681,19 @@ router.put(
       });
 
       if (!image) {
-        return res.status(404).json({ message: 'Изображение не найдено' });
+        return res.status(404).json({ message: 'Image not found' });
       }
 
       const oldCaption = image.prompt;
 
-      // Проверяем, изменился ли caption
+      // Check if caption has changed
       if (oldCaption === caption) {
         return res.status(400).json({ 
-          message: 'Новый caption идентичен текущему' 
+          message: 'New caption is identical to current caption' 
         });
       }
 
-      // Сохраняем историю изменений
+      // Save edit history
       const historyRepository = AppDataSource.manager.getRepository(CaptionEditHistory);
       const historyEntry = historyRepository.create({
         imageId: image.id,
@@ -703,7 +703,7 @@ router.put(
       });
       await historyRepository.save(historyEntry);
 
-      // Обновляем caption
+      // Update caption
       image.prompt = caption;
       await imageRepository.save(image);
 
@@ -715,7 +715,7 @@ router.put(
       });
 
       res.json({ 
-        message: 'Caption успешно обновлен',
+        message: 'Caption updated successfully',
         image: {
           id: image.id,
           caption: image.prompt,
@@ -723,14 +723,14 @@ router.put(
       });
     } catch (error) {
       logger.error('Error editing caption', { error, datasetId, imageId });
-      res.status(500).json({ message: 'Ошибка при редактировании caption' });
+      res.status(500).json({ message: 'Error editing caption' });
     }
   }
 );
 
 /**
  * GET /api/datasets/:datasetId/images/:imageId/caption-history
- * Получить историю правок caption изображения
+ * Get image caption edit history
  */
 router.get(
   '/:datasetId/images/:imageId/caption-history',
@@ -741,27 +741,27 @@ router.get(
     const userRole = req.user?.role;
 
     try {
-      // Проверяем существование датасета
+      // Check if dataset exists
       const dataset = await datasetRepository.findOne({
         where: { id: datasetId },
       });
 
       if (!dataset) {
-        return res.status(404).json({ message: 'Датасет не найден' });
+        return res.status(404).json({ message: 'Dataset not found' });
       }
 
-      // Проверяем доступ к датасету
+      // Check dataset access
       const isAdmin = userRole === UserRole.ADMIN;
       const isOwner = userId && dataset.userId === userId;
       const isPublic = dataset.isPublic;
 
       if (!isPublic && !isOwner && !isAdmin) {
         return res.status(403).json({ 
-          message: 'Доступ к этому датасету запрещен' 
+          message: 'Access to this dataset is denied' 
         });
       }
 
-      // Получаем изображение
+      // Get image
       const image = await imageRepository.findOne({
         where: { 
           id: parseInt(imageId),
@@ -770,10 +770,10 @@ router.get(
       });
 
       if (!image) {
-        return res.status(404).json({ message: 'Изображение не найдено' });
+        return res.status(404).json({ message: 'Image not found' });
       }
 
-      // Получаем историю изменений
+      // Get edit history
       const historyRepository = AppDataSource.manager.getRepository(CaptionEditHistory);
       const history = await historyRepository.find({
         where: { imageId: image.id },
@@ -799,35 +799,35 @@ router.get(
       });
     } catch (error) {
       logger.error('Error fetching caption history', { error, datasetId, imageId });
-      res.status(500).json({ message: 'Ошибка при получении истории правок' });
+      res.status(500).json({ message: 'Error fetching edit history' });
     }
   }
 );
 
-// POST /api/datasets/:id/likes - Поставить лайк датасету
+// POST /api/datasets/:id/likes - Like a dataset
 router.post('/:id/likes', checkJwt, async (req: Request, res: Response) => {
   const { id } = req.params;
   const userId = req.user!.userId;
 
   try {
-    // Проверяем существование датасета
+    // Check if dataset exists
     const dataset = await datasetRepository.findOne({ where: { id } });
     if (!dataset) {
-      return res.status(404).json({ message: 'Датасет не найден' });
+      return res.status(404).json({ message: 'Dataset not found' });
     }
 
     const likeRepository = AppDataSource.manager.getRepository(Like);
 
-    // Проверяем, не поставлен ли уже лайк
+    // Check if like already exists
     const existingLike = await likeRepository.findOne({
       where: { userId, datasetId: id }
     });
 
     if (existingLike) {
-      return res.status(400).json({ message: 'Вы уже поставили лайк этому датасету' });
+      return res.status(400).json({ message: 'You have already liked this dataset' });
     }
 
-    // Создаем новый лайк
+    // Create new like
     const like = likeRepository.create({
       userId,
       datasetId: id
@@ -836,14 +836,14 @@ router.post('/:id/likes', checkJwt, async (req: Request, res: Response) => {
     await likeRepository.save(like);
 
     logger.info('Like created', { datasetId: id, userId });
-    res.status(201).json({ message: 'Лайк добавлен', like });
+    res.status(201).json({ message: 'Like added', like });
   } catch (error) {
     logger.error('Failed to create like', { error, datasetId: id, userId });
-    res.status(500).json({ message: 'Ошибка при добавлении лайка' });
+    res.status(500).json({ message: 'Error adding like' });
   }
 });
 
-// DELETE /api/datasets/:id/likes - Убрать лайк с датасета
+// DELETE /api/datasets/:id/likes - Remove like from dataset
 router.delete('/:id/likes', checkJwt, async (req: Request, res: Response) => {
   const { id } = req.params;
   const userId = req.user!.userId;
@@ -851,26 +851,26 @@ router.delete('/:id/likes', checkJwt, async (req: Request, res: Response) => {
   try {
     const likeRepository = AppDataSource.manager.getRepository(Like);
 
-    // Ищем лайк
+    // Find like
     const like = await likeRepository.findOne({
       where: { userId, datasetId: id }
     });
 
     if (!like) {
-      return res.status(404).json({ message: 'Лайк не найден' });
+      return res.status(404).json({ message: 'Like not found' });
     }
 
     await likeRepository.remove(like);
 
     logger.info('Like removed', { datasetId: id, userId });
-    res.json({ message: 'Лайк удален' });
+    res.json({ message: 'Like removed' });
   } catch (error) {
     logger.error('Failed to remove like', { error, datasetId: id, userId });
-    res.status(500).json({ message: 'Ошибка при удалении лайка' });
+    res.status(500).json({ message: 'Error removing like' });
   }
 });
 
-// GET /api/datasets/:id/likes - Получить список лайков с пользователями
+// GET /api/datasets/:id/likes - Get list of likes with users
 router.get('/:id/likes', async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -896,25 +896,25 @@ router.get('/:id/likes', async (req: Request, res: Response) => {
     res.json(formattedLikes);
   } catch (error) {
     logger.error('Failed to fetch likes', { error, datasetId: id });
-    res.status(500).json({ message: 'Ошибка при получении лайков' });
+    res.status(500).json({ message: 'Error fetching likes' });
   }
 });
 
-// GET /api/datasets/:id/contributors - Получить статистику участников обсуждений
+// GET /api/datasets/:id/contributors - Get discussion contributors statistics
 router.get('/:id/contributors', async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    // Проверяем существование датасета
+    // Check if dataset exists
     const dataset = await datasetRepository.findOne({ where: { id } });
     if (!dataset) {
-      return res.status(404).json({ message: 'Датасет не найден' });
+      return res.status(404).json({ message: 'Dataset not found' });
     }
 
     const discussionRepository = AppDataSource.manager.getRepository(Discussion);
     const postRepository = AppDataSource.manager.getRepository(DiscussionPost);
 
-    // Получаем все дискуссии датасета
+    // Get all dataset discussions
     const discussions = await discussionRepository.find({
       where: { datasetId: id },
       relations: ['author']
@@ -926,7 +926,7 @@ router.get('/:id/contributors', async (req: Request, res: Response) => {
 
     const discussionIds = discussions.map(d => d.id);
 
-    // Получаем все посты из этих дискуссий
+    // Get all posts from these discussions
     const posts = await postRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.author', 'author')
@@ -934,14 +934,14 @@ router.get('/:id/contributors', async (req: Request, res: Response) => {
       .andWhere('post.isDeleted = :isDeleted', { isDeleted: false })
       .getMany();
 
-    // Собираем статистику по участникам
+    // Collect contributor statistics
     const contributorsMap = new Map<string, {
       user: User;
       discussionsCreated: number;
       postsCount: number;
     }>();
 
-    // Считаем созданные дискуссии
+    // Count created discussions
     discussions.forEach(discussion => {
       const userId = discussion.authorId;
       if (!contributorsMap.has(userId)) {
@@ -954,7 +954,7 @@ router.get('/:id/contributors', async (req: Request, res: Response) => {
       contributorsMap.get(userId)!.discussionsCreated++;
     });
 
-    // Считаем посты
+    // Count posts
     posts.forEach(post => {
       const userId = post.authorId;
       if (!contributorsMap.has(userId)) {
@@ -967,7 +967,7 @@ router.get('/:id/contributors', async (req: Request, res: Response) => {
       contributorsMap.get(userId)!.postsCount++;
     });
 
-    // Форматируем результат
+    // Format result
     const contributors = Array.from(contributorsMap.values()).map(contrib => ({
       user: {
         id: contrib.user.id,
@@ -979,13 +979,13 @@ router.get('/:id/contributors', async (req: Request, res: Response) => {
       totalActivity: contrib.discussionsCreated + contrib.postsCount
     }));
 
-    // Сортируем по активности
+    // Sort by activity
     contributors.sort((a, b) => b.totalActivity - a.totalActivity);
 
     res.json(contributors);
   } catch (error) {
     logger.error('Failed to fetch contributors', { error, datasetId: id });
-    res.status(500).json({ message: 'Ошибка при получении статистики участников' });
+    res.status(500).json({ message: 'Error fetching contributor statistics' });
   }
 });
 

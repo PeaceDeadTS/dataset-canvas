@@ -3,7 +3,7 @@ import { User } from './User.entity';
 import { Dataset } from './Dataset.entity';
 
 @Entity('likes')
-@Unique(['userId', 'datasetId']) // Один пользователь может поставить только один лайк на датасет
+@Unique(['userId', 'datasetId']) // One user can only like a dataset once
 export class Like {
   @PrimaryGeneratedColumn()
   id!: number;

@@ -8,11 +8,11 @@ import logger from '../logger';
 
 const router = Router();
 
-// Middleware для проверки прав администратора
+// Middleware to check administrator rights
 const checkAdmin = (req: Request, res: Response, next: Function) => {
   if (!req.user || req.user.role !== UserRole.ADMIN) {
     return res.status(403).json({ 
-      message: 'Доступ запрещен. Требуются права администратора.' 
+      message: 'Access denied. Administrator rights required.' 
     });
   }
   next();
@@ -20,7 +20,7 @@ const checkAdmin = (req: Request, res: Response, next: Function) => {
 
 /**
  * GET /api/permissions
- * Получить список всех доступных прав в системе
+ * Get list of all available permissions in the system
  */
 router.get('/', checkJwt, async (req: Request, res: Response) => {
   try {
@@ -32,22 +32,22 @@ router.get('/', checkJwt, async (req: Request, res: Response) => {
     res.json(permissions);
   } catch (error) {
     logger.error('Error fetching permissions', { error });
-    res.status(500).json({ message: 'Ошибка при получении списка прав' });
+    res.status(500).json({ message: 'Error fetching permissions list' });
   }
 });
 
 /**
  * GET /api/permissions/user/:userId
- * Получить все права конкретного пользователя
+ * Get all permissions for a specific user
  */
 router.get('/user/:userId', checkJwt, async (req: Request, res: Response) => {
   const { userId } = req.params;
 
   try {
-    // Только администраторы или сам пользователь могут смотреть права
+    // Only administrators or the user themselves can view permissions
     if (req.user?.role !== UserRole.ADMIN && req.user?.userId !== userId) {
       return res.status(403).json({ 
-        message: 'Доступ запрещен' 
+        message: 'Access denied' 
       });
     }
 
@@ -59,13 +59,13 @@ router.get('/user/:userId', checkJwt, async (req: Request, res: Response) => {
     });
   } catch (error) {
     logger.error('Error fetching user permissions', { error, userId });
-    res.status(500).json({ message: 'Ошибка при получении прав пользователя' });
+    res.status(500).json({ message: 'Error fetching user permissions' });
   }
 });
 
 /**
  * POST /api/permissions/grant
- * Выдать право пользователю (только для администраторов)
+ * Grant permission to user (administrators only)
  * Body: { userId: string, permissionName: string }
  */
 router.post('/grant', checkJwt, checkAdmin, async (req: Request, res: Response) => {
@@ -73,7 +73,7 @@ router.post('/grant', checkJwt, checkAdmin, async (req: Request, res: Response) 
 
   if (!userId || !permissionName) {
     return res.status(400).json({ 
-      message: 'Необходимо указать userId и permissionName' 
+      message: 'userId and permissionName must be provided' 
     });
   }
 
@@ -81,34 +81,34 @@ router.post('/grant', checkJwt, checkAdmin, async (req: Request, res: Response) 
     const userRepository = AppDataSource.manager.getRepository(User);
     const permissionRepository = AppDataSource.manager.getRepository(Permission);
 
-    // Получаем пользователя с его правами
+    // Get user with their permissions
     const user = await userRepository.findOne({
       where: { id: userId },
       relations: ['permissions'],
     });
 
     if (!user) {
-      return res.status(404).json({ message: 'Пользователь не найден' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    // Получаем право
+    // Get permission
     const permission = await permissionRepository.findOne({
       where: { name: permissionName },
     });
 
     if (!permission) {
-      return res.status(404).json({ message: 'Право не найдено' });
+      return res.status(404).json({ message: 'Permission not found' });
     }
 
-    // Проверяем, не выдано ли уже это право
+    // Check if permission is already granted
     const hasPermission = user.permissions.some(p => p.id === permission.id);
     if (hasPermission) {
       return res.status(400).json({ 
-        message: 'У пользователя уже есть это право' 
+        message: 'User already has this permission' 
       });
     }
 
-    // Добавляем право
+    // Add permission
     user.permissions.push(permission);
     await userRepository.save(user);
 
@@ -119,7 +119,7 @@ router.post('/grant', checkJwt, checkAdmin, async (req: Request, res: Response) 
     });
 
     res.json({ 
-      message: 'Право успешно выдано',
+      message: 'Permission granted successfully',
       user: {
         id: user.id,
         username: user.username,
@@ -128,13 +128,13 @@ router.post('/grant', checkJwt, checkAdmin, async (req: Request, res: Response) 
     });
   } catch (error) {
     logger.error('Error granting permission', { error, userId, permissionName });
-    res.status(500).json({ message: 'Ошибка при выдаче права' });
+    res.status(500).json({ message: 'Error granting permission' });
   }
 });
 
 /**
  * POST /api/permissions/revoke
- * Отозвать право у пользователя (только для администраторов)
+ * Revoke permission from user (administrators only)
  * Body: { userId: string, permissionName: string }
  */
 router.post('/revoke', checkJwt, checkAdmin, async (req: Request, res: Response) => {
@@ -142,7 +142,7 @@ router.post('/revoke', checkJwt, checkAdmin, async (req: Request, res: Response)
 
   if (!userId || !permissionName) {
     return res.status(400).json({ 
-      message: 'Необходимо указать userId и permissionName' 
+      message: 'userId and permissionName must be provided' 
     });
   }
 
@@ -150,34 +150,34 @@ router.post('/revoke', checkJwt, checkAdmin, async (req: Request, res: Response)
     const userRepository = AppDataSource.manager.getRepository(User);
     const permissionRepository = AppDataSource.manager.getRepository(Permission);
 
-    // Получаем пользователя с его правами
+    // Get user with their permissions
     const user = await userRepository.findOne({
       where: { id: userId },
       relations: ['permissions'],
     });
 
     if (!user) {
-      return res.status(404).json({ message: 'Пользователь не найден' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    // Получаем право
+    // Get permission
     const permission = await permissionRepository.findOne({
       where: { name: permissionName },
     });
 
     if (!permission) {
-      return res.status(404).json({ message: 'Право не найдено' });
+      return res.status(404).json({ message: 'Permission not found' });
     }
 
-    // Проверяем, есть ли это право у пользователя
+    // Check if user has this permission
     const permissionIndex = user.permissions.findIndex(p => p.id === permission.id);
     if (permissionIndex === -1) {
       return res.status(400).json({ 
-        message: 'У пользователя нет этого права' 
+        message: 'User does not have this permission' 
       });
     }
 
-    // Удаляем право
+    // Remove permission
     user.permissions.splice(permissionIndex, 1);
     await userRepository.save(user);
 
@@ -188,7 +188,7 @@ router.post('/revoke', checkJwt, checkAdmin, async (req: Request, res: Response)
     });
 
     res.json({ 
-      message: 'Право успешно отозвано',
+      message: 'Permission revoked successfully',
       user: {
         id: user.id,
         username: user.username,
@@ -197,13 +197,13 @@ router.post('/revoke', checkJwt, checkAdmin, async (req: Request, res: Response)
     });
   } catch (error) {
     logger.error('Error revoking permission', { error, userId, permissionName });
-    res.status(500).json({ message: 'Ошибка при отзыве права' });
+    res.status(500).json({ message: 'Error revoking permission' });
   }
 });
 
 /**
  * GET /api/permissions/users-with-permission/:permissionName
- * Получить список пользователей с конкретным правом (только для администраторов)
+ * Get list of users with specific permission (administrators only)
  */
 router.get('/users-with-permission/:permissionName', checkJwt, checkAdmin, async (req: Request, res: Response) => {
   const { permissionName } = req.params;
@@ -217,16 +217,16 @@ router.get('/users-with-permission/:permissionName', checkJwt, checkAdmin, async
     });
 
     if (!permission) {
-      return res.status(404).json({ message: 'Право не найдено' });
+      return res.status(404).json({ message: 'Permission not found' });
     }
 
-    // Добавляем всех администраторов (у них все права)
+    // Add all administrators (they have all permissions)
     const userRepository = AppDataSource.manager.getRepository(User);
     const admins = await userRepository.find({
       where: { role: UserRole.ADMIN },
     });
 
-    // Объединяем списки (исключая дубликаты)
+    // Merge lists (excluding duplicates)
     const allUsersWithPermission = [
       ...permission.users,
       ...admins.filter(admin => 
@@ -251,7 +251,7 @@ router.get('/users-with-permission/:permissionName', checkJwt, checkAdmin, async
     });
   } catch (error) {
     logger.error('Error fetching users with permission', { error, permissionName });
-    res.status(500).json({ message: 'Ошибка при получении списка пользователей' });
+    res.status(500).json({ message: 'Error fetching users list' });
   }
 });
 

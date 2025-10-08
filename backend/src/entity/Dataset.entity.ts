@@ -40,6 +40,6 @@ export class Dataset {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  // Транзиентное поле для подсчета изображений
+  // Transient field for image count
   imageCount?: number;
 }

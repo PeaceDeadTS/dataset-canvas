@@ -10,7 +10,7 @@ import { User } from './User.entity';
 
 export enum PermissionType {
   EDIT_CAPTION = 'edit_caption',
-  // В будущем можно добавить другие права, например:
+  // Future permissions can be added here, for example:
   // DELETE_DATASET = 'delete_dataset',
   // MODERATE_COMMENTS = 'moderate_comments',
   // etc.

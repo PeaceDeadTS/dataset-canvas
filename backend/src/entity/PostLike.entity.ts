@@ -3,7 +3,7 @@ import { User } from './User.entity';
 import { DiscussionPost } from './DiscussionPost.entity';
 
 @Entity('post_likes')
-@Unique(['userId', 'postId']) // Один пользователь может поставить только один лайк на пост
+@Unique(['userId', 'postId']) // One user can only like a post once
 export class PostLike {
   @PrimaryGeneratedColumn()
   id!: number;

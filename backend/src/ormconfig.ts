@@ -18,8 +18,8 @@ const baseConfig = {
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE || 'dataset_canvas',
-  synchronize: false, // Всегда false в правильном воркфлоу
-  logging, // Используем переменную
+  synchronize: false, // Always false in proper workflow
+  logging, // Use variable
   entities: [path.join(__dirname, '**', '*.entity.{ts,js}')],
   migrations: [path.join(__dirname, 'migrations', '*.{ts,js}')],
   subscribers: [],

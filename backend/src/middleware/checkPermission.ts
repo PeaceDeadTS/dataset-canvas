@@ -5,25 +5,25 @@ import { Permission, PermissionType } from '../entity/Permission.entity';
 import logger from '../logger';
 
 /**
- * Middleware для проверки наличия конкретного права у пользователя
- * Администраторы имеют все права по умолчанию
+ * Middleware to check if a user has a specific permission
+ * Administrators have all permissions by default
  * 
- * @param permissionName - Название права для проверки (например, 'edit_caption')
+ * @param permissionName - Name of the permission to check (e.g., 'edit_caption')
  */
 export const checkPermission = (permissionName: PermissionType) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    // Проверяем, что пользователь авторизован
+    // Check if user is authenticated
     if (!req.user || !req.user.userId) {
       logger.warn('Permission check failed: User not authenticated');
       return res.status(401).json({ 
-        message: 'Требуется авторизация' 
+        message: 'Authentication required' 
       });
     }
 
     const userId = req.user.userId;
 
     try {
-      // Получаем пользователя с правами
+      // Get user with permissions
       const userRepository = AppDataSource.manager.getRepository(User);
       const user = await userRepository.findOne({
         where: { id: userId },
@@ -33,17 +33,17 @@ export const checkPermission = (permissionName: PermissionType) => {
       if (!user) {
         logger.warn(`Permission check failed: User not found (${userId})`);
         return res.status(401).json({ 
-          message: 'Пользователь не найден' 
+          message: 'User not found' 
         });
       }
 
-      // Администраторы имеют все права
+      // Administrators have all permissions
       if (user.role === UserRole.ADMIN) {
         logger.info(`Permission granted (admin): ${user.username} - ${permissionName}`);
         return next();
       }
 
-      // Проверяем наличие конкретного права
+      // Check if user has the specific permission
       const hasPermission = user.permissions.some(
         (permission) => permission.name === permissionName
       );
@@ -51,7 +51,7 @@ export const checkPermission = (permissionName: PermissionType) => {
       if (!hasPermission) {
         logger.warn(`Permission denied: ${user.username} - ${permissionName}`);
         return res.status(403).json({ 
-          message: `Недостаточно прав для выполнения этого действия. Требуется право: ${permissionName}` 
+          message: `Insufficient permissions to perform this action. Required permission: ${permissionName}` 
         });
       }
 
@@ -60,15 +60,15 @@ export const checkPermission = (permissionName: PermissionType) => {
     } catch (error) {
       logger.error('Error checking permission', { error, userId, permissionName });
       return res.status(500).json({ 
-        message: 'Ошибка при проверке прав доступа' 
+        message: 'Error checking permissions' 
       });
     }
   };
 };
 
 /**
- * Утилита для проверки прав в коде (не middleware)
- * Возвращает boolean - имеет ли пользователь указанное право
+ * Utility function to check permissions in code (not middleware)
+ * Returns boolean indicating whether the user has the specified permission
  */
 export const userHasPermission = async (
   userId: string, 
@@ -85,12 +85,12 @@ export const userHasPermission = async (
       return false;
     }
 
-    // Администраторы имеют все права
+    // Administrators have all permissions
     if (user.role === UserRole.ADMIN) {
       return true;
     }
 
-    // Проверяем наличие конкретного права
+    // Check if user has the specific permission
     return user.permissions.some(
       (permission) => permission.name === permissionName
     );
@@ -101,7 +101,7 @@ export const userHasPermission = async (
 };
 
 /**
- * Получить все права пользователя
+ * Get all user permissions
  */
 export const getUserPermissions = async (userId: string): Promise<PermissionType[]> => {
   try {
@@ -115,7 +115,7 @@ export const getUserPermissions = async (userId: string): Promise<PermissionType
       return [];
     }
 
-    // Администраторы имеют все права
+    // Administrators have all permissions
     if (user.role === UserRole.ADMIN) {
       return Object.values(PermissionType);
     }

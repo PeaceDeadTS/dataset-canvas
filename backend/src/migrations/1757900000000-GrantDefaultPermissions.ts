@@ -1,19 +1,19 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Миграция для выдачи базовых привилегий существующим пользователям
+ * Migration to grant default permissions to existing users
  * 
- * Выдает следующие базовые привилегии всем обычным пользователям (не администраторам):
+ * Grants the following default permissions to all regular users (non-administrators):
  * - read_discussions
  * - create_discussions  
  * - reply_to_discussions
  * - edit_own_posts
  * 
- * Администраторы имеют все права автоматически и не нуждаются в явном назначении
+ * Administrators have all permissions automatically and don't need explicit grants
  */
 export class GrantDefaultPermissions1757900000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Получаем ID привилегий, которые нужно выдать
+    // Get IDs of permissions to grant
     const permissions = await queryRunner.query(`
       SELECT id, name FROM permissions 
       WHERE name IN ('read_discussions', 'create_discussions', 'reply_to_discussions', 'edit_own_posts')
@@ -24,7 +24,7 @@ export class GrantDefaultPermissions1757900000000 implements MigrationInterface 
       return;
     }
 
-    // Получаем всех обычных пользователей (не администраторов)
+    // Get all regular users (non-administrators)
     const users = await queryRunner.query(`
       SELECT id, username, role FROM users 
       WHERE role != 'Administrator'
@@ -37,17 +37,17 @@ export class GrantDefaultPermissions1757900000000 implements MigrationInterface 
 
     console.log(`Found ${users.length} non-admin users and ${permissions.length} default permissions`);
 
-    // Для каждого пользователя выдаем все базовые привилегии (если они еще не выданы)
+    // For each user, grant all default permissions (if not already granted)
     for (const user of users) {
       for (const permission of permissions) {
-        // Проверяем, нет ли уже этой привилегии у пользователя
+        // Check if user already has this permission
         const existing = await queryRunner.query(`
           SELECT * FROM user_permissions 
           WHERE userId = ? AND permissionId = ?
         `, [user.id, permission.id]);
 
         if (existing.length === 0) {
-          // Выдаем привилегию
+          // Grant permission
           await queryRunner.query(`
             INSERT INTO user_permissions (userId, permissionId) 
             VALUES (?, ?)
@@ -64,10 +64,10 @@ export class GrantDefaultPermissions1757900000000 implements MigrationInterface 
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Откат миграции: удаляем базовые привилегии у всех пользователей
+    // Migration rollback: remove default permissions from all users
     console.log('Rolling back default permissions migration...');
     
-    // Получаем ID базовых привилегий
+    // Get IDs of default permissions
     const permissions = await queryRunner.query(`
       SELECT id, name FROM permissions 
       WHERE name IN ('read_discussions', 'create_discussions', 'reply_to_discussions', 'edit_own_posts')
@@ -80,7 +80,7 @@ export class GrantDefaultPermissions1757900000000 implements MigrationInterface 
 
     const permissionIds = permissions.map((p: any) => p.id);
 
-    // Удаляем связи для всех пользователей
+    // Remove permission associations for all users
     for (const permission of permissions) {
       const result = await queryRunner.query(`
         DELETE FROM user_permissions 
