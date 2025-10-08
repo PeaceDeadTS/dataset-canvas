@@ -227,10 +227,26 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
 
         await fileRepository.save(datasetFile);
 
-        // Overwrite Logic - delete existing images
-        await imageRepository.delete({ dataset: { id: dataset.id } });
+        // Smart Update Logic - preserve img_key for existing images
+        // Step 1: Load all existing images into a Map by URL for quick lookup
+        const existingImages = await imageRepository.find({
+            where: { dataset: { id: dataset.id } }
+        });
         
-        const images: DatasetImage[] = [];
+        const existingImagesByUrl = new Map<string, DatasetImage>();
+        const existingImagesByImgKey = new Map<string, DatasetImage>();
+        
+        existingImages.forEach(img => {
+            if (img.url) {
+                existingImagesByUrl.set(img.url, img);
+            }
+            if (img.img_key) {
+                existingImagesByImgKey.set(img.img_key, img);
+            }
+        });
+
+        const imagesToSave: DatasetImage[] = [];
+        const processedUrls = new Set<string>();
         
         if (!req.file || !req.file.buffer) {
             return res.status(400).send('No file content.');
@@ -242,24 +258,74 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
         readable
             .pipe(csv())
             .on('data', (row) => {
-                // Manually create and assign properties for type safety
-                const newImage = new DatasetImage();
-                newImage.img_key = randomUUID();
-                newImage.row_number = rowCounter++;
-                newImage.filename = row.filename;
-                newImage.url = row.url;
-                newImage.width = row.width ? parseInt(row.width, 10) : 0;
-                newImage.height = row.height ? parseInt(row.height, 10) : 0;
-                newImage.prompt = row.prompt;
-                newImage.dataset = dataset;
-                images.push(newImage);
+                const url = row.url;
+                const csvImgKey = row.img_key; // Check if CSV contains img_key column
+                
+                let imageToUpdate: DatasetImage | undefined;
+
+                // Step 2: Try to find existing image
+                // Priority 1: Match by img_key from CSV (if provided)
+                if (csvImgKey && existingImagesByImgKey.has(csvImgKey)) {
+                    imageToUpdate = existingImagesByImgKey.get(csvImgKey);
+                }
+                // Priority 2: Match by URL
+                else if (url && existingImagesByUrl.has(url)) {
+                    imageToUpdate = existingImagesByUrl.get(url);
+                }
+
+                // Step 3: Update existing image or create new one
+                if (imageToUpdate) {
+                    // Update existing image, preserving img_key and id
+                    imageToUpdate.row_number = rowCounter++;
+                    imageToUpdate.filename = row.filename || imageToUpdate.filename;
+                    imageToUpdate.url = url || imageToUpdate.url;
+                    imageToUpdate.width = row.width ? parseInt(row.width, 10) : imageToUpdate.width;
+                    imageToUpdate.height = row.height ? parseInt(row.height, 10) : imageToUpdate.height;
+                    imageToUpdate.prompt = row.prompt !== undefined ? row.prompt : imageToUpdate.prompt;
+                    imagesToSave.push(imageToUpdate);
+                    processedUrls.add(url);
+                } else {
+                    // Create new image with new img_key
+                    const newImage = new DatasetImage();
+                    newImage.img_key = csvImgKey || randomUUID(); // Use CSV img_key if provided
+                    newImage.row_number = rowCounter++;
+                    newImage.filename = row.filename;
+                    newImage.url = url;
+                    newImage.width = row.width ? parseInt(row.width, 10) : 0;
+                    newImage.height = row.height ? parseInt(row.height, 10) : 0;
+                    newImage.prompt = row.prompt || '';
+                    newImage.dataset = dataset;
+                    imagesToSave.push(newImage);
+                    processedUrls.add(url);
+                }
             })
             .on('end', async () => {
                 try {
-                    await imageRepository.save(images);
-                    logger.info(`Successfully uploaded CSV file ${uniqueFilename} and ${images.length} images to dataset ${dataset.name}`);
+                    // Step 4: Save all images (updates + new ones)
+                    await imageRepository.save(imagesToSave);
+
+                    // Step 5: Delete images that are no longer in the CSV
+                    const imagesToDelete = existingImages.filter(img => 
+                        img.url && !processedUrls.has(img.url)
+                    );
+                    
+                    if (imagesToDelete.length > 0) {
+                        await imageRepository.remove(imagesToDelete);
+                        logger.info(`Removed ${imagesToDelete.length} images that are no longer in CSV for dataset ${dataset.name}`);
+                    }
+
+                    const updatedCount = imagesToSave.filter(img => img.id).length;
+                    const newCount = imagesToSave.length - updatedCount;
+
+                    logger.info(`Successfully uploaded CSV file ${uniqueFilename} to dataset ${dataset.name}. Updated: ${updatedCount}, New: ${newCount}, Deleted: ${imagesToDelete.length}`);
                     res.status(201).send({ 
-                        message: `Successfully uploaded ${images.length} images to dataset ${dataset.name}`,
+                        message: `Successfully uploaded ${imagesToSave.length} images to dataset ${dataset.name}`,
+                        stats: {
+                            total: imagesToSave.length,
+                            updated: updatedCount,
+                            new: newCount,
+                            deleted: imagesToDelete.length
+                        },
                         fileId: datasetFile.id,
                         filename: datasetFile.originalName
                     });
