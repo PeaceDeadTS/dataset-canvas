@@ -54,27 +54,28 @@ export const PostLikesDisplay: React.FC<PostLikesDisplayProps> = ({
   return (
     <>
       <div className="flex items-center gap-2">
-        <button
-          onClick={handleLikeClick}
-          disabled={!canLike || isLoading}
-          className={`
-            relative transition-all duration-300 
-            ${canLike ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
-            ${isAnimating ? 'animate-bounce' : ''}
-          `}
-          title={canLike ? (isLiked ? t('common:likes.unlike') : t('common:likes.like')) : t('common:likes.loginRequired')}
-        >
-          <Heart
+        {canLike && (
+          <button
+            onClick={handleLikeClick}
+            disabled={isLoading}
             className={`
-              h-5 w-5 transition-all duration-300
-              ${isLiked ? 'fill-red-500 text-red-500 scale-110' : 'text-gray-400 hover:text-red-400'}
-              ${isAnimating && isLiked ? 'animate-ping absolute' : ''}
+              relative transition-all duration-300 cursor-pointer
+              ${isAnimating ? 'animate-bounce' : ''}
             `}
-          />
-          {isAnimating && isLiked && (
-            <Heart className="h-5 w-5 fill-red-500 text-red-500 scale-110" />
-          )}
-        </button>
+            title={isLiked ? t('common:likes.unlike') : t('common:likes.like')}
+          >
+            <Heart
+              className={`
+                h-5 w-5 transition-all duration-300
+                ${isLiked ? 'fill-red-500 text-red-500 scale-110' : 'text-gray-400 hover:text-red-400'}
+                ${isAnimating && isLiked ? 'animate-ping absolute' : ''}
+              `}
+            />
+            {isAnimating && isLiked && (
+              <Heart className="h-5 w-5 fill-red-500 text-red-500 scale-110" />
+            )}
+          </button>
+        )}
 
         {likes.length > 0 && (
           <div
