@@ -66,7 +66,7 @@ export function AuthPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-gray-100">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background">
       <div className="absolute left-8 top-8">
         <Button asChild variant="outline">
           <Link to="/">&larr; {t('common:back')}</Link>
