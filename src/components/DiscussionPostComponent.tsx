@@ -4,9 +4,10 @@ import { DiscussionPost } from '../types';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
-import { MessageSquare, Edit, Trash2, Clock } from 'lucide-react';
+import { MessageSquare, Edit, Trash2, Clock, History } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
+import { PostEditHistory } from './PostEditHistory';
 
 interface DiscussionPostComponentProps {
   post: DiscussionPost;
@@ -27,6 +28,7 @@ export function DiscussionPostComponent({
 }: DiscussionPostComponentProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'ru' ? ru : enUS;
+  const [showHistory, setShowHistory] = useState(false);
 
   const getRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -112,6 +114,30 @@ export function DiscussionPostComponent({
       <div className="prose prose-sm max-w-none">
         <p className="whitespace-pre-wrap">{post.content}</p>
       </div>
+
+      {/* Show history button if post has been edited */}
+      {post.editCount && post.editCount > 0 && (
+        <div className="mt-3 pt-3 border-t">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowHistory(!showHistory)}
+            className="text-xs"
+          >
+            <History className="h-3 w-3 mr-1" />
+            {showHistory
+              ? t('common:discussions.hideEditHistory')
+              : t('common:discussions.showEditHistory')}
+          </Button>
+        </div>
+      )}
+
+      {/* Edit history */}
+      {showHistory && post.editCount && post.editCount > 0 && (
+        <div className="mt-3 pt-3 border-t">
+          <PostEditHistory postId={post.id} />
+        </div>
+      )}
     </Card>
   );
 }

@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from '@/lib/axios';
-import { UserEdit, PaginatedResponse } from '@/types';
+import { UnifiedChange, UnifiedChangesResponse } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, ChevronLeft, ChevronRight, FileEdit } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, FileEdit, MessageSquare, Database } from 'lucide-react';
 import { DiffViewer } from '@/components/DiffViewer';
 
 interface UserEditsTabProps {
@@ -15,18 +15,18 @@ interface UserEditsTabProps {
 
 const UserEditsTab = ({ userId }: UserEditsTabProps) => {
   const { t } = useTranslation();
-  const [data, setData] = useState<PaginatedResponse<UserEdit> | null>(null);
+  const [data, setData] = useState<UnifiedChangesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [expandedEditId, setExpandedEditId] = useState<string | null>(null);
+  const [expandedChangeId, setExpandedChangeId] = useState<string | null>(null);
   const limit = 20;
 
   useEffect(() => {
     const fetchEdits = async () => {
       setLoading(true);
       try {
-        const response = await axios.get<PaginatedResponse<UserEdit>>(
+        const response = await axios.get<UnifiedChangesResponse>(
           `/users/${userId}/edits?page=${page}&limit=${limit}`
         );
         setData(response.data);
@@ -75,7 +75,7 @@ const UserEditsTab = ({ userId }: UserEditsTabProps) => {
     );
   }
 
-  if (!data || data.edits.length === 0) {
+  if (!data || data.changes.length === 0) {
     return (
       <div className="text-center py-12">
         <FileEdit className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
@@ -84,72 +84,181 @@ const UserEditsTab = ({ userId }: UserEditsTabProps) => {
     );
   }
 
-  const { edits, pagination } = data;
+  const { changes, pagination } = data;
 
   return (
     <div className="space-y-6">
-      {/* Edits List */}
+      {/* Changes List */}
       <div className="space-y-4">
-        {edits.map((edit) => (
+        {changes.map((change) => (
           <div
-            key={edit.id}
+            key={change.id}
             className="bg-card border border-border rounded-lg p-4 space-y-3"
           >
-            {/* Header */}
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center space-x-3 mb-2">
-                  <Link 
-                    to={`/datasets/${edit.dataset.id}?tab=data-studio`}
-                    className="text-lg font-semibold hover:text-primary transition-colors"
-                  >
-                    {edit.dataset.name}
-                  </Link>
-                  <Badge variant="outline" className="text-xs">
-                    {edit.image.img_key}
-                  </Badge>
+            {/* Render based on change type */}
+            {change.type === 'caption_edit' && (
+              <>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <Link 
+                        to={`/datasets/${change.data.dataset?.id}?tab=data-studio`}
+                        className="text-lg font-semibold hover:text-primary transition-colors"
+                      >
+                        {change.data.dataset?.name}
+                      </Link>
+                      <Badge variant="outline" className="text-xs">
+                        {change.data.imgKey}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      <span>{formatDate(change.timestamp)}</span>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Calendar className="w-4 h-4 mr-1" />
-                  <span>{formatDate(edit.createdAt)}</span>
+                <div className="bg-muted/30 rounded p-3">
+                  {expandedChangeId === change.id ? (
+                    <div>
+                      <DiffViewer 
+                        oldText={change.data.oldCaption} 
+                        newText={change.data.newCaption} 
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setExpandedChangeId(null)}
+                        className="mt-2"
+                      >
+                        {t('userEdits.showLess')}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {change.data.newCaption}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setExpandedChangeId(change.id)}
+                        className="mt-2"
+                      >
+                        {t('userEdits.showDiff')}
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
+              </>
+            )}
 
-            {/* Diff Preview */}
-            <div className="bg-muted/30 rounded p-3">
-              {expandedEditId === edit.id ? (
-                <div>
-                  <DiffViewer 
-                    oldText={edit.oldCaption} 
-                    newText={edit.newCaption} 
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setExpandedEditId(null)}
-                    className="mt-2"
+            {change.type === 'discussion_created' && (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-muted-foreground">{t('recentChanges.createdDiscussion')}</span>
+                  <Link 
+                    to={`/datasets/${change.data.dataset?.id}?tab=community`}
+                    className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
                   >
-                    {t('userEdits.showLess')}
-                  </Button>
+                    <Database className="w-4 h-4" />
+                    {change.data.dataset?.name}
+                  </Link>
                 </div>
-              ) : (
-                <div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {edit.newCaption}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setExpandedEditId(edit.id)}
-                    className="mt-2"
+                <div className="flex items-center text-sm text-muted-foreground mb-3">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  <span>{formatDate(change.timestamp)}</span>
+                </div>
+                <div className="bg-muted/30 rounded p-3">
+                  <span className="font-medium">{change.data.title}</span>
+                </div>
+              </>
+            )}
+
+            {change.type === 'discussion_post' && (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-muted-foreground">{t('recentChanges.postedIn')}</span>
+                  <Link 
+                    to={`/datasets/${change.data.dataset?.id}?tab=community`}
+                    className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
                   >
-                    {t('userEdits.showDiff')}
-                  </Button>
+                    <Database className="w-4 h-4" />
+                    {change.data.dataset?.name}
+                  </Link>
                 </div>
-              )}
-            </div>
+                <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
+                  <Badge variant="outline" className="text-xs">
+                    {change.data.discussionTitle}
+                  </Badge>
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-1" />
+                    <span>{formatDate(change.timestamp)}</span>
+                  </div>
+                </div>
+                <div className="bg-muted/30 rounded p-3">
+                  <p className="text-sm line-clamp-3">{change.data.content}</p>
+                </div>
+              </>
+            )}
+
+            {change.type === 'post_edit' && (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-muted-foreground">{t('recentChanges.editedPost')}</span>
+                  <Link 
+                    to={`/datasets/${change.data.dataset?.id}?tab=community`}
+                    className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+                  >
+                    <Database className="w-4 h-4" />
+                    {change.data.dataset?.name}
+                  </Link>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
+                  <Badge variant="outline" className="text-xs">
+                    {change.data.discussionTitle}
+                  </Badge>
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-1" />
+                    <span>{formatDate(change.timestamp)}</span>
+                  </div>
+                </div>
+                <div className="bg-muted/30 rounded p-3">
+                  {expandedChangeId === change.id ? (
+                    <div>
+                      <DiffViewer 
+                        oldText={change.data.oldContent} 
+                        newText={change.data.newContent} 
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setExpandedChangeId(null)}
+                        className="mt-2"
+                      >
+                        {t('userEdits.showLess')}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {change.data.newContent}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setExpandedChangeId(change.id)}
+                        className="mt-2"
+                      >
+                        {t('userEdits.showDiff')}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>

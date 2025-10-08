@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Discussion, DiscussionPost } from '../types';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { ArrowLeft, Lock, Pin, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Lock, Pin, MessageSquare, Trash2, LockOpen, PinOff } from 'lucide-react';
 import { DiscussionPostComponent } from './DiscussionPostComponent';
 import { PostEditor } from './PostEditor';
 import axios from '../lib/axios';
@@ -25,6 +25,8 @@ export function DiscussionThread({
   const [discussion, setDiscussion] = useState<Discussion & { posts: DiscussionPost[] } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [replyTo, setReplyTo] = useState<{ postId: number; username: string; content: string } | null>(null);
+  const [editingPostId, setEditingPostId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState<string>('');
 
   useEffect(() => {
     fetchDiscussion();
@@ -64,9 +66,36 @@ export function DiscussionThread({
     }
   };
 
-  const handleEditPost = async (postId: number) => {
-    // TODO: Implement edit functionality
-    console.log('Edit post:', postId);
+  const handleEditPost = (postId: number) => {
+    const post = discussion?.posts.find((p) => p.id === postId);
+    if (post) {
+      setEditingPostId(postId);
+      setEditingContent(post.content);
+      setReplyTo(null); // Cancel reply if editing
+    }
+  };
+
+  const handleSaveEdit = async (content: string) => {
+    if (!editingPostId) return;
+
+    try {
+      await axios.patch(`/posts/${editingPostId}`, { content });
+      toast({ title: t('common:discussions.postUpdateSuccess') });
+      setEditingPostId(null);
+      setEditingContent('');
+      await fetchDiscussion();
+    } catch (error) {
+      console.error('Failed to update post:', error);
+      toast({
+        title: t('common:discussions.postUpdateFailed'),
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPostId(null);
+    setEditingContent('');
   };
 
   const handleDeletePost = async (postId: number) => {
@@ -89,6 +118,70 @@ export function DiscussionThread({
     const post = discussion?.posts.find((p) => p.id === postId);
     if (post) {
       setReplyTo({ postId, username, content: post.content });
+    }
+  };
+
+  const handleLockDiscussion = async () => {
+    if (!discussion) return;
+
+    try {
+      await axios.patch(`/discussions/${discussionId}/lock`, {
+        isLocked: !discussion.isLocked,
+      });
+      toast({
+        title: discussion.isLocked
+          ? t('common:discussions.discussionUnlockSuccess')
+          : t('common:discussions.discussionLockSuccess'),
+      });
+      await fetchDiscussion();
+    } catch (error) {
+      console.error('Failed to lock/unlock discussion:', error);
+      toast({
+        title: discussion.isLocked
+          ? t('common:discussions.discussionUnlockFailed')
+          : t('common:discussions.discussionLockFailed'),
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handlePinDiscussion = async () => {
+    if (!discussion) return;
+
+    try {
+      await axios.patch(`/discussions/${discussionId}/pin`, {
+        isPinned: !discussion.isPinned,
+      });
+      toast({
+        title: discussion.isPinned
+          ? t('common:discussions.discussionUnpinSuccess')
+          : t('common:discussions.discussionPinSuccess'),
+      });
+      await fetchDiscussion();
+    } catch (error) {
+      console.error('Failed to pin/unpin discussion:', error);
+      toast({
+        title: discussion.isPinned
+          ? t('common:discussions.discussionUnpinFailed')
+          : t('common:discussions.discussionPinFailed'),
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeleteDiscussion = async () => {
+    if (!confirm(t('common:discussions.confirmDeleteDiscussion'))) return;
+
+    try {
+      await axios.delete(`/discussions/${discussionId}`);
+      toast({ title: t('common:discussions.discussionDeleteSuccess') });
+      onBack(); // Go back to list after deletion
+    } catch (error) {
+      console.error('Failed to delete discussion:', error);
+      toast({
+        title: t('common:discussions.discussionDeleteFailed'),
+        variant: 'destructive',
+      });
     }
   };
 
@@ -117,6 +210,7 @@ export function DiscussionThread({
     return user && post && (user.role === 'Administrator' || post.authorId === user.id);
   };
   const canDelete = user?.role === 'Administrator';
+  const canModerate = user?.role === 'Administrator';
 
   return (
     <div className="space-y-4">
@@ -157,20 +251,79 @@ export function DiscussionThread({
             {t('common:discussions.posts', { count: discussion.posts.length })}
           </p>
         </div>
+
+        {/* Moderation buttons */}
+        {canModerate && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLockDiscussion}
+            >
+              {discussion.isLocked ? (
+                <>
+                  <LockOpen className="h-4 w-4 mr-1" />
+                  {t('common:discussions.unlockDiscussion')}
+                </>
+              ) : (
+                <>
+                  <Lock className="h-4 w-4 mr-1" />
+                  {t('common:discussions.lockDiscussion')}
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePinDiscussion}
+            >
+              {discussion.isPinned ? (
+                <>
+                  <PinOff className="h-4 w-4 mr-1" />
+                  {t('common:discussions.unpinDiscussion')}
+                </>
+              ) : (
+                <>
+                  <Pin className="h-4 w-4 mr-1" />
+                  {t('common:discussions.pinDiscussion')}
+                </>
+              )}
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteDiscussion}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              {t('common:discussions.deleteDiscussion')}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Posts */}
       <div className="space-y-4">
         {discussion.posts.map((post) => (
-          <DiscussionPostComponent
-            key={post.id}
-            post={post}
-            canEdit={canEdit(post.id)}
-            canDelete={canDelete}
-            onEdit={handleEditPost}
-            onDelete={handleDeletePost}
-            onReply={handleReplyToPost}
-          />
+          editingPostId === post.id ? (
+            <PostEditor
+              key={post.id}
+              initialContent={editingContent}
+              onSubmit={handleSaveEdit}
+              onCancel={handleCancelEdit}
+              placeholder={t('common:discussions.editPost')}
+              submitLabel={t('common:save')}
+            />
+          ) : (
+            <DiscussionPostComponent
+              key={post.id}
+              post={post}
+              canEdit={canEdit(post.id)}
+              canDelete={canDelete}
+              onEdit={handleEditPost}
+              onDelete={handleDeletePost}
+              onReply={handleReplyToPost}
+            />
+          )
         ))}
       </div>
 
