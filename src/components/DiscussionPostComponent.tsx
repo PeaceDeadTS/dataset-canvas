@@ -182,16 +182,18 @@ export function DiscussionPostComponent({
         <p className="whitespace-pre-wrap">{post.content}</p>
       </div>
 
-      {/* Post likes */}
-      <div className="mt-3 pt-3 border-t">
-        <PostLikesDisplay
-          likes={likes}
-          isLiked={isLiked}
-          isLoading={isLikesLoading}
-          onToggleLike={handleToggleLike}
-          canLike={!!user && post.authorId !== user.userId}
-        />
-      </div>
+      {/* Post likes - показываем только если пост не удален */}
+      {!post.isDeleted && (
+        <div className="mt-3 pt-3 border-t">
+          <PostLikesDisplay
+            likes={likes}
+            isLiked={isLiked}
+            isLoading={isLikesLoading}
+            onToggleLike={handleToggleLike}
+            canLike={!!user && !!post.authorId && post.authorId !== user.userId}
+          />
+        </div>
+      )}
 
       {/* Show history button if post has been edited */}
       {(post.editCount ?? 0) > 0 && (
