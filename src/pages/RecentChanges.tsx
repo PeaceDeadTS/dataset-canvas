@@ -229,10 +229,13 @@ const RecentChanges = () => {
                           </span>
                         )}
                       </div>
-                      <div className="bg-muted/30 rounded p-3 flex items-center gap-2">
+                      <Link
+                        to={`/datasets/${change.dataset?.id}?tab=community`}
+                        className="bg-muted/30 rounded p-3 flex items-center gap-2 hover:bg-muted/50 transition-colors"
+                      >
                         <MessageSquare className="w-4 h-4 text-primary" />
                         <span className="font-medium">{change.data.title}</span>
-                      </div>
+                      </Link>
                     </>
                   )}
 
@@ -260,9 +263,14 @@ const RecentChanges = () => {
                         </Link>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
-                        <Badge variant="outline" className="text-xs">
-                          {change.data.discussionTitle}
-                        </Badge>
+                        <Link
+                          to={`/datasets/${change.dataset?.id}?tab=community`}
+                          className="hover:text-primary transition-colors"
+                        >
+                          <Badge variant="outline" className="text-xs">
+                            {change.data.discussionTitle}
+                          </Badge>
+                        </Link>
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4" />
                           <span>{formatDate(change.timestamp)}</span>
@@ -298,9 +306,14 @@ const RecentChanges = () => {
                         </Link>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
-                        <Badge variant="outline" className="text-xs">
-                          {change.data.discussionTitle}
-                        </Badge>
+                        <Link
+                          to={`/datasets/${change.dataset?.id}?tab=community`}
+                          className="hover:text-primary transition-colors"
+                        >
+                          <Badge variant="outline" className="text-xs">
+                            {change.data.discussionTitle}
+                          </Badge>
+                        </Link>
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4" />
                           <span>{formatDate(change.timestamp)}</span>

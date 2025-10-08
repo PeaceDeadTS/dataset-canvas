@@ -147,7 +147,7 @@ router.get('/:id/edits', checkJwtOptional, async (req: Request, res: Response) =
   const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10)));
 
   try {
-    const userId = parseInt(id, 10);
+    const userId = id; // UUID, not integer
     const changes: any[] = [];
 
     // Get caption edits

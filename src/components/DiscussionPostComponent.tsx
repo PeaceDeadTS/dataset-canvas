@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { DiscussionPost } from '../types';
 import { Button } from './ui/button';
@@ -66,7 +67,16 @@ export function DiscussionPostComponent({
             </span>
           </div>
           <div>
-            <p className="font-medium text-sm">{post.author?.username || 'Unknown'}</p>
+            {post.author?.username ? (
+              <Link 
+                to={`/users/${post.author.username}`}
+                className="font-medium text-sm hover:text-primary transition-colors"
+              >
+                {post.author.username}
+              </Link>
+            ) : (
+              <p className="font-medium text-sm">Unknown</p>
+            )}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
               {getRelativeTime(post.createdAt)}

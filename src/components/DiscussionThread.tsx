@@ -4,6 +4,16 @@ import { Discussion, DiscussionPost } from '../types';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ArrowLeft, Lock, Pin, MessageSquare, Trash2, LockOpen, PinOff } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog';
 import { DiscussionPostComponent } from './DiscussionPostComponent';
 import { PostEditor } from './PostEditor';
 import axios from '../lib/axios';
@@ -27,6 +37,8 @@ export function DiscussionThread({
   const [replyTo, setReplyTo] = useState<{ postId: number; username: string; content: string } | null>(null);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState<string>('');
+  const [deletePostId, setDeletePostId] = useState<number | null>(null);
+  const [deleteDiscussionOpen, setDeleteDiscussionOpen] = useState(false);
 
   useEffect(() => {
     fetchDiscussion();
@@ -98,12 +110,13 @@ export function DiscussionThread({
     setEditingContent('');
   };
 
-  const handleDeletePost = async (postId: number) => {
-    if (!confirm(t('common:discussions.confirmDeletePost'))) return;
+  const handleDeletePost = async () => {
+    if (!deletePostId) return;
 
     try {
-      await axios.delete(`/posts/${postId}`);
+      await axios.delete(`/posts/${deletePostId}`);
       toast({ title: t('common:discussions.postDeleteSuccess') });
+      setDeletePostId(null);
       await fetchDiscussion();
     } catch (error) {
       console.error('Failed to delete post:', error);
@@ -170,11 +183,10 @@ export function DiscussionThread({
   };
 
   const handleDeleteDiscussion = async () => {
-    if (!confirm(t('common:discussions.confirmDeleteDiscussion'))) return;
-
     try {
       await axios.delete(`/discussions/${discussionId}`);
       toast({ title: t('common:discussions.discussionDeleteSuccess') });
+      setDeleteDiscussionOpen(false);
       onBack(); // Go back to list after deletion
     } catch (error) {
       console.error('Failed to delete discussion:', error);
@@ -292,7 +304,7 @@ export function DiscussionThread({
             <Button
               variant="destructive"
               size="sm"
-              onClick={handleDeleteDiscussion}
+              onClick={() => setDeleteDiscussionOpen(true)}
             >
               <Trash2 className="h-4 w-4 mr-1" />
               {t('common:discussions.deleteDiscussion')}
@@ -303,8 +315,9 @@ export function DiscussionThread({
 
       {/* Posts */}
       <div className="space-y-4">
-        {discussion.posts.map((post) => (
-          editingPostId === post.id ? (
+        {discussion.posts.map((post, index) => {
+          const isFirstPost = index === 0;
+          return editingPostId === post.id ? (
             <PostEditor
               key={post.id}
               initialContent={editingContent}
@@ -314,17 +327,18 @@ export function DiscussionThread({
               submitLabel={t('common:save')}
             />
           ) : (
-            <DiscussionPostComponent
-              key={post.id}
-              post={post}
-              canEdit={canEdit(post.id)}
-              canDelete={canDelete}
-              onEdit={handleEditPost}
-              onDelete={handleDeletePost}
-              onReply={handleReplyToPost}
-            />
-          )
-        ))}
+            <div key={post.id} className={isFirstPost ? 'bg-accent/30 p-4 rounded-lg -m-4 mb-4' : ''}>
+              <DiscussionPostComponent
+                post={post}
+                canEdit={canEdit(post.id)}
+                canDelete={canDelete && !isFirstPost}
+                onEdit={handleEditPost}
+                onDelete={(postId) => setDeletePostId(postId)}
+                onReply={handleReplyToPost}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Reply editor */}
@@ -349,6 +363,42 @@ export function DiscussionThread({
           {t('common:discussions.loginToReply')}
         </p>
       )}
+
+      {/* Delete Post Dialog */}
+      <AlertDialog open={!!deletePostId} onOpenChange={() => setDeletePostId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('common:discussions.deletePost')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('common:discussions.confirmDeletePost')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common:cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletePost} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {t('common:delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Discussion Dialog */}
+      <AlertDialog open={deleteDiscussionOpen} onOpenChange={setDeleteDiscussionOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('common:discussions.deleteDiscussion')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('common:discussions.confirmDeleteDiscussion')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common:cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteDiscussion} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {t('common:delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

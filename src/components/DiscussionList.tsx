@@ -21,7 +21,7 @@ export function DiscussionList({
   onCreateDiscussion,
   canCreate,
 }: DiscussionListProps) {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['common']);
   const locale = i18n.language === 'ru' ? ru : enUS;
 
   const getRelativeTime = (dateString: string) => {
@@ -33,13 +33,13 @@ export function DiscussionList({
     return (
       <div className="text-center py-12">
         <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground" />
-        <h3 className="mt-4 text-lg font-semibold">{t('community.noDiscussionsYet')}</h3>
+        <h3 className="mt-4 text-lg font-semibold">{t('common:community.noDiscussionsYet')}</h3>
         <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
-          {t('community.noDiscussionsDescription')}
+          {t('common:community.noDiscussionsDescription')}
         </p>
         {canCreate && (
           <Button onClick={onCreateDiscussion} className="mt-6">
-            {t('discussions.newDiscussion')}
+            {t('common:discussions.newDiscussion')}
           </Button>
         )}
       </div>
@@ -49,9 +49,9 @@ export function DiscussionList({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">{t('community.discussionsTitle')}</h3>
+        <h3 className="text-lg font-semibold">{t('common:community.discussionsTitle')}</h3>
         {canCreate && (
-          <Button onClick={onCreateDiscussion}>{t('discussions.newDiscussion')}</Button>
+          <Button onClick={onCreateDiscussion}>{t('common:discussions.newDiscussion')}</Button>
         )}
       </div>
 
@@ -59,7 +59,9 @@ export function DiscussionList({
         {discussions.map((discussion) => (
           <Card
             key={discussion.id}
-            className="p-4 hover:bg-accent cursor-pointer transition-colors"
+            className={`p-4 hover:bg-accent cursor-pointer transition-colors ${
+              discussion.isPinned ? 'bg-accent/50 border-primary/50' : ''
+            }`}
             onClick={() => onSelectDiscussion(discussion.id)}
           >
             <div className="flex items-start justify-between gap-4">
@@ -69,13 +71,13 @@ export function DiscussionList({
                   {discussion.isPinned && (
                     <Badge variant="secondary" className="flex items-center gap-1">
                       <Pin className="h-3 w-3" />
-                      {t('discussions.pinned')}
+                      {t('common:discussions.pinned')}
                     </Badge>
                   )}
                   {discussion.isLocked && (
                     <Badge variant="outline" className="flex items-center gap-1">
                       <Lock className="h-3 w-3" />
-                      {t('discussions.locked')}
+                      {t('common:discussions.locked')}
                     </Badge>
                   )}
                 </div>
@@ -83,16 +85,16 @@ export function DiscussionList({
                 <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <MessageSquare className="h-4 w-4" />
-                    {t('discussions.posts', { count: discussion.postCount || 0 })}
+                    {t('common:discussions.posts', { count: discussion.postCount || 0 })}
                   </span>
-                  <span>{t('discussions.startedBy', { username: discussion.author?.username })}</span>
+                  <span>{t('common:discussions.startedBy', { username: discussion.author?.username })}</span>
                 </div>
 
                 {discussion.lastPostAt && discussion.lastPostAuthor && (
                   <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     <span>
-                      {t('discussions.lastPostBy', { username: discussion.lastPostAuthor.username })}
+                      {t('common:discussions.lastPostBy', { username: discussion.lastPostAuthor.username })}
                       {' · '}
                       {getRelativeTime(discussion.lastPostAt)}
                     </span>

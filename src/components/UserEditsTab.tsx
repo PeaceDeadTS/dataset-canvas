@@ -108,7 +108,7 @@ const UserEditsTab = ({ userId }: UserEditsTabProps) => {
                         {change.data.dataset?.name}
                       </Link>
                       <Badge variant="outline" className="text-xs">
-                        {change.data.imgKey}
+                        {change.data.image?.img_key}
                       </Badge>
                     </div>
                     <div className="flex items-center text-sm text-muted-foreground">
