@@ -5,8 +5,20 @@ import { Permission } from '../entity/Permission.entity';
 import { DiscussionPost } from '../entity/DiscussionPost.entity';
 
 /**
+ * Default discussion permissions for authenticated users
+ * These are the permissions that all authenticated users have by default
+ */
+const DEFAULT_DISCUSSION_PERMISSIONS = [
+  'read_discussions',
+  'create_discussions',
+  'reply_to_discussions',
+  'edit_own_posts',
+];
+
+/**
  * Middleware to check if a user has a specific discussion permission
  * Administrators automatically pass all permission checks
+ * Default permissions are granted to all authenticated users automatically
  */
 export const checkDiscussionPermission = (permissionName: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -32,7 +44,12 @@ export const checkDiscussionPermission = (permissionName: string) => {
         return next();
       }
 
-      // Check if user has the required permission
+      // Check if this is a default permission - grant automatically
+      if (DEFAULT_DISCUSSION_PERMISSIONS.includes(permissionName)) {
+        return next();
+      }
+
+      // For non-default permissions, check explicit grants
       const hasPermission = user.permissions?.some(
         (p) => p.name === permissionName
       );
@@ -103,11 +120,8 @@ export const checkCanEditPost = async (
       return next();
     }
 
-    // Check if user is the author and has edit_own_posts permission
-    const canEditOwn = user.permissions?.some(
-      (p) => p.name === ('edit_own_posts' as any)
-    );
-    if (canEditOwn && post.authorId === userId) {
+    // All authenticated users can edit their own posts (default permission)
+    if (post.authorId === userId) {
       return next();
     }
 
@@ -121,47 +135,8 @@ export const checkCanEditPost = async (
 };
 
 /**
- * Default discussion permissions for authenticated users
- * These are the permissions that all authenticated users should have by default
+ * Note: Default discussion permissions are now handled automatically by middleware
+ * All authenticated users automatically have: read_discussions, create_discussions,
+ * reply_to_discussions, and edit_own_posts without explicit permission grants
  */
-export const DEFAULT_DISCUSSION_PERMISSIONS = [
-  'read_discussions',
-  'create_discussions',
-  'reply_to_discussions',
-  'edit_own_posts',
-];
-
-/**
- * Grant default discussion permissions to a user
- */
-export const grantDefaultDiscussionPermissions = async (userId: string) => {
-  const permissionRepository = AppDataSource.manager.getRepository(Permission);
-  const userRepository = AppDataSource.manager.getRepository(User);
-
-  const user = await userRepository.findOne({
-    where: { id: userId },
-    relations: ['permissions'],
-  });
-
-  if (!user) {
-    throw new Error('User not found');
-  }
-
-  const defaultPermissions = await permissionRepository.find({
-    where: DEFAULT_DISCUSSION_PERMISSIONS.map((name) => ({ name: name as any })),
-  });
-
-  // Add only permissions that user doesn't already have
-  const existingPermissionNames = user.permissions?.map((p) => p.name) || [];
-  const newPermissions = defaultPermissions.filter(
-    (p) => !existingPermissionNames.includes(p.name)
-  );
-
-  if (newPermissions.length > 0) {
-    user.permissions = [...(user.permissions || []), ...newPermissions];
-    await userRepository.save(user);
-  }
-
-  return user;
-};
 
