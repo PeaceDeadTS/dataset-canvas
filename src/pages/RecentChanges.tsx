@@ -230,7 +230,7 @@ const RecentChanges = () => {
                         )}
                       </div>
                       <Link
-                        to={`/datasets/${change.dataset?.id}?tab=community`}
+                        to={`/datasets/${change.dataset?.id}?tab=community&discussion=${change.data.discussionId}`}
                         className="bg-muted/30 rounded p-3 flex items-center gap-2 hover:bg-muted/50 transition-colors"
                       >
                         <MessageSquare className="w-4 h-4 text-primary" />
@@ -264,7 +264,7 @@ const RecentChanges = () => {
                       </div>
                       <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
                         <Link
-                          to={`/datasets/${change.dataset?.id}?tab=community`}
+                          to={`/datasets/${change.dataset?.id}?tab=community&discussion=${change.data.discussionId}`}
                           className="hover:text-primary transition-colors"
                         >
                           <Badge variant="outline" className="text-xs">
@@ -307,7 +307,7 @@ const RecentChanges = () => {
                       </div>
                       <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
                         <Link
-                          to={`/datasets/${change.dataset?.id}?tab=community`}
+                          to={`/datasets/${change.dataset?.id}?tab=community&discussion=${change.data.discussionId}`}
                           className="hover:text-primary transition-colors"
                         >
                           <Badge variant="outline" className="text-xs">

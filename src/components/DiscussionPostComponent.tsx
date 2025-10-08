@@ -80,7 +80,7 @@ export function DiscussionPostComponent({
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
               {getRelativeTime(post.createdAt)}
-              {post.editCount && post.editCount > 0 && (
+              {(post.editCount ?? 0) > 0 && (
                 <Badge variant="outline" className="text-xs">
                   {t('common:discussions.edited')}
                 </Badge>
@@ -126,7 +126,7 @@ export function DiscussionPostComponent({
       </div>
 
       {/* Show history button if post has been edited */}
-      {post.editCount && post.editCount > 0 && (
+      {(post.editCount ?? 0) > 0 && (
         <div className="mt-3 pt-3 border-t">
           <Button
             variant="ghost"
@@ -143,7 +143,7 @@ export function DiscussionPostComponent({
       )}
 
       {/* Edit history */}
-      {showHistory && post.editCount && post.editCount > 0 && (
+      {showHistory && (post.editCount ?? 0) > 0 && (
         <div className="mt-3 pt-3 border-t">
           <PostEditHistory postId={post.id} />
         </div>

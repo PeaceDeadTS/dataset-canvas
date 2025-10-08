@@ -169,9 +169,12 @@ const UserEditsTab = ({ userId }: UserEditsTabProps) => {
                   <Calendar className="w-4 h-4 mr-1" />
                   <span>{formatDate(change.timestamp)}</span>
                 </div>
-                <div className="bg-muted/30 rounded p-3">
+                <Link
+                  to={`/datasets/${change.data.dataset?.id}?tab=community&discussion=${change.data.discussionId}`}
+                  className="bg-muted/30 rounded p-3 block hover:bg-muted/50 transition-colors"
+                >
                   <span className="font-medium">{change.data.title}</span>
-                </div>
+                </Link>
               </>
             )}
 
@@ -189,9 +192,14 @@ const UserEditsTab = ({ userId }: UserEditsTabProps) => {
                   </Link>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
-                  <Badge variant="outline" className="text-xs">
-                    {change.data.discussionTitle}
-                  </Badge>
+                  <Link
+                    to={`/datasets/${change.data.dataset?.id}?tab=community&discussion=${change.data.discussionId}`}
+                    className="hover:text-primary transition-colors"
+                  >
+                    <Badge variant="outline" className="text-xs">
+                      {change.data.discussionTitle}
+                    </Badge>
+                  </Link>
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-1" />
                     <span>{formatDate(change.timestamp)}</span>
@@ -217,9 +225,14 @@ const UserEditsTab = ({ userId }: UserEditsTabProps) => {
                   </Link>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
-                  <Badge variant="outline" className="text-xs">
-                    {change.data.discussionTitle}
-                  </Badge>
+                  <Link
+                    to={`/datasets/${change.data.dataset?.id}?tab=community&discussion=${change.data.discussionId}`}
+                    className="hover:text-primary transition-colors"
+                  >
+                    <Badge variant="outline" className="text-xs">
+                      {change.data.discussionTitle}
+                    </Badge>
+                  </Link>
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-1" />
                     <span>{formatDate(change.timestamp)}</span>

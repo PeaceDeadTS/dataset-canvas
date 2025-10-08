@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dataset, Discussion } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +21,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
   const { t } = useTranslation(['pages', 'common']);
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -27,7 +29,16 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
 
   useEffect(() => {
     fetchDiscussions();
-  }, [dataset.id]);
+    
+    // Check for discussion parameter in URL
+    const discussionParam = searchParams.get('discussion');
+    if (discussionParam) {
+      const discussionId = parseInt(discussionParam, 10);
+      if (!isNaN(discussionId)) {
+        setSelectedDiscussionId(discussionId);
+      }
+    }
+  }, [dataset.id, searchParams]);
 
   const fetchDiscussions = async () => {
     try {
@@ -56,10 +67,18 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
 
   const handleSelectDiscussion = (discussionId: number) => {
     setSelectedDiscussionId(discussionId);
+    // Update URL with discussion parameter
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('discussion', discussionId.toString());
+    setSearchParams(newParams, { replace: true });
   };
 
   const handleBackToList = () => {
     setSelectedDiscussionId(null);
+    // Remove discussion parameter from URL
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('discussion');
+    setSearchParams(newParams, { replace: true });
     fetchDiscussions(); // Refresh the list
   };
 
