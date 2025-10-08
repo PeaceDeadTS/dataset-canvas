@@ -4,6 +4,7 @@ export interface User {
     email: string; // This was missing and caused the crash
     role: 'Administrator' | 'Developer' | 'User';
     permissions?: string[];
+    theme?: 'light' | 'dark' | 'system';
 }
 
 export interface Permission {

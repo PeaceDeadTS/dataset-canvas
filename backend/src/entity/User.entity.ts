@@ -18,6 +18,12 @@ export enum UserRole {
   USER = 'User',
 }
 
+export enum UserTheme {
+  LIGHT = 'light',
+  DARK = 'dark',
+  SYSTEM = 'system',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -45,6 +51,13 @@ export class User {
 
   @Column({ default: UserRole.USER })
   role!: UserRole;
+
+  @Column({ 
+    type: 'varchar',
+    default: UserTheme.SYSTEM,
+    length: 20
+  })
+  theme!: UserTheme;
 
   @CreateDateColumn()
   createdAt!: Date;

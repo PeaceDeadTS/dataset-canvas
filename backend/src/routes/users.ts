@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
-import { User, UserRole } from '../entity/User.entity';
+import { User, UserRole, UserTheme } from '../entity/User.entity';
 import { Dataset } from '../entity/Dataset.entity';
 import { CaptionEditHistory } from '../entity/CaptionEditHistory.entity';
 import { Discussion } from '../entity/Discussion.entity';
@@ -402,6 +402,74 @@ router.delete('/:id', checkJwt, async (req: Request, res: Response) => {
 
   } catch (error) {
     logger.error('Failed to delete user', { userId: id, error });
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// PATCH /api/users/me/settings - Update current user settings
+router.patch('/me/settings', checkJwt, async (req: Request, res: Response) => {
+  const currentUserId = req.user?.userId;
+  const { theme } = req.body;
+
+  // Validate theme
+  if (theme && !Object.values(UserTheme).includes(theme as UserTheme)) {
+    return res.status(400).json({ error: 'Invalid theme. Must be one of: light, dark, system' });
+  }
+
+  try {
+    const user = await userRepository.findOneBy({ id: currentUserId });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Update theme if provided
+    if (theme) {
+      user.theme = theme as UserTheme;
+    }
+
+    await userRepository.save(user);
+
+    logger.info(`User settings updated`, { 
+      userId: currentUserId, 
+      username: user.username,
+      theme: user.theme
+    });
+
+    res.json({ 
+      message: 'Settings updated successfully',
+      settings: {
+        theme: user.theme
+      }
+    });
+
+  } catch (error) {
+    logger.error('Failed to update user settings', { userId: currentUserId, error });
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// GET /api/users/me/settings - Get current user settings
+router.get('/me/settings', checkJwt, async (req: Request, res: Response) => {
+  const currentUserId = req.user?.userId;
+
+  try {
+    const user = await userRepository.findOne({
+      where: { id: currentUserId },
+      select: ['id', 'username', 'theme']
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ 
+      settings: {
+        theme: user.theme
+      }
+    });
+
+  } catch (error) {
+    logger.error('Failed to get user settings', { userId: currentUserId, error });
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
