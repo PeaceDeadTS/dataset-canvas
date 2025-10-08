@@ -8,14 +8,14 @@ export class Like {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'varchar', length: 36 })
+  @Column('uuid')
   userId!: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })
   user!: User;
 
-  @Column({ type: 'varchar', length: 36 })
+  @Column('uuid')
   datasetId!: string;
 
   @ManyToOne(() => Dataset)

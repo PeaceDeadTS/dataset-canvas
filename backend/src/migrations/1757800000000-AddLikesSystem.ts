@@ -8,8 +8,8 @@ export class AddLikesSystem1757800000000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE \`likes\` (
         \`id\` int NOT NULL AUTO_INCREMENT,
-        \`userId\` varchar(36) NOT NULL,
-        \`datasetId\` varchar(36) NOT NULL,
+        \`userId\` char(36) NOT NULL,
+        \`datasetId\` char(36) NOT NULL,
         \`createdAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
         PRIMARY KEY (\`id\`),
         INDEX \`IDX_LIKE_USER\` (\`userId\`),
