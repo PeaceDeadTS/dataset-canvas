@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dataset, DatasetFile } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -110,34 +112,89 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
                   <p>{error}</p>
                 </div>
               ) : files.length > 0 ? (
-                <div className="space-y-3">
-                  {files.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <div className="font-medium">{file.originalName}</div>
-                          <div className="text-sm text-muted-foreground flex items-center gap-4">
-                            <span>{file.description || t('pages:dataset.original_upload')}</span>
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {formatDate(file.createdAt)}
-                            </span>
-                            <span>{formatFileSize(file.size)}</span>
+                <div className="space-y-6">
+                  {/* Latest Version */}
+                  {files.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 mb-3">
+                        <h3 className="text-sm font-semibold text-foreground">
+                          {t('pages:dataset.latest_version')}
+                        </h3>
+                        <Badge variant="default" className="bg-primary">
+                          {t('pages:dataset.latest_version')}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-4 border-2 border-primary/50 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <div>
+                            <div className="font-medium">{files[0].originalName}</div>
+                            <div className="text-sm text-muted-foreground flex items-center gap-4">
+                              <span>{files[0].description || t('pages:dataset.original_upload')}</span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(files[0].createdAt)}
+                              </span>
+                              <span>{formatFileSize(files[0].size)}</span>
+                            </div>
                           </div>
                         </div>
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={() => handleDownload(files[0].id)}
+                          className="flex items-center gap-2"
+                        >
+                          <Download className="h-4 w-4" />
+                          {t('pages:dataset.download_csv')}
+                        </Button>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleDownload(file.id)}
-                        className="flex items-center gap-2"
-                      >
-                        <Download className="h-4 w-4" />
-                        {t('pages:dataset.download_csv')}
-                      </Button>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Archive Versions */}
+                  {files.length > 1 && (
+                    <>
+                      <Separator className="my-6" />
+                      <div className="space-y-3">
+                        <div className="mb-3">
+                          <h3 className="text-sm font-semibold text-muted-foreground">
+                            {t('pages:dataset.archive_versions')}
+                          </h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t('pages:dataset.archive_versions_description')}
+                          </p>
+                        </div>
+                        {files.slice(1).map((file) => (
+                          <div key={file.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors opacity-75">
+                            <div className="flex items-center gap-3">
+                              <FileText className="h-5 w-5 text-muted-foreground" />
+                              <div>
+                                <div className="font-medium">{file.originalName}</div>
+                                <div className="text-sm text-muted-foreground flex items-center gap-4">
+                                  <span>{file.description || t('pages:dataset.original_upload')}</span>
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="h-3 w-3" />
+                                    {formatDate(file.createdAt)}
+                                  </span>
+                                  <span>{formatFileSize(file.size)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleDownload(file.id)}
+                              className="flex items-center gap-2"
+                            >
+                              <Download className="h-4 w-4" />
+                              {t('pages:dataset.download_csv')}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">

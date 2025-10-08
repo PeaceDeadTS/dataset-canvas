@@ -463,8 +463,13 @@ router.get('/:id/files', checkJwtOptional, async (req: Request, res: Response) =
             return res.status(403).json({ error: 'Access denied' });
         }
 
+        // Sort files by creation date DESC (newest first)
+        const sortedFiles = [...dataset.files].sort((a, b) => 
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
         // Return files data without file paths for security
-        const filesData = dataset.files.map(file => ({
+        const filesData = sortedFiles.map(file => ({
             id: file.id,
             filename: file.filename,
             originalName: file.originalName,
