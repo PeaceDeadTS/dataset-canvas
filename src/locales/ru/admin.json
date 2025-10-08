@@ -59,6 +59,7 @@
   "permission_dialog_user": "Пользователь",
   "permission_dialog_admin_warning": "⚠️ Администраторы имеют все права автоматически",
   "permission_granted": "Выдано",
+  "permission_not_granted": "Не выдано",
   "permission_grant": "Выдать",
   "permission_revoke": "Отозвать",
   "permission_code": "Код",

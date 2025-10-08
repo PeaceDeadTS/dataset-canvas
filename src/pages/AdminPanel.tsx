@@ -98,6 +98,7 @@ export default function AdminPanel() {
   const [permissionsLoading, setPermissionsLoading] = useState(true);
   const [permissionDialogOpen, setPermissionDialogOpen] = useState(false);
   const [selectedUserForPermission, setSelectedUserForPermission] = useState<AdminUser | null>(null);
+  const [permissionOperationInProgress, setPermissionOperationInProgress] = useState<string | null>(null);
 
   // Проверка прав доступа
   if (!user || user.role !== 'Administrator') {
@@ -169,7 +170,9 @@ export default function AdminPanel() {
   };
 
   const handleGrantPermission = async (userId: string, permissionName: string) => {
+    const operationKey = `${userId}-${permissionName}`;
     try {
+      setPermissionOperationInProgress(operationKey);
       await axios.post('/permissions/grant', { userId, permissionName });
       
       // Обновляем права пользователя
@@ -180,6 +183,14 @@ export default function AdminPanel() {
           : u
       ));
       
+      // Обновляем права в открытом диалоге
+      if (selectedUserForPermission && selectedUserForPermission.id === userId) {
+        setSelectedUserForPermission({
+          ...selectedUserForPermission,
+          permissions: updatedPermissions
+        });
+      }
+      
       toast({
         title: t('admin:success_permission_granted'),
       });
@@ -189,11 +200,15 @@ export default function AdminPanel() {
         title: error.response?.data?.message || t('admin:error_granting_permission'),
         variant: "destructive"
       });
+    } finally {
+      setPermissionOperationInProgress(null);
     }
   };
 
   const handleRevokePermission = async (userId: string, permissionName: string) => {
+    const operationKey = `${userId}-${permissionName}`;
     try {
+      setPermissionOperationInProgress(operationKey);
       await axios.post('/permissions/revoke', { userId, permissionName });
       
       // Обновляем права пользователя
@@ -204,6 +219,14 @@ export default function AdminPanel() {
           : u
       ));
       
+      // Обновляем права в открытом диалоге
+      if (selectedUserForPermission && selectedUserForPermission.id === userId) {
+        setSelectedUserForPermission({
+          ...selectedUserForPermission,
+          permissions: updatedPermissions
+        });
+      }
+      
       toast({
         title: t('admin:success_permission_revoked'),
       });
@@ -213,6 +236,8 @@ export default function AdminPanel() {
         title: error.response?.data?.message || t('admin:error_revoking_permission'),
         variant: "destructive"
       });
+    } finally {
+      setPermissionOperationInProgress(null);
     }
   };
 
@@ -671,11 +696,13 @@ export default function AdminPanel() {
                     const hasPermission = selectedUserForPermission?.permissions?.includes(permission.name) || 
                                         selectedUserForPermission?.role === 'Administrator';
                     const isAdmin = selectedUserForPermission?.role === 'Administrator';
+                    const operationKey = `${selectedUserForPermission?.id}-${permission.name}`;
+                    const isOperationInProgress = permissionOperationInProgress === operationKey;
                     
                     return (
                       <div
                         key={permission.id}
-                        className="flex items-center justify-between p-4 border rounded-lg"
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                       >
                         <div className="flex-1">
                           <div className="font-medium">{permission.displayName}</div>
@@ -686,29 +713,39 @@ export default function AdminPanel() {
                             {t('admin:permission_code')}: {permission.name}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 ml-4">
                           {hasPermission ? (
                             <>
-                              <Badge variant="default">{t('admin:permission_granted')}</Badge>
+                              <Badge variant="default" className="min-w-[80px] justify-center">
+                                {t('admin:permission_granted')}
+                              </Badge>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleRevokePermission(selectedUserForPermission!.id, permission.name)}
-                                disabled={isAdmin}
+                                disabled={isAdmin || isOperationInProgress}
+                                className="min-w-[100px]"
                               >
                                 <X className="h-4 w-4 mr-1" />
-                                {t('admin:permission_revoke')}
+                                {isOperationInProgress ? t('admin:loading') : t('admin:permission_revoke')}
                               </Button>
                             </>
                           ) : (
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => handleGrantPermission(selectedUserForPermission!.id, permission.name)}
-                            >
-                              <Plus className="h-4 w-4 mr-1" />
-                              {t('admin:permission_grant')}
-                            </Button>
+                            <>
+                              <Badge variant="secondary" className="min-w-[80px] justify-center">
+                                {t('admin:permission_not_granted')}
+                              </Badge>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleGrantPermission(selectedUserForPermission!.id, permission.name)}
+                                disabled={isOperationInProgress}
+                                className="min-w-[100px]"
+                              >
+                                <Plus className="h-4 w-4 mr-1" />
+                                {isOperationInProgress ? t('admin:loading') : t('admin:permission_grant')}
+                              </Button>
+                            </>
                           )}
                         </div>
                       </div>

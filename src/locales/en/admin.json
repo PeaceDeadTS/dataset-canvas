@@ -59,6 +59,7 @@
   "permission_dialog_user": "User",
   "permission_dialog_admin_warning": "⚠️ Administrators automatically have all permissions",
   "permission_granted": "Granted",
+  "permission_not_granted": "Not Granted",
   "permission_grant": "Grant",
   "permission_revoke": "Revoke",
   "permission_code": "Code",
