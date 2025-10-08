@@ -403,6 +403,32 @@ This section provides a summary of the core features implemented in the applicat
     *   **Activity Integration**: Complete integration with Recent Changes and User Edits pages, displaying all discussion activity types with clickable links directly to specific discussions
     *   **Permission System**: Automatic permission checking with admin panel integration for managing discussion permissions
 
+*   **Like System (Fully Implemented)**:
+    *   **Dataset Likes**: Complete like system for datasets with visual feedback and user attribution:
+        *   Compact display with overlapping avatars (GitHub/Telegram style) showing first 5 users
+        *   Heart icon with smooth animations (bounce effect on click, fill transition)
+        *   Modal dialog with full list of users who liked, timestamps, and email addresses
+        *   Backend validation preventing duplicate likes
+        *   Real-time counter updates with optimistic UI
+        *   Anonymous user support (view-only mode with login prompt)
+    *   **Post Likes**: Like system for discussion posts with same UX patterns:
+        *   Smaller, compact display suitable for posts (3 avatars max)
+        *   Self-like prevention on both backend (validation) and frontend (UI disabled)
+        *   Integrated into DiscussionPostComponent with automatic data refresh
+        *   Post-specific like counts visible to all users
+        *   Separate API endpoints (`/api/posts/:id/likes`) with full CRUD operations
+    *   **Database Design**:
+        *   `likes` table for dataset likes (userId + datasetId unique constraint)
+        *   `post_likes` table for post likes (userId + postId unique constraint)
+        *   Cascading deletes maintaining data integrity
+        *   Indexed foreign keys for optimal query performance
+    *   **Community Statistics**:
+        *   Real-time like counts displayed in Community tab
+        *   Click-to-expand dialogs showing all contributors
+        *   Automatic contributor fetching on page load (no manual refresh needed)
+        *   Contributors sorted by total activity (discussions + posts)
+        *   Discussion count and post count statistics per user
+        
 *   **Features NOT Yet Implemented** (Future Enhancements):
     *   **Real-time Updates**: No WebSocket or polling for live discussion updates
     *   **Rich Text Formatting**: Plain text only, no markdown/formatting support
@@ -410,7 +436,7 @@ This section provides a summary of the core features implemented in the applicat
     *   **Search**: No search functionality within discussions
     *   **Moderation Queue**: No moderation tools for flagged content
     *   **Discussion Categories/Tags**: No organization system beyond pinning
-    *   **Voting System**: No upvote/downvote functionality
+    *   **Voting System**: No upvote/downvote for posts (only likes)
     *   **File Attachments**: No support for attaching files to posts
 
 *   **Technical Implementation Details**:
@@ -427,7 +453,9 @@ This section provides a summary of the core features implemented in the applicat
 
 ## Document Version History
 
-*Latest Update: October 2025 - Discussion System Completion: Finalized comprehensive discussion system with complete end-to-end functionality. All frontend features now fully operational including post editing with inline editor, PostEditHistory component with expandable MediaWiki-style diffs, full admin moderation tools (Lock/Pin/Delete) with modern AlertDialog confirmations replacing browser prompts, complete Recent Changes and User Edits integration showing all discussion activity with deep links to specific discussions, admin panel integration for permission management, URL-based navigation with discussion parameter support, visual enhancements including highlighted pinned discussions and thread starter posts, clickable usernames linking to profiles throughout the system, and bug fixes addressing React conditional rendering issues. System now production-ready with comprehensive functionality matching project requirements.*
+*Latest Update: October 2025 - Community Engagement & Like System: Implemented comprehensive like system for both datasets and discussion posts with GitHub/Telegram-style UI featuring compact avatar displays, smooth animations, and detailed modal dialogs. Deployed complete backend with two database tables (`likes`, `post_likes`) using unique constraints and cascading deletes for data integrity. Added six new API endpoints for CRUD operations on likes with proper validation including self-like prevention. Enhanced Community tab with real-time statistics: discussion count, contributor list with activity metrics (threads created + posts written), and like visualization with user attribution. Fixed contributors loading bug ensuring statistics display immediately on page load. Frontend features include PostLikesDisplay component with animations, LikesDisplay component for datasets, ContributorsDialog with detailed user activity breakdown, and seamless integration into DiscussionPostComponent. All components fully localized in English and Russian with comprehensive toast notifications for user feedback.*
+
+*October 2025 - Discussion System Completion: Finalized comprehensive discussion system with complete end-to-end functionality. All frontend features now fully operational including post editing with inline editor, PostEditHistory component with expandable MediaWiki-style diffs, full admin moderation tools (Lock/Pin/Delete) with modern AlertDialog confirmations replacing browser prompts, complete Recent Changes and User Edits integration showing all discussion activity with deep links to specific discussions, admin panel integration for permission management, URL-based navigation with discussion parameter support, visual enhancements including highlighted pinned discussions and thread starter posts, clickable usernames linking to profiles throughout the system, and bug fixes addressing React conditional rendering issues. System now production-ready with comprehensive functionality matching project requirements.*
 
 *January 2025 - Discussion System Implementation: Deployed comprehensive discussion system with complete backend infrastructure including three TypeORM entities (Discussion, DiscussionPost, DiscussionEditHistory), full RESTful API with 10 endpoints covering CRUD operations, granular permission system with six distinct permissions integrated into existing framework, custom middleware for access control, and extended Recent Changes/User Edits APIs to track discussion activity. Frontend implementation includes five core components (DiscussionList, CreateDiscussionDialog, DiscussionThread, DiscussionPostComponent, PostEditor) providing basic discussion functionality with create, view, and reply capabilities. System features nested replies with quotations, soft delete support, lock/pin functionality (backend ready), complete internationalization, and responsive design.*
 

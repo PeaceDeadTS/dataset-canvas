@@ -495,7 +495,7 @@ router.post('/posts/:id/likes', checkJwt, async (req, res) => {
     const postRepository = AppDataSource.manager.getRepository(DiscussionPost);
     const post = await postRepository.findOne({
       where: { id: postId },
-      relations: ['discussion'],
+      relations: ['discussion', 'author'],
     });
 
     if (!post) {
@@ -504,6 +504,11 @@ router.post('/posts/:id/likes', checkJwt, async (req, res) => {
 
     if (post.isDeleted) {
       return res.status(400).json({ message: 'Cannot like deleted post' });
+    }
+
+    // Проверяем, что пользователь не лайкает свой собственный пост
+    if (post.authorId === userId) {
+      return res.status(400).json({ message: 'Вы не можете лайкать свой собственный пост' });
     }
 
     const postLikeRepository = AppDataSource.manager.getRepository(PostLike);

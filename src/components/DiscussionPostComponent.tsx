@@ -189,7 +189,7 @@ export function DiscussionPostComponent({
           isLiked={isLiked}
           isLoading={isLikesLoading}
           onToggleLike={handleToggleLike}
-          canLike={!!user}
+          canLike={!!user && post.authorId !== user.userId}
         />
       </div>
 
