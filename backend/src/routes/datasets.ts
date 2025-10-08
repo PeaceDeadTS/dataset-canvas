@@ -116,6 +116,7 @@ router.get('/:id', checkJwtOptional, async (req: Request, res: Response) => {
     
     const [images, total] = await imageRepository.findAndCount({
       where: { dataset: { id } },
+      order: { row_number: 'ASC' },
       skip: (Number(page) - 1) * Number(limit),
       take: Number(limit),
     });
