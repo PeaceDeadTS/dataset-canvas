@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -118,6 +119,9 @@ export const LikesDisplay: React.FC<LikesDisplayProps> = ({
               <Heart className="h-5 w-5 fill-red-500 text-red-500" />
               {t('common:likes.likesTitle')} ({likes.length})
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {t('common:likes.likesDialogDescription')}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 mt-4">
             {likes.map((like) => (

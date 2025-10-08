@@ -153,6 +153,7 @@
     "loginRequired": "Login to like this dataset",
     "likesTitle": "Likes",
     "postLikesTitle": "Post Likes",
+    "likesDialogDescription": "List of users who liked this item",
     "noLikes": "No likes yet",
     "likeSuccess": "Liked successfully!",
     "unlikeSuccess": "Unliked successfully!",

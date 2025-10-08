@@ -153,6 +153,7 @@
     "loginRequired": "Войдите, чтобы поставить лайк",
     "likesTitle": "Лайки",
     "postLikesTitle": "Лайки поста",
+    "likesDialogDescription": "Список пользователей, которые поставили лайк",
     "noLikes": "Лайков пока нет",
     "likeSuccess": "Лайк успешно поставлен!",
     "unlikeSuccess": "Лайк убран!",
