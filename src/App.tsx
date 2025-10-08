@@ -42,12 +42,12 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <ThemeProvider>
             <CreateDatasetProvider>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
@@ -65,10 +65,10 @@ const App = () => (
               </Suspense>
               <GlobalCreateDatasetDialog />
             </CreateDatasetProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
