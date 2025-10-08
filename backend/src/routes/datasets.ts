@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { AppDataSource } from '../data-source';
-import { Dataset } from '../entity/Dataset.entity';
+import { Dataset, DatasetFormat } from '../entity/Dataset.entity';
 import { User, UserRole } from '../entity/User.entity';
 import { checkJwt, checkJwtOptional } from '../middleware/checkJwt';
 import { DatasetImage } from '../entity/DatasetImage.entity';
@@ -20,6 +20,7 @@ import { Like } from '../entity/Like.entity';
 import { Discussion } from '../entity/Discussion.entity';
 import { DiscussionPost } from '../entity/DiscussionPost.entity';
 import logger from '../logger';
+import { parseCOCOJSON, isCocoFormat } from '../utils/cocoParser';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -180,7 +181,7 @@ router.post('/', checkJwt, async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/datasets/:id/upload
+// POST /api/datasets/:id/upload - Supports both CSV and COCO formats
 router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request, res: Response) => {
     const { id } = req.params;
     const userId = req.user?.userId;
@@ -201,18 +202,41 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
             return res.status(403).send('Forbidden');
         }
 
+        // Detect file format
+        const isCoco = isCocoFormat(req.file.buffer);
+        const detectedFormat = isCoco ? DatasetFormat.COCO : DatasetFormat.CSV;
+
+        // Check format compatibility - prevent mixing formats
+        const existingImageCount = await imageRepository.count({
+            where: { dataset: { id: dataset.id } }
+        });
+
+        if (existingImageCount > 0 && dataset.format !== detectedFormat) {
+            return res.status(400).json({
+                error: 'Format mismatch',
+                message: `This dataset already contains ${dataset.format.toUpperCase()} data. You cannot upload ${detectedFormat.toUpperCase()} files to a ${dataset.format.toUpperCase()} dataset. Please create a new dataset for ${detectedFormat.toUpperCase()} format.`
+            });
+        }
+
+        // Update dataset format on first upload
+        if (existingImageCount === 0 && dataset.format !== detectedFormat) {
+            dataset.format = detectedFormat;
+            await datasetRepository.save(dataset);
+            logger.info(`Dataset ${dataset.name} format set to ${detectedFormat}`);
+        }
+
         // Create uploads directory if it doesn't exist
         const uploadsDir = path.join(process.cwd(), 'uploads');
         if (!fs.existsSync(uploadsDir)) {
             fs.mkdirSync(uploadsDir, { recursive: true });
         }
 
-        // Generate unique filename for the CSV file
-        const fileExtension = path.extname(req.file.originalname) || '.csv';
+        // Generate unique filename
+        const fileExtension = path.extname(req.file.originalname) || (isCoco ? '.json' : '.csv');
         const uniqueFilename = `${dataset.id}_${Date.now()}_${randomUUID()}${fileExtension}`;
         const filePath = path.join(uploadsDir, uniqueFilename);
 
-        // Save the CSV file to disk
+        // Save file to disk
         fs.writeFileSync(filePath, req.file.buffer);
 
         // Save file metadata to database
@@ -222,119 +246,229 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
         datasetFile.mimeType = req.file.mimetype;
         datasetFile.size = req.file.size;
         datasetFile.filePath = filePath;
-        datasetFile.description = 'Original CSV upload';
+        datasetFile.description = isCoco ? 'Original COCO JSON upload' : 'Original CSV upload';
         datasetFile.dataset = dataset;
         datasetFile.datasetId = dataset.id;
 
         await fileRepository.save(datasetFile);
 
-        // Smart Update Logic - preserve img_key for existing images
-        // Step 1: Load all existing images into a Map by URL for quick lookup
+        // Load existing images for Smart Update
         const existingImages = await imageRepository.find({
             where: { dataset: { id: dataset.id } }
         });
-        
-        const existingImagesByUrl = new Map<string, DatasetImage>();
-        const existingImagesByImgKey = new Map<string, DatasetImage>();
-        
-        existingImages.forEach(img => {
-            if (img.url) {
-                existingImagesByUrl.set(img.url, img);
-            }
-            if (img.img_key) {
-                existingImagesByImgKey.set(img.img_key, img);
-            }
-        });
 
-        const imagesToSave: DatasetImage[] = [];
-        const processedUrls = new Set<string>();
-        
-        if (!req.file || !req.file.buffer) {
-            return res.status(400).send('No file content.');
-        }
+        let imagesToSave: DatasetImage[] = [];
+        let processedUrls = new Set<string>();
+        let updatedCount = 0;
+        let newCount = 0;
+        let deletedCount = 0;
 
-        const readable = Readable.from(req.file.buffer);
-        let rowCounter = 1;
+        if (isCoco) {
+            // === COCO FORMAT PROCESSING ===
+            try {
+                const parsedImages = await parseCOCOJSON(req.file.buffer);
 
-        readable
-            .pipe(csv())
-            .on('data', (row) => {
-                const url = row.url;
-                const csvImgKey = row.img_key; // Check if CSV contains img_key column
-                
-                let imageToUpdate: DatasetImage | undefined;
+                // Build lookup maps for existing images
+                const existingImagesByUrl = new Map<string, DatasetImage>();
+                const existingImagesByCocoId = new Map<number, DatasetImage>();
 
-                // Step 2: Try to find existing image
-                // Priority 1: Match by img_key from CSV (if provided)
-                if (csvImgKey && existingImagesByImgKey.has(csvImgKey)) {
-                    imageToUpdate = existingImagesByImgKey.get(csvImgKey);
-                }
-                // Priority 2: Match by URL
-                else if (url && existingImagesByUrl.has(url)) {
-                    imageToUpdate = existingImagesByUrl.get(url);
-                }
+                existingImages.forEach(img => {
+                    if (img.url) {
+                        existingImagesByUrl.set(img.url, img);
+                    }
+                    if (img.cocoImageId) {
+                        existingImagesByCocoId.set(img.cocoImageId, img);
+                    }
+                });
 
-                // Step 3: Update existing image or create new one
-                if (imageToUpdate) {
-                    // Update existing image, preserving img_key and id
-                    imageToUpdate.row_number = rowCounter++;
-                    imageToUpdate.filename = row.filename || imageToUpdate.filename;
-                    imageToUpdate.url = url || imageToUpdate.url;
-                    imageToUpdate.width = row.width ? parseInt(row.width, 10) : imageToUpdate.width;
-                    imageToUpdate.height = row.height ? parseInt(row.height, 10) : imageToUpdate.height;
-                    imageToUpdate.prompt = row.prompt !== undefined ? row.prompt : imageToUpdate.prompt;
-                    imagesToSave.push(imageToUpdate);
-                    processedUrls.add(url);
-                } else {
-                    // Create new image with new img_key
-                    const newImage = new DatasetImage();
-                    newImage.img_key = csvImgKey || randomUUID(); // Use CSV img_key if provided
-                    newImage.row_number = rowCounter++;
-                    newImage.filename = row.filename;
-                    newImage.url = url;
-                    newImage.width = row.width ? parseInt(row.width, 10) : 0;
-                    newImage.height = row.height ? parseInt(row.height, 10) : 0;
-                    newImage.prompt = row.prompt || '';
-                    newImage.dataset = dataset;
-                    imagesToSave.push(newImage);
-                    processedUrls.add(url);
-                }
-            })
-            .on('end', async () => {
-                try {
-                    // Step 4: Save all images (updates + new ones)
-                    await imageRepository.save(imagesToSave);
+                // Process parsed COCO images
+                parsedImages.forEach((parsedImg, index) => {
+                    let imageToUpdate: DatasetImage | undefined;
 
-                    // Step 5: Delete images that are no longer in the CSV
-                    const imagesToDelete = existingImages.filter(img => 
-                        img.url && !processedUrls.has(img.url)
-                    );
-                    
-                    if (imagesToDelete.length > 0) {
-                        await imageRepository.remove(imagesToDelete);
-                        logger.info(`Removed ${imagesToDelete.length} images that are no longer in CSV for dataset ${dataset.name}`);
+                    // Try to match by cocoImageId first, then by URL
+                    if (existingImagesByCocoId.has(parsedImg.cocoImageId)) {
+                        imageToUpdate = existingImagesByCocoId.get(parsedImg.cocoImageId);
+                    } else if (existingImagesByUrl.has(parsedImg.url)) {
+                        imageToUpdate = existingImagesByUrl.get(parsedImg.url);
                     }
 
-                    const updatedCount = imagesToSave.filter(img => img.id).length;
-                    const newCount = imagesToSave.length - updatedCount;
+                    if (imageToUpdate) {
+                        // Update existing image
+                        imageToUpdate.row_number = index + 1;
+                        imageToUpdate.filename = parsedImg.filename;
+                        imageToUpdate.url = parsedImg.url;
+                        imageToUpdate.flickrUrl = parsedImg.flickrUrl;
+                        imageToUpdate.width = parsedImg.width;
+                        imageToUpdate.height = parsedImg.height;
+                        imageToUpdate.prompt = parsedImg.prompt;
+                        imageToUpdate.additionalCaptions = parsedImg.additionalCaptions.length > 0 ? parsedImg.additionalCaptions : undefined;
+                        imageToUpdate.license = parsedImg.license;
+                        imageToUpdate.cocoImageId = parsedImg.cocoImageId;
+                        updatedCount++;
+                    } else {
+                        // Create new image
+                        const newImage = new DatasetImage();
+                        newImage.img_key = parsedImg.img_key;
+                        newImage.row_number = index + 1;
+                        newImage.filename = parsedImg.filename;
+                        newImage.url = parsedImg.url;
+                        newImage.flickrUrl = parsedImg.flickrUrl;
+                        newImage.width = parsedImg.width;
+                        newImage.height = parsedImg.height;
+                        newImage.prompt = parsedImg.prompt;
+                        newImage.additionalCaptions = parsedImg.additionalCaptions.length > 0 ? parsedImg.additionalCaptions : undefined;
+                        newImage.license = parsedImg.license;
+                        newImage.cocoImageId = parsedImg.cocoImageId;
+                        newImage.dataset = dataset;
+                        newCount++;
+                        imageToUpdate = newImage;
+                    }
 
-                    logger.info(`Successfully uploaded CSV file ${uniqueFilename} to dataset ${dataset.name}. Updated: ${updatedCount}, New: ${newCount}, Deleted: ${imagesToDelete.length}`);
-                    res.status(201).send({ 
-                        message: `Successfully uploaded ${imagesToSave.length} images to dataset ${dataset.name}`,
-                        stats: {
-                            total: imagesToSave.length,
-                            updated: updatedCount,
-                            new: newCount,
-                            deleted: imagesToDelete.length
-                        },
-                        fileId: datasetFile.id,
-                        filename: datasetFile.originalName
-                    });
-                } catch (dbError) {
-                    logger.error(`DB error during CSV save for dataset ${id}`, { error: dbError });
-                    res.status(500).send('Error saving images to database.');
+                    imagesToSave.push(imageToUpdate);
+                    processedUrls.add(parsedImg.url);
+                });
+
+                // Save all images
+                await imageRepository.save(imagesToSave);
+
+                // Delete images no longer in COCO file
+                const imagesToDelete = existingImages.filter(img => 
+                    img.url && !processedUrls.has(img.url)
+                );
+
+                if (imagesToDelete.length > 0) {
+                    await imageRepository.remove(imagesToDelete);
+                    deletedCount = imagesToDelete.length;
+                    logger.info(`Removed ${deletedCount} images that are no longer in COCO for dataset ${dataset.name}`);
+                }
+
+                logger.info(`Successfully uploaded COCO file ${uniqueFilename} to dataset ${dataset.name}. Updated: ${updatedCount}, New: ${newCount}, Deleted: ${deletedCount}`);
+                res.status(201).json({
+                    message: `Successfully uploaded ${imagesToSave.length} images to dataset ${dataset.name}`,
+                    format: 'coco',
+                    stats: {
+                        total: imagesToSave.length,
+                        updated: updatedCount,
+                        new: newCount,
+                        deleted: deletedCount
+                    },
+                    fileId: datasetFile.id,
+                    filename: datasetFile.originalName
+                });
+
+            } catch (parseError: any) {
+                logger.error(`COCO parsing error for dataset ${id}`, { error: parseError });
+                // Delete the saved file on parse error
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+                await fileRepository.remove(datasetFile);
+                return res.status(400).json({
+                    error: 'COCO parsing failed',
+                    message: parseError.message || 'Invalid COCO format'
+                });
+            }
+
+        } else {
+            // === CSV FORMAT PROCESSING (ORIGINAL LOGIC) ===
+            const existingImagesByUrl = new Map<string, DatasetImage>();
+            const existingImagesByImgKey = new Map<string, DatasetImage>();
+
+            existingImages.forEach(img => {
+                if (img.url) {
+                    existingImagesByUrl.set(img.url, img);
+                }
+                if (img.img_key) {
+                    existingImagesByImgKey.set(img.img_key, img);
                 }
             });
+
+            const readable = Readable.from(req.file.buffer);
+            let rowCounter = 1;
+
+            readable
+                .pipe(csv())
+                .on('data', (row) => {
+                    const url = row.url;
+                    const csvImgKey = row.img_key;
+
+                    let imageToUpdate: DatasetImage | undefined;
+
+                    // Try to find existing image
+                    if (csvImgKey && existingImagesByImgKey.has(csvImgKey)) {
+                        imageToUpdate = existingImagesByImgKey.get(csvImgKey);
+                    } else if (url && existingImagesByUrl.has(url)) {
+                        imageToUpdate = existingImagesByUrl.get(url);
+                    }
+
+                    if (imageToUpdate) {
+                        // Update existing image
+                        imageToUpdate.row_number = rowCounter++;
+                        imageToUpdate.filename = row.filename || imageToUpdate.filename;
+                        imageToUpdate.url = url || imageToUpdate.url;
+                        imageToUpdate.width = row.width ? parseInt(row.width, 10) : imageToUpdate.width;
+                        imageToUpdate.height = row.height ? parseInt(row.height, 10) : imageToUpdate.height;
+                        imageToUpdate.prompt = row.prompt !== undefined ? row.prompt : imageToUpdate.prompt;
+                        imagesToSave.push(imageToUpdate);
+                        processedUrls.add(url);
+                    } else {
+                        // Create new image
+                        const newImage = new DatasetImage();
+                        newImage.img_key = csvImgKey || randomUUID();
+                        newImage.row_number = rowCounter++;
+                        newImage.filename = row.filename;
+                        newImage.url = url;
+                        newImage.width = row.width ? parseInt(row.width, 10) : 0;
+                        newImage.height = row.height ? parseInt(row.height, 10) : 0;
+                        newImage.prompt = row.prompt || '';
+                        newImage.dataset = dataset;
+                        imagesToSave.push(newImage);
+                        processedUrls.add(url);
+                    }
+                })
+                .on('end', async () => {
+                    try {
+                        await imageRepository.save(imagesToSave);
+
+                        const imagesToDelete = existingImages.filter(img =>
+                            img.url && !processedUrls.has(img.url)
+                        );
+
+                        if (imagesToDelete.length > 0) {
+                            await imageRepository.remove(imagesToDelete);
+                            logger.info(`Removed ${imagesToDelete.length} images that are no longer in CSV for dataset ${dataset.name}`);
+                        }
+
+                        const finalUpdatedCount = imagesToSave.filter(img => img.id).length;
+                        const finalNewCount = imagesToSave.length - finalUpdatedCount;
+
+                        logger.info(`Successfully uploaded CSV file ${uniqueFilename} to dataset ${dataset.name}. Updated: ${finalUpdatedCount}, New: ${finalNewCount}, Deleted: ${imagesToDelete.length}`);
+                        res.status(201).json({
+                            message: `Successfully uploaded ${imagesToSave.length} images to dataset ${dataset.name}`,
+                            format: 'csv',
+                            stats: {
+                                total: imagesToSave.length,
+                                updated: finalUpdatedCount,
+                                new: finalNewCount,
+                                deleted: imagesToDelete.length
+                            },
+                            fileId: datasetFile.id,
+                            filename: datasetFile.originalName
+                        });
+                    } catch (dbError) {
+                        logger.error(`DB error during CSV save for dataset ${id}`, { error: dbError });
+                        res.status(500).send('Error saving images to database.');
+                    }
+                })
+                .on('error', (csvError) => {
+                    logger.error(`CSV parsing error for dataset ${id}`, { error: csvError });
+                    res.status(400).json({
+                        error: 'CSV parsing failed',
+                        message: 'Invalid CSV format'
+                    });
+                });
+        }
+
     } catch (error) {
         logger.error(`Upload failed for dataset ${id}`, { error });
         res.status(500).send('Internal Server Error');

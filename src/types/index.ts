@@ -34,6 +34,11 @@ export interface DatasetImage {
     width: number;
     height: number;
     prompt: string;
+    // COCO-specific fields
+    cocoImageId?: number;
+    additionalCaptions?: string[];
+    license?: string;
+    flickrUrl?: string;
 }
 
 export interface DatasetFile {
@@ -47,11 +52,14 @@ export interface DatasetFile {
     updatedAt: string;
 }
 
+export type DatasetFormat = 'csv' | 'coco';
+
 export interface Dataset {
     id: string;
     name: string;
     description?: string;
     isPublic: boolean;
+    format: DatasetFormat;
     user?: User; // Сделали опциональным для безопасности
     createdAt: string;
     imageCount: number;

@@ -34,6 +34,19 @@ export class DatasetImage {
   @Column('text')
   prompt!: string;
 
+  // COCO-specific fields
+  @Column({ type: 'int', nullable: true })
+  cocoImageId?: number;
+
+  @Column({ type: 'json', nullable: true })
+  additionalCaptions?: string[];
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  license?: string;
+
+  @Column({ type: 'text', nullable: true })
+  flickrUrl?: string;
+
   @ManyToOne(() => Dataset, (dataset) => dataset.images, { onDelete: 'CASCADE' })
   dataset!: Dataset;
 

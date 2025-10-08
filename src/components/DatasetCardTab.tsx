@@ -102,7 +102,7 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-4 flex-wrap">
                 <h2 className="text-2xl font-bold">{dataset.name}</h2>
                 <Badge variant={dataset.isPublic ? "default" : "secondary"}>
                   {dataset.isPublic ? (
@@ -116,6 +116,10 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
                       {t('common:private')}
                     </>
                   )}
+                </Badge>
+                <Badge variant="outline" className="uppercase">
+                  <FileText className="w-3 h-3 mr-1" />
+                  {dataset.format || 'CSV'}
                 </Badge>
               </div>
 

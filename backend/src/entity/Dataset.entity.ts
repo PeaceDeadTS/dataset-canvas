@@ -3,6 +3,11 @@ import { User } from './User.entity';
 import { DatasetImage } from './DatasetImage.entity';
 import { DatasetFile } from './DatasetFile.entity';
 
+export enum DatasetFormat {
+  CSV = 'csv',
+  COCO = 'coco'
+}
+
 @Entity('datasets')
 export class Dataset {
   @PrimaryGeneratedColumn('uuid')
@@ -16,6 +21,13 @@ export class Dataset {
 
   @Column({ type: 'boolean', default: true })
   isPublic!: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: DatasetFormat,
+    default: DatasetFormat.CSV
+  })
+  format!: DatasetFormat;
 
   @ManyToOne(() => User, (user) => user.datasets)
   @JoinColumn({ name: 'userId' })

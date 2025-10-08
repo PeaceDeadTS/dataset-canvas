@@ -256,11 +256,17 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                 <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
                   <TableRow className="border-b">
                     <TableHead className="w-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.row')}</TableHead>
+                    {dataset.format === 'coco' && (
+                      <TableHead className="w-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.coco_id')}</TableHead>
+                    )}
                     <TableHead className="min-w-[18rem] max-w-[30rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.image_key')}</TableHead>
                     <TableHead className="min-w-[18rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.filename')}</TableHead>
                     <TableHead className="min-w-[20rem] max-w-[80rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('common:image')}</TableHead>
                     <TableHead className="w-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.dimensions')}</TableHead>
                     <TableHead className="min-w-[44rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.prompt')}</TableHead>
+                    {dataset.format === 'coco' && (
+                      <TableHead className="min-w-[12rem] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95">{t('pages:dataset.license')}</TableHead>
+                    )}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -269,6 +275,9 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                       <DialogTrigger asChild>
                         <TableRow className="cursor-pointer">
                           <TableCell className="py-4 text-center">{image.row_number}</TableCell>
+                          {dataset.format === 'coco' && (
+                            <TableCell className="py-4 text-center text-xs text-muted-foreground">{image.cocoImageId || '-'}</TableCell>
+                          )}
                           <TableCell className="font-mono text-xs py-4 overflow-hidden text-ellipsis">{image.img_key}</TableCell>
                           <TableCell className="py-4 overflow-hidden text-ellipsis">{image.filename}</TableCell>
                           <TableCell className="py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
@@ -292,6 +301,9 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                           </TableCell>
                           <TableCell className="py-4 text-center whitespace-nowrap">{`${image.width}x${image.height}`}</TableCell>
                           <TableCell className="py-4 overflow-hidden text-ellipsis">{image.prompt}</TableCell>
+                          {dataset.format === 'coco' && (
+                            <TableCell className="py-4 text-xs text-muted-foreground overflow-hidden text-ellipsis">{image.license || '-'}</TableCell>
+                          )}
                         </TableRow>
                       </DialogTrigger>
                       <DialogContent className="w-[95vw] sm:w-[90vw] md:w-[85vw] lg:w-[80vw] lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl max-h-[90vh] overflow-hidden">
@@ -353,6 +365,43 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                               )}
                             </div>
                             <p className="font-mono text-xs break-all"><strong>{t('common:imageDetails.key')}:</strong> {image.img_key}</p>
+                            
+                            {/* COCO-specific fields */}
+                            {dataset.format === 'coco' && (
+                              <>
+                                {image.cocoImageId && (
+                                  <p className="text-xs"><strong>{t('pages:dataset.coco_id')}:</strong> {image.cocoImageId}</p>
+                                )}
+                                {image.license && (
+                                  <p className="text-xs"><strong>{t('pages:dataset.license')}:</strong> {image.license}</p>
+                                )}
+                                {image.flickrUrl && (
+                                  <div>
+                                    <p className="text-xs"><strong>{t('pages:dataset.flickr_url')}:</strong></p>
+                                    <a 
+                                      href={image.flickrUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-muted-foreground hover:text-primary break-all max-w-full text-xs underline"
+                                    >
+                                      {image.flickrUrl}
+                                    </a>
+                                  </div>
+                                )}
+                                {image.additionalCaptions && image.additionalCaptions.length > 0 && (
+                                  <div className="space-y-2">
+                                    <p className="text-xs"><strong>{t('pages:dataset.additional_captions')} ({image.additionalCaptions.length}):</strong></p>
+                                    <div className="space-y-1 pl-4">
+                                      {image.additionalCaptions.map((caption, idx) => (
+                                        <p key={idx} className="text-xs text-muted-foreground">
+                                          {idx + 1}. {caption}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </>
+                            )}
                             
                             {hasPermission('edit_caption') && (
                               <>

@@ -1,0 +1,92 @@
+{
+  "info": {
+    "description": "Test COCO Dataset for Dataset Canvas",
+    "version": "1.0",
+    "year": 2025,
+    "contributor": "Dataset Canvas Team",
+    "date_created": "2025-01-15"
+  },
+  "licenses": [
+    {
+      "id": 1,
+      "name": "Attribution-NonCommercial-ShareAlike 4.0 International",
+      "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+    },
+    {
+      "id": 2,
+      "name": "Public Domain",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+    }
+  ],
+  "images": [
+    {
+      "id": 1,
+      "file_name": "sample_cat_001.jpg",
+      "coco_url": "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba",
+      "flickr_url": "https://www.flickr.com/photos/example/cat001",
+      "width": 1024,
+      "height": 768,
+      "license": 1
+    },
+    {
+      "id": 2,
+      "file_name": "sample_dog_001.jpg",
+      "coco_url": "https://images.unsplash.com/photo-1543466835-00a7907e9de1",
+      "width": 1280,
+      "height": 720,
+      "license": 2
+    },
+    {
+      "id": 3,
+      "file_name": "sample_bird_001.jpg",
+      "coco_url": "https://images.unsplash.com/photo-1552728089-57bdde30beb3",
+      "flickr_url": "https://www.flickr.com/photos/example/bird001",
+      "width": 1920,
+      "height": 1080,
+      "license": 1
+    }
+  ],
+  "annotations": [
+    {
+      "id": 1001,
+      "image_id": 1,
+      "caption": "A fluffy orange tabby cat lying on a comfortable couch, looking directly at the camera with bright green eyes"
+    },
+    {
+      "id": 1002,
+      "image_id": 1,
+      "caption": "Orange cat resting peacefully on soft furniture"
+    },
+    {
+      "id": 1003,
+      "image_id": 1,
+      "caption": "Domestic feline with orange fur relaxing indoors"
+    },
+    {
+      "id": 2001,
+      "image_id": 2,
+      "caption": "A golden retriever dog sitting in a grassy field during sunset, tongue out and happy expression"
+    },
+    {
+      "id": 2002,
+      "image_id": 2,
+      "caption": "Happy dog enjoying outdoor time in nature"
+    },
+    {
+      "id": 3001,
+      "image_id": 3,
+      "caption": "A colorful parrot perched on a tree branch in a tropical forest, vibrant blue and yellow plumage"
+    },
+    {
+      "id": 3002,
+      "image_id": 3,
+      "caption": "Tropical bird with bright feathers resting on branch"
+    },
+    {
+      "id": 3003,
+      "image_id": 3,
+      "caption": "Exotic parrot displaying beautiful natural colors"
+    }
+  ]
+}
+
