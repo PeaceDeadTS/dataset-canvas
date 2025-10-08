@@ -338,7 +338,7 @@ export function AppHeader() {
                   onClick={() => setSettingsOpen(true)}
                 >
                   <Settings className="h-4 w-4" />
-                  {t('common:settings')}
+                  {t('common:settings.title')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
