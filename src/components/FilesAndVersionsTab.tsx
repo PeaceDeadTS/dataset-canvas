@@ -222,32 +222,34 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
             </CardContent>
           </Card>
 
-          {/* Export Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileDown className="h-5 w-5" />
-                {t('pages:dataset.export_title')}
-              </CardTitle>
-              <CardDescription>
-                {t('pages:dataset.export_description')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  {t('pages:dataset.export_info')}
-                </p>
-                <Button 
-                  onClick={() => setExportDialogOpen(true)}
-                  className="flex items-center gap-2"
-                >
-                  <FileDown className="h-4 w-4" />
-                  {t('pages:dataset.export_button')}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Export Section - Only visible when dataset has images */}
+          {dataset.imageCount > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileDown className="h-5 w-5" />
+                  {t('pages:dataset.export_title')}
+                </CardTitle>
+                <CardDescription>
+                  {t('pages:dataset.export_description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    {t('pages:dataset.export_info')}
+                  </p>
+                  <Button 
+                    onClick={() => setExportDialogOpen(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    {t('pages:dataset.export_button')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Version History (placeholder) */}
           <Card>
