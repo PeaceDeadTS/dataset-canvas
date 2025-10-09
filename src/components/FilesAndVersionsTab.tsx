@@ -88,9 +88,11 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
           <div className="space-y-2">
             <h2 className="text-2xl font-bold">{t('pages:dataset.files_and_versions')}</h2>
             <p className="text-muted-foreground">
-              {dataset.format === 'coco' 
-                ? t('pages:dataset.files_description_coco')
-                : t('pages:dataset.files_description_csv')}
+              {files.length === 0
+                ? t('pages:dataset.files_description')
+                : dataset.format === 'coco' 
+                  ? t('pages:dataset.files_description_coco')
+                  : t('pages:dataset.files_description_csv')}
             </p>
           </div>
 
@@ -102,9 +104,11 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
                 {t('pages:dataset.dataset_files')}
               </CardTitle>
               <CardDescription>
-                {dataset.format === 'coco' 
-                  ? t('pages:dataset.files_description_coco')
-                  : t('pages:dataset.files_description_csv')}
+                {files.length === 0
+                  ? t('pages:dataset.files_description')
+                  : dataset.format === 'coco' 
+                    ? t('pages:dataset.files_description_coco')
+                    : t('pages:dataset.files_description_csv')}
               </CardDescription>
             </CardHeader>
             <CardContent>

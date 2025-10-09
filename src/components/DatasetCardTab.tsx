@@ -117,10 +117,17 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
                     </>
                   )}
                 </Badge>
-                <Badge variant="outline" className="uppercase">
-                  <FileText className="w-3 h-3 mr-1" />
-                  {dataset.format || 'CSV'}
-                </Badge>
+                {(!statistics || statistics.totalSamples === 0) ? (
+                  <Badge variant="outline" className="uppercase">
+                    <FileText className="w-3 h-3 mr-1" />
+                    {t('pages:dataset.data_format')}
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="uppercase">
+                    <FileText className="w-3 h-3 mr-1" />
+                    {dataset.format || 'CSV'}
+                  </Badge>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
