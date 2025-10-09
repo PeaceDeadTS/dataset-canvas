@@ -91,6 +91,7 @@
     "community_description": "Обсуждения и вклады сообщества",
     "no_files": "Для этого датасета нет доступных файлов",
     "download_csv": "Скачать CSV",
+    "download_json": "Скачать JSON",
     "original_upload": "Оригинальная загрузка",
     "file_size": "Размер файла",
     "upload_description": "Загрузите CSV файл со столбцами: filename, url, width, height, prompt.",

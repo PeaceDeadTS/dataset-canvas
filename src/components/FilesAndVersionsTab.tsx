@@ -153,7 +153,9 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
                           className="flex items-center gap-2"
                         >
                           <Download className="h-4 w-4" />
-                          {t('pages:dataset.download_csv')}
+                          {dataset.format === 'coco' 
+                            ? t('pages:dataset.download_json') 
+                            : t('pages:dataset.download_csv')}
                         </Button>
                       </div>
                     </div>
@@ -195,7 +197,9 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
                               className="flex items-center gap-2"
                             >
                               <Download className="h-4 w-4" />
-                              {t('pages:dataset.download_csv')}
+                              {dataset.format === 'coco' 
+                                ? t('pages:dataset.download_json') 
+                                : t('pages:dataset.download_csv')}
                             </Button>
                           </div>
                         ))}

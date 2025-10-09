@@ -167,10 +167,18 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
     }
   };
 
-  // Функция для получения расширения файла из URL
-  const getFileExtension = (url: string): string => {
+  // Функция для получения расширения файла из filename или URL
+  const getFileExtension = (image: DatasetImage): string => {
     try {
-      const cleanUrl = url.split('?')[0];
+      // Сначала пробуем получить расширение из filename
+      if (image.filename) {
+        const parts = image.filename.split('.');
+        if (parts.length > 1) {
+          return parts[parts.length - 1].toUpperCase();
+        }
+      }
+      // Если нет filename, пробуем из URL
+      const cleanUrl = image.url.split('?')[0];
       const parts = cleanUrl.split('.');
       return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : t('common:imageDetails.unknown');
     } catch {
@@ -324,7 +332,7 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                            </div>
                            <div className="text-sm space-y-2 w-full min-w-0">
                             <p><strong>{t('common:imageDetails.filename')}:</strong> {image.filename}</p>
-                            <p><strong>{t('common:imageDetails.fileExtension')}:</strong> {getFileExtension(image.url)}</p>
+                            <p><strong>{t('common:imageDetails.fileExtension')}:</strong> {getFileExtension(image)}</p>
                             <p><strong>{t('common:imageDetails.dimensions')}:</strong> {image.width} × {image.height} {t('common:imageDetails.pixels')}</p>
                             <p><strong>{t('common:imageDetails.aspectRatio')}:</strong> {formatAspectRatio(image.width, image.height)}</p>
                             <div>

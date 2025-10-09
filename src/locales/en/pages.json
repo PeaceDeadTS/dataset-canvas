@@ -91,6 +91,7 @@
     "community_description": "Discussions and community contributions",
     "no_files": "No files available for this dataset",
     "download_csv": "Download CSV",
+    "download_json": "Download JSON",
     "original_upload": "Original upload",
     "file_size": "File size",
     "upload_description": "Upload a CSV file with columns: filename, url, width, height, prompt.",
