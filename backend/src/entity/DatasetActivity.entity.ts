@@ -17,27 +17,27 @@ export enum ActivityType {
 @Entity('dataset_activity')
 export class DatasetActivity {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({
     type: 'enum',
     enum: ActivityType,
   })
-  activityType: ActivityType;
+  activityType!: ActivityType;
 
   @Column({ type: 'uuid' })
-  userId: string;
+  userId!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
-  user: User;
+  user!: User;
 
   @Column()
-  datasetId: number;
+  datasetId!: number;
 
   @ManyToOne(() => Dataset, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'datasetId' })
-  dataset: Dataset;
+  dataset!: Dataset;
 
   // Additional metadata for file uploads
   @Column({ type: 'varchar', length: 255, nullable: true })
@@ -47,6 +47,6 @@ export class DatasetActivity {
   imageCount?: number;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }
 
