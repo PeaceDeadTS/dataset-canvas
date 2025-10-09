@@ -65,6 +65,8 @@
     "no_images": "No images in this dataset",
     "upload_csv": "Upload CSV",
     "upload_coco": "Upload COCO JSON",
+    "upload_data": "Upload Data",
+    "upload_data_description": "Upload a CSV or COCO JSON file with your dataset images.",
     "upload_coco_description": "Upload a COCO JSON file with images and annotations arrays.",
     "loading_page": "Loading page...",
     "aspect_ratio": "Aspect Ratio",

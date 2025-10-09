@@ -103,10 +103,17 @@ export async function parseCOCOJSON(buffer: Buffer): Promise<ParsedCOCOImage[]> 
       // Extract filename from file_name or URL
       const filename = image.file_name || extractFilenameFromUrl(url);
 
-      // If URL ends with '/', append filename to create complete URL
-      if (url.endsWith('/') && filename && filename !== 'unknown') {
-        url = url + filename;
-        logger.debug('Appended filename to URL', { originalUrl: url.slice(0, -filename.length), filename, fullUrl: url });
+      // Check if URL needs filename appended
+      // Case 1: URL ends with '/'
+      // Case 2: URL doesn't have a file extension (no dot in the last segment)
+      const needsFilename = url.endsWith('/') || !url.split('/').pop()?.includes('.');
+      
+      if (needsFilename && filename && filename !== 'unknown') {
+        // Add separator if URL doesn't end with '/'
+        const separator = url.endsWith('/') ? '' : '/';
+        const originalUrl = url;
+        url = url + separator + filename;
+        logger.info('Appended filename to URL', { originalUrl, filename, fullUrl: url });
       }
 
       // Get annotations for this image

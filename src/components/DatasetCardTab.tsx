@@ -254,14 +254,18 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5" />
-                  {dataset.format === 'coco' 
-                    ? t('pages:dataset.upload_coco') 
-                    : t('pages:dataset.upload_csv')}
+                  {!statistics || statistics.totalSamples === 0
+                    ? t('pages:dataset.upload_data')
+                    : dataset.format === 'coco' 
+                      ? t('pages:dataset.upload_coco') 
+                      : t('pages:dataset.upload_csv')}
                 </CardTitle>
                 <CardDescription>
-                  {dataset.format === 'coco'
-                    ? t('pages:dataset.upload_coco_description')
-                    : t('pages:dataset.upload_description')}
+                  {!statistics || statistics.totalSamples === 0
+                    ? t('pages:dataset.upload_data_description')
+                    : dataset.format === 'coco'
+                      ? t('pages:dataset.upload_coco_description')
+                      : t('pages:dataset.upload_description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>

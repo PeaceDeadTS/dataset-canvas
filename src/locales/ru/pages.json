@@ -65,6 +65,8 @@
     "no_images": "В этом датасете нет изображений",
     "upload_csv": "Загрузить CSV",
     "upload_coco": "Загрузить COCO JSON",
+    "upload_data": "Загрузить данные",
+    "upload_data_description": "Загрузите CSV или COCO JSON файл с изображениями вашего датасета.",
     "upload_coco_description": "Загрузите COCO JSON файл с массивами images и annotations.",
     "loading_page": "Загружается страница...",
     "aspect_ratio": "Соотношение сторон",
