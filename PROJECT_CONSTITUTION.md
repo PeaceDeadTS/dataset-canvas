@@ -441,7 +441,40 @@ This section provides a summary of the core features implemented in the applicat
     *   **Performance Optimization**: Server-side pagination limiting results to 50 per page for optimal performance
     *   **Complete Localization**: Full i18n support with relative time formatting ("2 hours ago", "3 days ago") in English and Russian
 
-### 5.8. Discussion System (Fully Implemented)
+### 5.8. Dataset Visibility Management (Fully Implemented)
+
+*   **Backend API Endpoint**: Complete visibility toggle implementation with dedicated endpoint:
+    *   **PATCH /api/datasets/:id/visibility**: Backend endpoint for changing dataset visibility status
+    *   **Authorization System**: Comprehensive access control ensuring only dataset owners and administrators can modify visibility
+    *   **Request Validation**: Proper validation of `isPublic` boolean parameter with detailed error messages
+    *   **Audit Logging**: All visibility changes logged with Winston including dataset details, old/new states, user information, and admin flag
+    *   **Response Format**: Structured JSON response with updated dataset information for frontend synchronization
+
+*   **Frontend Implementation**: Modern UI components for seamless visibility management:
+    *   **Toggle Button**: Intuitive visibility toggle button in Dataset Card component with contextual icons (Eye for "Make Public", EyeOff for "Make Private")
+    *   **Permission Checking**: Automatic permission validation ensuring only authorized users see visibility controls
+    *   **Real-time Updates**: Immediate UI updates after visibility change without requiring page refresh
+    *   **Loading States**: Visual feedback during API calls with disabled button state preventing duplicate requests
+    *   **Error Handling**: Comprehensive error handling with user-friendly toast notifications
+    *   **State Management**: Proper state propagation from child components (DatasetCardTab) through parent chain (DatasetTabs → Dataset page)
+    *   **Automatic Badge Updates**: Dynamic badge rendering reflecting current public/private status after changes
+
+*   **User Experience Enhancements**:
+    *   **Clickable Author Links**: Dataset author names now link to user profiles for easy navigation
+    *   **Localization Fix**: Resolved bug where "common.datasets" displayed instead of translated text in user profiles
+    *   **Complete Internationalization**: All UI elements, buttons, and notifications fully translated in English and Russian
+    *   **Toast Notifications**: Clear success/error messages informing users of visibility change outcomes
+    *   **Contextual Button Text**: Dynamic button labels reflecting intended action ("Make Public" vs "Make Private")
+    *   **Visual Consistency**: Proper integration with existing design system using shadcn/ui components
+
+*   **Technical Implementation**:
+    *   **Type Safety**: Full TypeScript integration with proper type definitions for props and callbacks
+    *   **React Router Integration**: Proper use of Link components for client-side navigation
+    *   **Auth Context Integration**: Seamless integration with existing authentication system
+    *   **Axios Instance**: Consistent API communication using configured axios instance with automatic JWT handling
+    *   **Component Hierarchy**: Clean prop drilling with optional callback pattern for flexibility
+
+### 5.9. Discussion System (Fully Implemented)
 
 *   **Backend Infrastructure (Fully Implemented)**: Complete discussion system infrastructure with robust database schema and API endpoints:
     *   **Entity Architecture**: Three TypeORM entities (`Discussion`, `DiscussionPost`, `DiscussionEditHistory`) with proper foreign key relationships using UUID for users/datasets and auto-increment IDs for discussions/posts
@@ -531,9 +564,13 @@ This section provides a summary of the core features implemented in the applicat
 
 ---
 
+---
+
 ## Document Version History
 
-*Latest Update: January 2025 - Dataset Export System Implementation: Deployed professional export functionality enabling seamless integration with popular training frameworks. Implemented comprehensive backend infrastructure with export utility module (`backend/src/utils/exportHelper.ts`) providing smart URL-to-path conversion and JSONL generation, dedicated REST API endpoint (`GET /api/datasets/:id/export/kohya`) with proper authentication and access control, and intelligent path normalization removing domain/protocol while preserving directory structure. Added complete Kohya SS / sd-scripts format support generating standard-compliant JSONL with `file_name` and `caption` fields per line, designed for direct consumption by train_network.py scripts. Frontend implementation includes modern ExportDialog component with format selection radio buttons, visual format preview, informational notes about separate image downloads, loading states, and comprehensive error handling. Integrated export section into Files and Versions tab with dedicated card positioned below Dataset Files, providing one-click export with backend validation ensuring datasets have images. System features complete internationalization in English and Russian covering all UI elements, toast notifications, and error messages. Security implementation includes proper permission handling respecting dataset visibility rules, allowing private dataset export only by owner or administrators while enabling public dataset export for any authenticated user. Updated PROJECT_CONSTITUTION.md to document complete export system architecture.*
+*Latest Update: October 2025 - Dataset Visibility Toggle Implementation: Deployed comprehensive visibility management system enabling seamless switching between public and private dataset states. Implemented backend API endpoint (`PATCH /api/datasets/:id/visibility`) with proper authorization checks ensuring only dataset owners and administrators can modify visibility settings. Frontend features include intuitive visibility toggle button in Dataset Card with Eye/EyeOff icons, real-time UI updates reflecting new visibility state without page refresh, and complete internationalization for all UI elements and toast notifications in English and Russian. System includes automatic state synchronization across parent components maintaining data consistency, visual badge updates reflecting current public/private status, and comprehensive access control validation on both frontend and backend. Fixed localization bug in user profile where "common.datasets" was displayed instead of translated text due to incorrect namespace separator. Enhanced user experience by making dataset author names clickable links to user profiles throughout the application. Updated PROJECT_CONSTITUTION.md to document complete visibility toggle architecture and user experience improvements.*
+
+*January 2025 - Dataset Export System Implementation: Deployed professional export functionality enabling seamless integration with popular training frameworks. Implemented comprehensive backend infrastructure with export utility module (`backend/src/utils/exportHelper.ts`) providing smart URL-to-path conversion and JSONL generation, dedicated REST API endpoint (`GET /api/datasets/:id/export/kohya`) with proper authentication and access control, and intelligent path normalization removing domain/protocol while preserving directory structure. Added complete Kohya SS / sd-scripts format support generating standard-compliant JSONL with `file_name` and `caption` fields per line, designed for direct consumption by train_network.py scripts. Frontend implementation includes modern ExportDialog component with format selection radio buttons, visual format preview, informational notes about separate image downloads, loading states, and comprehensive error handling. Integrated export section into Files and Versions tab with dedicated card positioned below Dataset Files, providing one-click export with backend validation ensuring datasets have images. System features complete internationalization in English and Russian covering all UI elements, toast notifications, and error messages. Security implementation includes proper permission handling respecting dataset visibility rules, allowing private dataset export only by owner or administrators while enabling public dataset export for any authenticated user. Updated PROJECT_CONSTITUTION.md to document complete export system architecture.*
 
 *January 2025 - COCO Format Support Implementation: Deployed comprehensive multi-format dataset system supporting both CSV and COCO JSON formats with intelligent automatic format detection. Implemented complete COCO parser (`backend/src/utils/cocoParser.ts`) handling standard COCO structure with images and annotations arrays, smart URL construction appending filenames to base paths, multiple captions support storing additional captions in JSON array, and license information preservation from COCO metadata. Added database schema enhancements with migration (`1758000000000-AddCocoSupport`) adding `format` enum to datasets table and COCO-specific fields (`cocoImageId`, `additionalCaptions`, `license`, `flickrUrl`) to dataset_image table. Enhanced upload endpoint with format detection analyzing file content structure, format enforcement preventing mixing formats within datasets, and separate processing pipelines for CSV and COCO maintaining Smart Update logic for both. Frontend improvements include adaptive UI automatically adjusting upload instructions and file filters based on dataset format, format-specific Data Studio columns displaying COCO ID and license when applicable, conditional badge display showing 'DATA' for empty datasets instead of defaulting to CSV, and comprehensive format instructions card educating users about required and optional fields for both formats. System now provides seamless support for industry-standard COCO datasets while maintaining full backward compatibility with existing CSV workflows. Updated PROJECT_CONSTITUTION.md to document multi-format architecture.*
 

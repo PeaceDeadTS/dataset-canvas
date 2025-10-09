@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { Upload, FileText, BarChart3, Calendar, User, Lock, Globe, CheckCircle, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from '@/lib/axios';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface DatasetCardTabProps {
@@ -191,7 +191,19 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <User className="h-4 w-4" />
-                  <span>{t('common:author')}: {dataset.user?.username || 'Unknown'}</span>
+                  <span>
+                    {t('common:author')}:{' '}
+                    {dataset.user?.username ? (
+                      <Link 
+                        to={`/users/${dataset.user.username}`} 
+                        className="text-primary hover:underline font-medium"
+                      >
+                        {dataset.user.username}
+                      </Link>
+                    ) : (
+                      'Unknown'
+                    )}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="h-4 w-4" />

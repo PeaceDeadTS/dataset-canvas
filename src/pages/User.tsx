@@ -169,7 +169,7 @@ const UserPage = () => {
               <section>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold">{t('userProfile.myPrivateDatasets')}</h2>
-                  <Badge variant="secondary">{privateDatasets.length} {t('common.datasets')}</Badge>
+                  <Badge variant="secondary">{privateDatasets.length} {t('common:datasets')}</Badge>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {privateDatasets.map(dataset => (
@@ -186,7 +186,7 @@ const UserPage = () => {
                     ? t('userProfile.myPublicDatasets')
                     : t('userProfile.userPublicDatasets', { username: data.user.username })}
                 </h2>
-                <Badge variant="outline">{publicDatasets.length} {t('common.datasets')}</Badge>
+                <Badge variant="outline">{publicDatasets.length} {t('common:datasets')}</Badge>
               </div>
               
               {publicDatasets.length > 0 ? (
