@@ -254,17 +254,21 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5" />
-                  {t('pages:dataset.upload_csv')}
+                  {dataset.format === 'coco' 
+                    ? t('pages:dataset.upload_coco') 
+                    : t('pages:dataset.upload_csv')}
                 </CardTitle>
                 <CardDescription>
-                  {t('pages:dataset.upload_description')}
+                  {dataset.format === 'coco'
+                    ? t('pages:dataset.upload_coco_description')
+                    : t('pages:dataset.upload_description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
                   <Input 
                     type="file" 
-                    accept=".csv" 
+                    accept=".csv,.json" 
                     onChange={handleFileChange} 
                     className="max-w-xs"
                     placeholder={t('pages:dataset.select_file')} 

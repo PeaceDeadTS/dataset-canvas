@@ -92,12 +92,21 @@ export async function parseCOCOJSON(buffer: Buffer): Promise<ParsedCOCOImage[]> 
 
     for (const image of cocoData.images) {
       // Extract URL with priority: coco_url -> flickr_url
-      const url = image.coco_url || image.flickr_url;
+      let url = image.coco_url || image.flickr_url;
       
       if (!url) {
         logger.warn('Skipping image without URL', { imageId: image.id });
         skippedImages.push(Number(image.id));
         continue;
+      }
+
+      // Extract filename from file_name or URL
+      const filename = image.file_name || extractFilenameFromUrl(url);
+
+      // If URL ends with '/', append filename to create complete URL
+      if (url.endsWith('/') && filename && filename !== 'unknown') {
+        url = url + filename;
+        logger.debug('Appended filename to URL', { originalUrl: url.slice(0, -filename.length), filename, fullUrl: url });
       }
 
       // Get annotations for this image
@@ -118,9 +127,6 @@ export async function parseCOCOJSON(buffer: Buffer): Promise<ParsedCOCOImage[]> 
       if (image.license !== undefined) {
         licenseInfo = licenseMap.get(image.license) || String(image.license);
       }
-
-      // Extract filename from file_name or URL
-      const filename = image.file_name || extractFilenameFromUrl(url);
 
       parsedImages.push({
         cocoImageId: Number(image.id),
