@@ -427,79 +427,81 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
             </Card>
           )}
 
-          {/* Format Instructions */}
-          <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-900">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
-                <FileText className="h-5 w-5" />
-                {t('pages:dataset.format_instructions_title')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* CSV Instructions */}
-              <div className="space-y-2">
-                <h4 className="font-semibold text-sm flex items-center gap-2">
-                  <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-mono">CSV</span>
-                  {t('pages:dataset.csv_format_title')}
-                </h4>
-                <p className="text-sm text-muted-foreground">
-                  {t('pages:dataset.csv_format_description')}
-                </p>
-                <div className="bg-muted/50 p-3 rounded-md font-mono text-xs space-y-1">
-                  <div className="text-muted-foreground">{t('pages:dataset.csv_required_columns')}:</div>
-                  <div className="ml-2">
-                    <span className="text-blue-600 dark:text-blue-400">filename</span>,{' '}
-                    <span className="text-blue-600 dark:text-blue-400">url</span>,{' '}
-                    <span className="text-blue-600 dark:text-blue-400">width</span>,{' '}
-                    <span className="text-blue-600 dark:text-blue-400">height</span>,{' '}
-                    <span className="text-blue-600 dark:text-blue-400">prompt</span>
-                  </div>
-                  <div className="text-muted-foreground mt-2">{t('pages:dataset.csv_optional_columns')}:</div>
-                  <div className="ml-2">
-                    <span className="text-purple-600 dark:text-purple-400">img_key</span>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* COCO Instructions */}
-              <div className="space-y-2">
-                <h4 className="font-semibold text-sm flex items-center gap-2">
-                  <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 rounded text-xs font-mono">COCO JSON</span>
-                  {t('pages:dataset.coco_format_title')}
-                </h4>
-                <p className="text-sm text-muted-foreground">
-                  {t('pages:dataset.coco_format_description')}
-                </p>
-                <div className="bg-muted/50 p-3 rounded-md font-mono text-xs space-y-1">
-                  <div className="text-muted-foreground">{t('pages:dataset.coco_structure')}:</div>
-                  <div className="ml-2 space-y-1">
-                    <div>
-                      <span className="text-blue-600 dark:text-blue-400">"images"</span>: [
+          {/* Format Instructions - Only visible for users with upload permission */}
+          {canUpload && (
+            <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-900">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+                  <FileText className="h-5 w-5" />
+                  {t('pages:dataset.format_instructions_title')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* CSV Instructions */}
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm flex items-center gap-2">
+                    <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs font-mono">CSV</span>
+                    {t('pages:dataset.csv_format_title')}
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {t('pages:dataset.csv_format_description')}
+                  </p>
+                  <div className="bg-muted/50 p-3 rounded-md font-mono text-xs space-y-1">
+                    <div className="text-muted-foreground">{t('pages:dataset.csv_required_columns')}:</div>
+                    <div className="ml-2">
+                      <span className="text-blue-600 dark:text-blue-400">filename</span>,{' '}
+                      <span className="text-blue-600 dark:text-blue-400">url</span>,{' '}
+                      <span className="text-blue-600 dark:text-blue-400">width</span>,{' '}
+                      <span className="text-blue-600 dark:text-blue-400">height</span>,{' '}
+                      <span className="text-blue-600 dark:text-blue-400">prompt</span>
                     </div>
-                    <div className="ml-4">
-                      {'{'} <span className="text-green-600 dark:text-green-400">id</span>, <span className="text-green-600 dark:text-green-400">file_name</span>, <span className="text-green-600 dark:text-green-400">coco_url</span>, width, height {'}'}
+                    <div className="text-muted-foreground mt-2">{t('pages:dataset.csv_optional_columns')}:</div>
+                    <div className="ml-2">
+                      <span className="text-purple-600 dark:text-purple-400">img_key</span>
                     </div>
-                    <div>]</div>
-                    <div>
-                      <span className="text-blue-600 dark:text-blue-400">"annotations"</span>: [
-                    </div>
-                    <div className="ml-4">
-                      {'{'} <span className="text-green-600 dark:text-green-400">image_id</span>, <span className="text-green-600 dark:text-green-400">caption</span> {'}'}
-                    </div>
-                    <div>]</div>
-                  </div>
-                  <div className="text-muted-foreground mt-2">{t('pages:dataset.coco_optional')}:</div>
-                  <div className="ml-2">
-                    <span className="text-purple-600 dark:text-purple-400">flickr_url</span>,{' '}
-                    <span className="text-purple-600 dark:text-purple-400">license</span>,{' '}
-                    <span className="text-purple-600 dark:text-purple-400">licenses</span>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+
+                <Separator />
+
+                {/* COCO Instructions */}
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm flex items-center gap-2">
+                    <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 rounded text-xs font-mono">COCO JSON</span>
+                    {t('pages:dataset.coco_format_title')}
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {t('pages:dataset.coco_format_description')}
+                  </p>
+                  <div className="bg-muted/50 p-3 rounded-md font-mono text-xs space-y-1">
+                    <div className="text-muted-foreground">{t('pages:dataset.coco_structure')}:</div>
+                    <div className="ml-2 space-y-1">
+                      <div>
+                        <span className="text-blue-600 dark:text-blue-400">"images"</span>: [
+                      </div>
+                      <div className="ml-4">
+                        {'{'} <span className="text-green-600 dark:text-green-400">id</span>, <span className="text-green-600 dark:text-green-400">file_name</span>, <span className="text-green-600 dark:text-green-400">coco_url</span>, width, height {'}'}
+                      </div>
+                      <div>]</div>
+                      <div>
+                        <span className="text-blue-600 dark:text-blue-400">"annotations"</span>: [
+                      </div>
+                      <div className="ml-4">
+                        {'{'} <span className="text-green-600 dark:text-green-400">image_id</span>, <span className="text-green-600 dark:text-green-400">caption</span> {'}'}
+                      </div>
+                      <div>]</div>
+                    </div>
+                    <div className="text-muted-foreground mt-2">{t('pages:dataset.coco_optional')}:</div>
+                    <div className="ml-2">
+                      <span className="text-purple-600 dark:text-purple-400">flickr_url</span>,{' '}
+                      <span className="text-purple-600 dark:text-purple-400">license</span>,{' '}
+                      <span className="text-purple-600 dark:text-purple-400">licenses</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
