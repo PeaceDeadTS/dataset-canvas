@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DatasetListItem } from "@/components/DatasetListItem";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,7 @@ interface DatasetWithImageCount extends Dataset {
 }
 
 const AllDatasetsPage = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { openDialog } = useCreateDataset();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -58,15 +58,6 @@ const AllDatasetsPage = () => {
   const myPublicDatasets = allDatasets.filter(dataset => dataset.isPublic && dataset.user?.id === user?.id);
   const myPrivateDatasets = allDatasets.filter(dataset => !dataset.isPublic && dataset.user?.id === user?.id);
 
-  const formatDate = (dateString: string) => {
-    const locale = i18n.language === 'ru' ? 'ru-RU' : 'en-US';
-    return new Date(dateString).toLocaleDateString(locale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
   const DatasetGrid = ({ datasets, emptyMessage }: { datasets: DatasetWithImageCount[], emptyMessage: string }) => (
     <>
       {datasets.length === 0 ? (
@@ -76,74 +67,7 @@ const AllDatasetsPage = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {datasets.map((dataset) => (
-            <Card key={dataset.id} className="hover:shadow-lg transition-shadow duration-200">
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg truncate">
-                      <Link 
-                        to={`/datasets/${dataset.id}`}
-                        className="hover:text-blue-600 transition-colors"
-                      >
-                        {dataset.name}
-                      </Link>
-                    </CardTitle>
-                    <CardDescription className="mt-1 line-clamp-2">
-                      {dataset.description || t('pages:datasets.no_description')}
-                    </CardDescription>
-                  </div>
-                  
-                  <div className="flex flex-col items-end ml-4">
-                    <Badge 
-                      variant={dataset.isPublic ? "default" : "secondary"}
-                      className="mb-2"
-                    >
-                      {dataset.isPublic ? t('common:public') : t('common:private')}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {dataset.imageCount} {t('common:pairs')}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="pt-0">
-                <div className="space-y-3">
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium">{t('common:author')}:</span> 
-                    <Link 
-                      to={`/users/${dataset.user.username}`}
-                      className="ml-1 text-blue-600 hover:text-blue-800"
-                    >
-                      {dataset.user.username}
-                    </Link>
-                  </div>
-                  
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium">{t('pages:datasets.created_date')}</span> {formatDate(dataset.createdAt)}
-                  </div>
-                  
-                  {dataset.updatedAt && dataset.updatedAt !== dataset.createdAt && (
-                    <div className="text-sm text-gray-600">
-                      <span className="font-medium">{t('pages:datasets.updated_date')}</span> {formatDate(dataset.updatedAt)}
-                    </div>
-                  )}
-                  
-                  <div className="pt-2">
-                    <Button 
-                      asChild 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full"
-                    >
-                      <Link to={`/datasets/${dataset.id}`}>
-                        {t('pages:datasets.open_dataset')}
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <DatasetListItem key={dataset.id} dataset={dataset} />
           ))}
         </div>
       )}

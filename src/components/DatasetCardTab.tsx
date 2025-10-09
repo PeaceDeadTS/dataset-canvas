@@ -20,6 +20,7 @@ interface DatasetCardTabProps {
   canUpload: boolean;
   onUploadSuccess: () => void;
   onVisibilityChange?: (newVisibility: boolean) => void;
+  onDescriptionUpdate?: (descriptionMarkdown: string) => void;
 }
 
 export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
@@ -27,6 +28,7 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
   canUpload,
   onUploadSuccess,
   onVisibilityChange,
+  onDescriptionUpdate,
 }) => {
   const { t } = useTranslation(['pages', 'common']);
   const { id } = useParams<{ id: string }>();
@@ -120,6 +122,11 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
         descriptionMarkdown: markdown,
         description: markdown.substring(0, 500) // Preview text
       }));
+      
+      // Notify parent component to update its state
+      if (onDescriptionUpdate) {
+        onDescriptionUpdate(markdown);
+      }
       
       toast.success(t('pages:dataset.description_updated', 'Description updated successfully'));
     } catch (error: any) {

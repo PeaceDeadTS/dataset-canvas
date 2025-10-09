@@ -126,6 +126,17 @@ const DatasetPage = () => {
     }
   };
 
+  const handleDescriptionUpdate = (descriptionMarkdown: string) => {
+    // Обновляем описание в локальном состоянии
+    if (dataset) {
+      setDataset({ 
+        ...dataset, 
+        descriptionMarkdown,
+        description: descriptionMarkdown.substring(0, 500)
+      });
+    }
+  };
+
   const getPaginationGroup = () => {
     const pageCount = totalPages;
     const currentPageLocal = currentPage;
@@ -199,6 +210,7 @@ const DatasetPage = () => {
               onLimitChange={updateLimit}
               onUploadSuccess={handleUploadSuccess}
               onVisibilityChange={handleVisibilityChange}
+              onDescriptionUpdate={handleDescriptionUpdate}
             />
           </div>
 

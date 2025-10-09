@@ -21,6 +21,7 @@ interface DatasetTabsProps {
   onLimitChange: (limit: number) => void;
   onUploadSuccess: () => void;
   onVisibilityChange?: (newVisibility: boolean) => void;
+  onDescriptionUpdate?: (descriptionMarkdown: string) => void;
 }
 
 export const DatasetTabs: React.FC<DatasetTabsProps> = ({
@@ -36,6 +37,7 @@ export const DatasetTabs: React.FC<DatasetTabsProps> = ({
   onLimitChange,
   onUploadSuccess,
   onVisibilityChange,
+  onDescriptionUpdate,
 }) => {
   const { t } = useTranslation(['pages', 'common']);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -95,6 +97,7 @@ export const DatasetTabs: React.FC<DatasetTabsProps> = ({
               canUpload={canUpload} 
               onUploadSuccess={onUploadSuccess} 
               onVisibilityChange={onVisibilityChange}
+              onDescriptionUpdate={onDescriptionUpdate}
             />
           </TabsContent>
           
