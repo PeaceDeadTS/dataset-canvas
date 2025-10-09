@@ -32,8 +32,8 @@ export class DatasetActivity {
   @JoinColumn({ name: 'userId' })
   user!: User;
 
-  @Column()
-  datasetId!: number;
+  @Column({ type: 'uuid' })
+  datasetId!: string;
 
   @ManyToOne(() => Dataset, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'datasetId' })

@@ -9,8 +9,8 @@ export class CreateDatasetActivity1758100000000 implements MigrationInterface {
       CREATE TABLE \`dataset_activity\` (
         \`id\` int NOT NULL AUTO_INCREMENT,
         \`activityType\` enum('dataset_created', 'file_uploaded') NOT NULL,
-        \`userId\` char(36) NOT NULL,
-        \`datasetId\` int NOT NULL,
+        \`userId\` uuid NOT NULL,
+        \`datasetId\` uuid NOT NULL,
         \`fileName\` varchar(255) NULL,
         \`imageCount\` int NULL,
         \`createdAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
