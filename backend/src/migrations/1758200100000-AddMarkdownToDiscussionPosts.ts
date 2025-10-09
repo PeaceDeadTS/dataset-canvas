@@ -4,46 +4,46 @@ export class AddMarkdownToDiscussionPosts1758200100000 implements MigrationInter
     name = 'AddMarkdownToDiscussionPosts1758200100000'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        // Add contentMarkdown column to discussion_posts table
+        // Add content_markdown column to discussion_posts table
         await queryRunner.query(`
             ALTER TABLE \`discussion_posts\` 
-            ADD \`contentMarkdown\` LONGTEXT NULL
+            ADD \`content_markdown\` LONGTEXT NULL
         `);
         
-        // Copy existing content to contentMarkdown as initial value
+        // Copy existing content to content_markdown as initial value
         await queryRunner.query(`
             UPDATE \`discussion_posts\` 
-            SET \`contentMarkdown\` = \`content\` 
+            SET \`content_markdown\` = \`content\` 
             WHERE \`content\` IS NOT NULL
         `);
         
-        // Add contentMarkdown to discussion_post_edit_history table
+        // Add contentMarkdown to discussion_edit_history table
         await queryRunner.query(`
-            ALTER TABLE \`discussion_post_edit_history\` 
-            ADD \`oldContentMarkdown\` LONGTEXT NULL,
-            ADD \`newContentMarkdown\` LONGTEXT NULL
+            ALTER TABLE \`discussion_edit_history\` 
+            ADD \`old_content_markdown\` LONGTEXT NULL,
+            ADD \`new_content_markdown\` LONGTEXT NULL
         `);
         
         // Copy existing content to markdown columns in history
         await queryRunner.query(`
-            UPDATE \`discussion_post_edit_history\` 
-            SET \`oldContentMarkdown\` = \`oldContent\`,
-                \`newContentMarkdown\` = \`newContent\`
+            UPDATE \`discussion_edit_history\` 
+            SET \`old_content_markdown\` = \`old_content\`,
+                \`new_content_markdown\` = \`new_content\`
         `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         // Remove markdown columns from edit history
         await queryRunner.query(`
-            ALTER TABLE \`discussion_post_edit_history\` 
-            DROP COLUMN \`oldContentMarkdown\`,
-            DROP COLUMN \`newContentMarkdown\`
+            ALTER TABLE \`discussion_edit_history\` 
+            DROP COLUMN \`old_content_markdown\`,
+            DROP COLUMN \`new_content_markdown\`
         `);
         
-        // Remove contentMarkdown column from posts
+        // Remove content_markdown column from posts
         await queryRunner.query(`
             ALTER TABLE \`discussion_posts\` 
-            DROP COLUMN \`contentMarkdown\`
+            DROP COLUMN \`content_markdown\`
         `);
     }
 }

@@ -36,7 +36,7 @@ export class DiscussionPost {
   @Column({ type: 'text' })
   content!: string;
 
-  @Column({ type: 'longtext', nullable: true })
+  @Column({ name: 'content_markdown', type: 'longtext', nullable: true })
   contentMarkdown?: string;
 
   // For replies - can be null if it's a top-level post
