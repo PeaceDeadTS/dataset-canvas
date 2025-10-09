@@ -7,29 +7,34 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Dataset, DatasetStatistics } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { Upload, FileText, BarChart3, Calendar, User, Lock, Globe, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Upload, FileText, BarChart3, Calendar, User, Lock, Globe, CheckCircle, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from '@/lib/axios';
 import { useParams } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DatasetCardTabProps {
   dataset: Dataset;
   canUpload: boolean;
   onUploadSuccess: () => void;
+  onVisibilityChange?: (newVisibility: boolean) => void;
 }
 
 export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
   dataset,
   canUpload,
   onUploadSuccess,
+  onVisibilityChange,
 }) => {
   const { t } = useTranslation(['pages', 'common']);
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [statistics, setStatistics] = useState<DatasetStatistics | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
   const [showAllResolutions, setShowAllResolutions] = useState(false);
+  const [togglingVisibility, setTogglingVisibility] = useState(false);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -90,6 +95,37 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
     return new Date(dateString).toLocaleDateString();
   };
 
+  const canChangeVisibility = user && (user.id === dataset.userId || user.role === 'Administrator');
+
+  const handleToggleVisibility = async () => {
+    if (!id || !canChangeVisibility) return;
+
+    const newVisibility = !dataset.isPublic;
+    
+    try {
+      setTogglingVisibility(true);
+      await axios.patch(`/datasets/${id}/visibility`, {
+        isPublic: newVisibility
+      });
+
+      toast.success(
+        newVisibility 
+          ? t('pages:dataset.visibility_changed_to_public')
+          : t('pages:dataset.visibility_changed_to_private')
+      );
+
+      // Уведомляем родительский компонент об изменении
+      if (onVisibilityChange) {
+        onVisibilityChange(newVisibility);
+      }
+    } catch (err: any) {
+      console.error('Failed to toggle visibility:', err);
+      toast.error(err.response?.data?.message || t('pages:dataset.visibility_change_error'));
+    } finally {
+      setTogglingVisibility(false);
+    }
+  };
+
   return (
     <div className="h-full overflow-y-auto">
       <div className="container mx-auto px-4 py-6" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
@@ -128,6 +164,27 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
                     <FileText className="w-3 h-3 mr-1" />
                     {dataset.format || 'CSV'}
                   </Badge>
+                )}
+                {canChangeVisibility && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleToggleVisibility}
+                    disabled={togglingVisibility}
+                    className="ml-auto"
+                  >
+                    {dataset.isPublic ? (
+                      <>
+                        <EyeOff className="w-4 h-4 mr-2" />
+                        {t('pages:dataset.make_private')}
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-4 h-4 mr-2" />
+                        {t('pages:dataset.make_public')}
+                      </>
+                    )}
+                  </Button>
                 )}
               </div>
 

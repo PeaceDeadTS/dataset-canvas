@@ -20,6 +20,7 @@ interface DatasetTabsProps {
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
   onUploadSuccess: () => void;
+  onVisibilityChange?: (newVisibility: boolean) => void;
 }
 
 export const DatasetTabs: React.FC<DatasetTabsProps> = ({
@@ -34,6 +35,7 @@ export const DatasetTabs: React.FC<DatasetTabsProps> = ({
   onPageChange,
   onLimitChange,
   onUploadSuccess,
+  onVisibilityChange,
 }) => {
   const { t } = useTranslation(['pages', 'common']);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -88,7 +90,12 @@ export const DatasetTabs: React.FC<DatasetTabsProps> = ({
 
         <div className="flex-1 min-h-0">
           <TabsContent value="dataset-card" className="h-full m-0 data-[state=inactive]:hidden">
-            <DatasetCardTab dataset={dataset} canUpload={canUpload} onUploadSuccess={onUploadSuccess} />
+            <DatasetCardTab 
+              dataset={dataset} 
+              canUpload={canUpload} 
+              onUploadSuccess={onUploadSuccess} 
+              onVisibilityChange={onVisibilityChange}
+            />
           </TabsContent>
           
           <TabsContent value="data-studio" className="h-full m-0 data-[state=inactive]:hidden">

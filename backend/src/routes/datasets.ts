@@ -1191,5 +1191,65 @@ router.get('/:id/export/kohya', checkJwtOptional, async (req: Request, res: Resp
   }
 });
 
+// PATCH /api/datasets/:id/visibility - Toggle dataset visibility (public/private)
+router.patch('/:id/visibility', checkJwt, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { isPublic } = req.body;
+  const userId = req.user?.userId;
+  const userRole = req.user?.role;
+
+  try {
+    const dataset = await datasetRepository.findOne({ 
+      where: { id },
+      relations: ['user']
+    });
+
+    if (!dataset) {
+      return res.status(404).json({ message: 'Dataset not found' });
+    }
+
+    // Authorization: owner or admin can change visibility
+    const isOwner = dataset.userId === userId;
+    const isAdmin = userRole === UserRole.ADMIN;
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: 'Access denied. Only dataset owner or administrator can change visibility.' });
+    }
+
+    // Validate isPublic parameter
+    if (typeof isPublic !== 'boolean') {
+      return res.status(400).json({ message: 'isPublic must be a boolean value' });
+    }
+
+    // Update visibility
+    const oldVisibility = dataset.isPublic;
+    dataset.isPublic = isPublic;
+    await datasetRepository.save(dataset);
+
+    logger.info('Dataset visibility changed', {
+      datasetId: id,
+      datasetName: dataset.name,
+      oldVisibility,
+      newVisibility: isPublic,
+      changedBy: userId,
+      changedByUsername: req.user?.username,
+      isAdmin
+    });
+
+    res.json({
+      message: 'Dataset visibility updated successfully',
+      dataset: {
+        id: dataset.id,
+        name: dataset.name,
+        isPublic: dataset.isPublic
+      }
+    });
+
+  } catch (error) {
+    logger.error(`Failed to change visibility for dataset ${id}`, { error });
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 
 export default router;

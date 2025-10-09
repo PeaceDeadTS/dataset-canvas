@@ -119,6 +119,13 @@ const DatasetPage = () => {
     updateCurrentPage(1);
   };
 
+  const handleVisibilityChange = (newVisibility: boolean) => {
+    // Обновляем локальное состояние датасета
+    if (dataset) {
+      setDataset({ ...dataset, isPublic: newVisibility });
+    }
+  };
+
   const getPaginationGroup = () => {
     const pageCount = totalPages;
     const currentPageLocal = currentPage;
@@ -191,6 +198,7 @@ const DatasetPage = () => {
               onPageChange={updateCurrentPage}
               onLimitChange={updateLimit}
               onUploadSuccess={handleUploadSuccess}
+              onVisibilityChange={handleVisibilityChange}
             />
           </div>
 
