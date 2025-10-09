@@ -146,7 +146,16 @@
     "diff_was": "Было",
     "diff_became": "Стало",
     "diff_added_chars": "+{{count}} символов",
-    "diff_removed_chars": "-{{count}} символов"
+    "diff_removed_chars": "-{{count}} символов",
+    "format_instructions_title": "Инструкции по форматам файлов",
+    "csv_format_title": "Формат CSV",
+    "csv_format_description": "Загрузите CSV файл с метаданными изображений. Каждая строка представляет одно изображение.",
+    "csv_required_columns": "Обязательные колонки",
+    "csv_optional_columns": "Опциональные колонки",
+    "coco_format_title": "Формат COCO JSON",
+    "coco_format_description": "Загрузите COCO JSON файл с массивами images и annotations. Стандартный формат датасета COCO.",
+    "coco_structure": "Структура JSON",
+    "coco_optional": "Опциональные поля"
   },
   "user": {
     "profile": "Профиль",

@@ -146,7 +146,16 @@
     "diff_was": "Was",
     "diff_became": "Became",
     "diff_added_chars": "+{{count}} characters",
-    "diff_removed_chars": "-{{count}} characters"
+    "diff_removed_chars": "-{{count}} characters",
+    "format_instructions_title": "File Format Instructions",
+    "csv_format_title": "CSV Format",
+    "csv_format_description": "Upload a CSV file containing image metadata. Each row represents one image.",
+    "csv_required_columns": "Required columns",
+    "csv_optional_columns": "Optional columns",
+    "coco_format_title": "COCO JSON Format",
+    "coco_format_description": "Upload a COCO JSON file with images and annotations arrays. Standard COCO dataset format.",
+    "coco_structure": "JSON structure",
+    "coco_optional": "Optional fields"
   },
   "user": {
     "profile": "Profile",
