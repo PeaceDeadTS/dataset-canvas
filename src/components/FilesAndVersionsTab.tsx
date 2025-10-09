@@ -6,9 +6,10 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dataset, DatasetFile } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { Download, FileText, Calendar } from 'lucide-react';
+import { Download, FileText, Calendar, FileDown } from 'lucide-react';
 import axios from '@/lib/axios';
 import { toast } from 'sonner';
+import { ExportDialog } from './ExportDialog';
 
 interface FilesAndVersionsTabProps {
   dataset: Dataset;
@@ -21,6 +22,7 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
   const [files, setFiles] = useState<DatasetFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -220,6 +222,39 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
             </CardContent>
           </Card>
 
+          {/* Export Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileDown className="h-5 w-5" />
+                {t('pages:dataset.export_title')}
+              </CardTitle>
+              <CardDescription>
+                {t('pages:dataset.export_description')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  {t('pages:dataset.export_info')}
+                </p>
+                <Button 
+                  onClick={() => setExportDialogOpen(true)}
+                  className="flex items-center gap-2"
+                  disabled={!dataset.imageCount || dataset.imageCount === 0}
+                >
+                  <FileDown className="h-4 w-4" />
+                  {t('pages:dataset.export_button')}
+                </Button>
+                {(!dataset.imageCount || dataset.imageCount === 0) && (
+                  <p className="text-xs text-muted-foreground">
+                    {t('pages:dataset.export_no_images')}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Version History (placeholder) */}
           <Card>
             <CardHeader>
@@ -237,6 +272,14 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
           </Card>
         </div>
       </div>
+
+      {/* Export Dialog */}
+      <ExportDialog 
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        datasetId={dataset.id}
+        datasetName={dataset.name}
+      />
     </div>
   );
 };

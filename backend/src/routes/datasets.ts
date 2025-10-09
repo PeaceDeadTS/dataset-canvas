@@ -21,6 +21,7 @@ import { Discussion } from '../entity/Discussion.entity';
 import { DiscussionPost } from '../entity/DiscussionPost.entity';
 import logger from '../logger';
 import { parseCOCOJSON, isCocoFormat } from '../utils/cocoParser';
+import { generateKohyaJSONL } from '../utils/exportHelper';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -1125,6 +1126,68 @@ router.get('/:id/contributors', async (req: Request, res: Response) => {
   } catch (error) {
     logger.error('Failed to fetch contributors', { error, datasetId: id });
     res.status(500).json({ message: 'Error fetching contributor statistics' });
+  }
+});
+
+// GET /api/datasets/:id/export/kohya - Export dataset in Kohya SS JSONL format
+router.get('/:id/export/kohya', checkJwtOptional, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = req.user?.userId;
+  const userRole = req.user?.role;
+
+  try {
+    // Find the dataset with its images
+    const dataset = await datasetRepository.findOne({
+      where: { id },
+      relations: ['user', 'images']
+    });
+
+    if (!dataset) {
+      return res.status(404).json({ message: 'Dataset not found' });
+    }
+
+    // Check visibility permissions
+    const isOwner = userId && dataset.user.id === userId;
+    const isAdmin = userRole === UserRole.ADMIN;
+    const canView = dataset.isPublic || isOwner || isAdmin;
+
+    if (!canView) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    // Check if dataset has images
+    if (!dataset.images || dataset.images.length === 0) {
+      return res.status(400).json({ message: 'Dataset has no images to export' });
+    }
+
+    // Prepare image data for export
+    const imageData = dataset.images.map(image => ({
+      url: image.url,
+      prompt: image.prompt
+    }));
+
+    // Generate JSONL content
+    const jsonlContent = generateKohyaJSONL(imageData);
+
+    // Set headers for file download
+    const filename = `${dataset.name.replace(/[^a-zA-Z0-9_-]/g, '_')}_kohya.jsonl`;
+    res.setHeader('Content-Type', 'application/jsonl');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', Buffer.byteLength(jsonlContent));
+
+    // Send the file
+    res.send(jsonlContent);
+
+    logger.info('Dataset exported to Kohya JSONL format', { 
+      datasetId: id, 
+      datasetName: dataset.name,
+      imageCount: dataset.images.length,
+      userId 
+    });
+
+  } catch (error) {
+    logger.error('Failed to export dataset', { error, datasetId: id });
+    res.status(500).json({ message: 'Error exporting dataset' });
   }
 });
 
