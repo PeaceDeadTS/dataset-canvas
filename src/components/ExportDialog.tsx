@@ -65,11 +65,17 @@ export const ExportDialog = ({ open, onOpenChange, datasetId, datasetName }: Exp
       });
 
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Export failed:', error);
+      
+      // Check if it's a 400 error (no images)
+      const errorMessage = error.response?.status === 400 
+        ? (error.response?.data?.message || t('pages.dataset.export_no_images'))
+        : t('pages.dataset.export.errorDescription');
+      
       toast({
         title: t('pages.dataset.export.error'),
-        description: t('pages.dataset.export.errorDescription'),
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

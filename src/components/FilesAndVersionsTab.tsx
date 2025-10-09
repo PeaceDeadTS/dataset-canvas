@@ -241,16 +241,10 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
                 <Button 
                   onClick={() => setExportDialogOpen(true)}
                   className="flex items-center gap-2"
-                  disabled={!dataset.imageCount || dataset.imageCount === 0}
                 >
                   <FileDown className="h-4 w-4" />
                   {t('pages:dataset.export_button')}
                 </Button>
-                {(!dataset.imageCount || dataset.imageCount === 0) && (
-                  <p className="text-xs text-muted-foreground">
-                    {t('pages:dataset.export_no_images')}
-                  </p>
-                )}
               </div>
             </CardContent>
           </Card>
