@@ -25,7 +25,7 @@ interface ExportDialogProps {
 type ExportFormat = 'kohya';
 
 export const ExportDialog = ({ open, onOpenChange, datasetId, datasetName }: ExportDialogProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['pages', 'common']);
   const { toast } = useToast();
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('kohya');
   const [isExporting, setIsExporting] = useState(false);
@@ -60,8 +60,8 @@ export const ExportDialog = ({ open, onOpenChange, datasetId, datasetName }: Exp
       window.URL.revokeObjectURL(url);
 
       toast({
-        title: t('pages.dataset.export.success'),
-        description: t('pages.dataset.export.successDescription'),
+        title: t('pages:dataset.export.success'),
+        description: t('pages:dataset.export.successDescription'),
       });
 
       onOpenChange(false);
@@ -70,11 +70,11 @@ export const ExportDialog = ({ open, onOpenChange, datasetId, datasetName }: Exp
       
       // Check if it's a 400 error (no images)
       const errorMessage = error.response?.status === 400 
-        ? (error.response?.data?.message || t('pages.dataset.export_no_images'))
-        : t('pages.dataset.export.errorDescription');
+        ? (error.response?.data?.message || t('pages:dataset.export_no_images'))
+        : t('pages:dataset.export.errorDescription');
       
       toast({
-        title: t('pages.dataset.export.error'),
+        title: t('pages:dataset.export.error'),
         description: errorMessage,
         variant: 'destructive',
       });
@@ -87,15 +87,15 @@ export const ExportDialog = ({ open, onOpenChange, datasetId, datasetName }: Exp
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{t('pages.dataset.export.title')}</DialogTitle>
+          <DialogTitle>{t('pages:dataset.export.title')}</DialogTitle>
           <DialogDescription>
-            {t('pages.dataset.export.description')}
+            {t('pages:dataset.export.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>{t('pages.dataset.export.formatLabel')}</Label>
+            <Label>{t('pages:dataset.export.formatLabel')}</Label>
             <RadioGroup value={selectedFormat} onValueChange={(value) => setSelectedFormat(value as ExportFormat)}>
               <div className="flex items-start space-x-3 rounded-md border p-4">
                 <RadioGroupItem value="kohya" id="kohya" className="mt-1" />
@@ -107,7 +107,7 @@ export const ExportDialog = ({ open, onOpenChange, datasetId, datasetName }: Exp
                     </div>
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    {t('pages.dataset.export.kohyaDescription')}
+                    {t('pages:dataset.export.kohyaDescription')}
                   </p>
                   <div className="mt-2 rounded-md bg-muted p-2 text-xs font-mono">
                     {'{"file_name": "path/to/image.jpg", "caption": "..."}'}
@@ -118,8 +118,8 @@ export const ExportDialog = ({ open, onOpenChange, datasetId, datasetName }: Exp
           </div>
 
           <div className="rounded-md bg-blue-50 dark:bg-blue-950 p-3 text-sm text-blue-900 dark:text-blue-100">
-            <p className="font-medium mb-1">{t('pages.dataset.export.noteTitle')}</p>
-            <p>{t('pages.dataset.export.noteContent')}</p>
+            <p className="font-medium mb-1">{t('pages:dataset.export.noteTitle')}</p>
+            <p>{t('pages:dataset.export.noteContent')}</p>
           </div>
         </div>
 
@@ -129,18 +129,18 @@ export const ExportDialog = ({ open, onOpenChange, datasetId, datasetName }: Exp
             onClick={() => onOpenChange(false)}
             disabled={isExporting}
           >
-            {t('common.cancel')}
+            {t('common:cancel')}
           </Button>
           <Button onClick={handleExport} disabled={isExporting}>
             {isExporting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t('pages.dataset.export.exporting')}
+                {t('pages:dataset.export.exporting')}
               </>
             ) : (
               <>
                 <Download className="mr-2 h-4 w-4" />
-                {t('pages.dataset.export.exportButton')}
+                {t('pages:dataset.export.exportButton')}
               </>
             )}
           </Button>
