@@ -6,7 +6,7 @@ import { UnifiedChange, UnifiedChangesResponse } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, ChevronLeft, ChevronRight, FileEdit, MessageSquare, Database } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, FileEdit, MessageSquare, Database, FolderPlus, Upload } from 'lucide-react';
 import { DiffViewer } from '@/components/DiffViewer';
 
 interface UserEditsTabProps {
@@ -268,6 +268,57 @@ const UserEditsTab = ({ userId }: UserEditsTabProps) => {
                         {t('userEdits.showDiff')}
                       </Button>
                     </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {change.type === 'dataset_created' && (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <FolderPlus className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-muted-foreground">{t('recentChanges.createdDataset')}</span>
+                  <Link 
+                    to={`/datasets/${change.data.dataset?.id}`}
+                    className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+                  >
+                    <Database className="w-4 h-4" />
+                    {change.data.dataset?.name}
+                  </Link>
+                </div>
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  <span>{formatDate(change.timestamp)}</span>
+                </div>
+              </>
+            )}
+
+            {change.type === 'file_uploaded' && (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <Upload className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-muted-foreground">{t('recentChanges.uploadedFile')}</span>
+                  <Link 
+                    to={`/datasets/${change.data.dataset?.id}?tab=data-studio`}
+                    className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+                  >
+                    <Database className="w-4 h-4" />
+                    {change.data.dataset?.name}
+                  </Link>
+                </div>
+                <div className="flex items-center text-sm text-muted-foreground mb-3">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  <span>{formatDate(change.timestamp)}</span>
+                </div>
+                <div className="bg-muted/30 rounded p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Upload className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium text-sm">{change.data.fileName}</span>
+                  </div>
+                  {change.data.imageCount && (
+                    <Badge variant="secondary" className="text-xs">
+                      {t('recentChanges.imagesUploaded', { count: change.data.imageCount })}
+                    </Badge>
                   )}
                 </div>
               </>

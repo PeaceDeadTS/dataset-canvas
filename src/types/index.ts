@@ -204,7 +204,7 @@ export interface DiscussionEditHistory {
 
 // Unified change types for Recent Changes and User Edits
 export interface UnifiedChange {
-    type: 'caption_edit' | 'discussion_created' | 'discussion_post' | 'post_edit';
+    type: 'caption_edit' | 'discussion_created' | 'discussion_post' | 'post_edit' | 'dataset_created' | 'file_uploaded';
     id: string;
     timestamp: string;
     user?: { id: number; username: string } | null;

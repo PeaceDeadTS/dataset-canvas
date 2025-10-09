@@ -7,7 +7,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, ChevronLeft, ChevronRight, User, Database, FileText, MessageSquare } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, User, Database, FileText, MessageSquare, FolderPlus, Upload } from 'lucide-react';
 import { DiffViewer } from '@/components/DiffViewer';
 
 const RecentChanges = () => {
@@ -349,6 +349,110 @@ const RecentChanges = () => {
                               {t('recentChanges.showDiff')}
                             </Button>
                           </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {change.type === 'dataset_created' && (
+                    <>
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        {change.user && (
+                          <Link
+                            to={`/users/${change.user.username}`}
+                            className="flex items-center space-x-1 text-sm font-medium hover:text-primary transition-colors"
+                          >
+                            <User className="w-4 h-4" />
+                            <span>{change.user.username}</span>
+                          </Link>
+                        )}
+                        <span className="text-muted-foreground text-sm">
+                          {t('recentChanges.createdDataset')}
+                        </span>
+                        <Link
+                          to={`/datasets/${change.dataset?.id}`}
+                          className="flex items-center space-x-1 text-sm font-medium hover:text-primary transition-colors"
+                        >
+                          <Database className="w-4 h-4" />
+                          <span className="truncate">{change.dataset?.name}</span>
+                        </Link>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>{formatDate(change.timestamp)}</span>
+                        </div>
+                        {change.dataset?.owner && (
+                          <span className="text-xs">
+                            {t('recentChanges.datasetBy')}{' '}
+                            <Link
+                              to={`/users/${change.dataset.owner.username}`}
+                              className="hover:text-primary transition-colors"
+                            >
+                              {change.dataset.owner.username}
+                            </Link>
+                          </span>
+                        )}
+                      </div>
+                      <Link
+                        to={`/datasets/${change.dataset?.id}`}
+                        className="bg-muted/30 rounded p-3 flex items-center gap-2 hover:bg-muted/50 transition-colors"
+                      >
+                        <FolderPlus className="w-4 h-4 text-primary" />
+                        <span className="font-medium">{t('recentChanges.viewDataset')}</span>
+                      </Link>
+                    </>
+                  )}
+
+                  {change.type === 'file_uploaded' && (
+                    <>
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        {change.user && (
+                          <Link
+                            to={`/users/${change.user.username}`}
+                            className="flex items-center space-x-1 text-sm font-medium hover:text-primary transition-colors"
+                          >
+                            <User className="w-4 h-4" />
+                            <span>{change.user.username}</span>
+                          </Link>
+                        )}
+                        <span className="text-muted-foreground text-sm">
+                          {t('recentChanges.uploadedFile')}
+                        </span>
+                        <Link
+                          to={`/datasets/${change.dataset?.id}?tab=data-studio`}
+                          className="flex items-center space-x-1 text-sm font-medium hover:text-primary transition-colors"
+                        >
+                          <Database className="w-4 h-4" />
+                          <span className="truncate">{change.dataset?.name}</span>
+                        </Link>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>{formatDate(change.timestamp)}</span>
+                        </div>
+                        {change.dataset?.owner && (
+                          <span className="text-xs">
+                            {t('recentChanges.datasetBy')}{' '}
+                            <Link
+                              to={`/users/${change.dataset.owner.username}`}
+                              className="hover:text-primary transition-colors"
+                            >
+                              {change.dataset.owner.username}
+                            </Link>
+                          </span>
+                        )}
+                      </div>
+                      <div className="bg-muted/30 rounded p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Upload className="w-4 h-4 text-primary" />
+                          <span className="font-medium text-sm">{change.data.fileName}</span>
+                        </div>
+                        {change.data.imageCount && (
+                          <Badge variant="secondary" className="text-xs">
+                            {t('recentChanges.imagesUploaded', { count: change.data.imageCount })}
+                          </Badge>
                         )}
                       </div>
                     </>

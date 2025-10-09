@@ -6,6 +6,7 @@ import { CaptionEditHistory } from '../entity/CaptionEditHistory.entity';
 import { Discussion } from '../entity/Discussion.entity';
 import { DiscussionPost } from '../entity/DiscussionPost.entity';
 import { DiscussionEditHistory } from '../entity/DiscussionEditHistory.entity';
+import { DatasetActivity, ActivityType } from '../entity/DatasetActivity.entity';
 import { checkJwtOptional, checkJwt } from '../middleware/checkJwt';
 import logger from '../logger';
 
@@ -270,6 +271,41 @@ router.get('/:id/edits', checkJwtOptional, async (req: Request, res: Response) =
             dataset: {
               id: edit.post.discussion.dataset.id,
               name: edit.post.discussion.dataset.name,
+            },
+          },
+        });
+      });
+    }
+
+    // Get dataset activities (created and file uploads)
+    if (type === 'all' || type === 'dataset_created' || type === 'file_uploaded') {
+      const activities = await AppDataSource.getRepository(DatasetActivity)
+        .createQueryBuilder('activity')
+        .leftJoinAndSelect('activity.dataset', 'dataset')
+        .where('activity.userId = :userId', { userId })
+        .orderBy('activity.createdAt', 'DESC')
+        .limit(limitNum * 2)
+        .getMany();
+
+      activities.forEach((activity) => {
+        const activityType = activity.activityType === ActivityType.DATASET_CREATED ? 'dataset_created' : 'file_uploaded';
+        
+        // Skip if filtering by specific type and this activity doesn't match
+        if (type !== 'all' && type !== activityType) {
+          return;
+        }
+
+        changes.push({
+          type: activityType,
+          id: `${activityType}_${activity.id}`,
+          timestamp: activity.createdAt,
+          data: {
+            datasetId: activity.datasetId,
+            fileName: activity.fileName,
+            imageCount: activity.imageCount,
+            dataset: {
+              id: activity.dataset.id,
+              name: activity.dataset.name,
             },
           },
         });

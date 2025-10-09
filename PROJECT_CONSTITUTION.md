@@ -423,23 +423,38 @@ This section provides a summary of the core features implemented in the applicat
     *   **Audit Trail**: All caption modifications logged with user ID, old/new values, and timestamps for compliance and accountability
     *   **Full Localization**: Complete i18n support for all UI components (English/Russian) including editor, history list, and diff viewer
 *   **User Edit History System**: MediaWiki-inspired user contribution tracking system for transparency and accountability:
-    *   **User Profile Edits Tab**: Dedicated tab in user profiles (`/users/:username?tab=edits`) displaying all caption edits made by the user
-    *   **Backend API Endpoint**: RESTful API endpoint (`GET /api/users/:id/edits`) with pagination support (page, limit parameters)
-    *   **Comprehensive Edit Display**: Each edit shows dataset name, image key (UUID), timestamp with relative formatting, and diff preview
-    *   **Expandable Diff Viewer**: Click-to-expand interface showing full MediaWiki-style color-coded differences between old and new captions
+    *   **User Profile Edits Tab**: Dedicated tab in user profiles (`/users/:username?tab=edits`) displaying all activities performed by the user
+    *   **Backend API Endpoint**: RESTful API endpoint (`GET /api/users/:id/edits`) with pagination support (page, limit parameters) and activity type filtering
+    *   **Comprehensive Activity Display**: Shows all user activity types including caption edits, discussions created/posted, post edits, datasets created, and files uploaded
+    *   **Activity Types Tracked**: Six activity types in user profiles:
+        *   `caption_edit` - Caption modifications with expandable diff viewer
+        *   `discussion_created` - Discussion threads created by user
+        *   `discussion_post` - Posts made by user in discussions
+        *   `post_edit` - Discussion post edits by user
+        *   `dataset_created` - Datasets created by user with direct links
+        *   `file_uploaded` - Files uploaded by user with filename and image count
+    *   **Expandable Diff Viewer**: Click-to-expand interface showing full MediaWiki-style color-coded differences for caption and post edits
     *   **Pagination Support**: Efficient pagination with configurable items per page (default 20, max 100) and proper page navigation
-    *   **Deep Linking**: Direct links from edits to specific datasets and Data Studio views for context
-    *   **TypeScript Type Safety**: Full type definitions for UserEdit interface and PaginatedResponse generic type
+    *   **Deep Linking**: Direct links from activities to specific datasets, Data Studio views, and discussion threads for context
+    *   **TypeScript Type Safety**: Full type definitions for UnifiedChange interface and PaginatedResponse generic type
 *   **Recent Changes System**: Global activity monitoring inspired by MediaWiki's Recent Changes for community transparency:
-    *   **Dedicated Page**: Standalone page (`/recent-changes`) accessible from Community navigation menu showing site-wide caption edits
-    *   **Backend API Endpoint**: Global endpoint (`GET /api/recent-changes`) aggregating edits from all users with pagination
-    *   **Rich Metadata Display**: Shows editor username, dataset name, dataset owner, image key, and relative timestamps for each change
-    *   **Advanced Query Joins**: Efficient database queries with proper join operations to User, DatasetImage, and Dataset entities
-    *   **Activity Timeline**: Chronologically ordered list of edits (newest first) with expandable diff viewers
-    *   **User Attribution**: Clear attribution showing "User edited Dataset" with clickable links to both user profiles and datasets
-    *   **Navigation Integration**: Prominent placement in Community menu with descriptive subtitle about tracking caption edits
+    *   **Dedicated Page**: Standalone page (`/recent-changes`) accessible from Community navigation menu showing site-wide activity
+    *   **Backend API Endpoint**: Global endpoint (`GET /api/recent-changes`) aggregating all activity types from all users with pagination
+    *   **Activity Types**: Comprehensive tracking of six activity types:
+        *   `caption_edit` - Caption modifications with MediaWiki-style diff viewer
+        *   `discussion_created` - New discussion threads with clickable links
+        *   `discussion_post` - Posts in discussions with content previews
+        *   `post_edit` - Discussion post edits with expandable diffs
+        *   `dataset_created` - Dataset creation events with direct links to datasets
+        *   `file_uploaded` - File uploads with filename and image count display
+    *   **DatasetActivity Entity**: Dedicated `DatasetActivity` entity for logging dataset creation and file upload events
+    *   **Rich Metadata Display**: Shows actor username, dataset name, dataset owner, image key (for caption edits), file names, image counts, and relative timestamps
+    *   **Advanced Query Joins**: Efficient database queries with proper join operations to User, DatasetImage, Dataset, Discussion, and DiscussionPost entities
+    *   **Activity Timeline**: Chronologically ordered list of all activities (newest first) with appropriate viewers (diff viewers for edits, content previews for posts, metadata for uploads)
+    *   **User Attribution**: Clear attribution showing "User [action] Dataset" with clickable links to both user profiles and datasets
+    *   **Navigation Integration**: Prominent placement in Community menu with descriptive subtitle about tracking all site activity
     *   **Performance Optimization**: Server-side pagination limiting results to 50 per page for optimal performance
-    *   **Complete Localization**: Full i18n support with relative time formatting ("2 hours ago", "3 days ago") in English and Russian
+    *   **Complete Localization**: Full i18n support with relative time formatting ("2 hours ago", "3 days ago") and all activity type descriptions in English and Russian
 
 ### 5.8. Dataset Visibility Management (Fully Implemented)
 
@@ -568,7 +583,9 @@ This section provides a summary of the core features implemented in the applicat
 
 ## Document Version History
 
-*Latest Update: October 2025 - Dataset Visibility Toggle Implementation: Deployed comprehensive visibility management system enabling seamless switching between public and private dataset states. Implemented backend API endpoint (`PATCH /api/datasets/:id/visibility`) with proper authorization checks ensuring only dataset owners and administrators can modify visibility settings. Frontend features include intuitive visibility toggle button in Dataset Card with Eye/EyeOff icons, real-time UI updates reflecting new visibility state without page refresh, and complete internationalization for all UI elements and toast notifications in English and Russian. System includes automatic state synchronization across parent components maintaining data consistency, visual badge updates reflecting current public/private status, and comprehensive access control validation on both frontend and backend. Fixed localization bug in user profile where "common.datasets" was displayed instead of translated text due to incorrect namespace separator. Enhanced user experience by making dataset author names clickable links to user profiles throughout the application. Updated PROJECT_CONSTITUTION.md to document complete visibility toggle architecture and user experience improvements.*
+*Latest Update: October 2025 - Activity Tracking System Enhancement: Expanded Recent Changes and User Edit History systems with comprehensive dataset activity tracking. Implemented new `DatasetActivity` entity for logging dataset creation and file upload events with dedicated migration (`1758100000000-CreateDatasetActivity`). Enhanced backend endpoints (`POST /api/datasets` and `POST /api/datasets/:id/upload`) to automatically log `dataset_created` and `file_uploaded` activities. Extended Recent Changes API (`GET /api/recent-changes`) and User Edits API (`GET /api/users/:id/edits`) to aggregate and display six activity types: caption edits, discussion creation/posts, post edits, dataset creation, and file uploads. Updated frontend components (RecentChanges page and UserEditsTab) with comprehensive UI for displaying new activity types including visual icons (FolderPlus, Upload), clickable dataset links, file metadata (filename, image count), and proper timestamp formatting. Added complete internationalization in English and Russian for all new activity type labels (`createdDataset`, `uploadedFile`, `viewDataset`, `imagesUploaded`). System now provides complete transparency of all user actions in the platform, from dataset management to content contributions. Updated PROJECT_CONSTITUTION.md to document expanded activity tracking architecture with detailed descriptions of all six activity types and their respective data structures.*
+
+*October 2025 - Dataset Visibility Toggle Implementation: Deployed comprehensive visibility management system enabling seamless switching between public and private dataset states. Implemented backend API endpoint (`PATCH /api/datasets/:id/visibility`) with proper authorization checks ensuring only dataset owners and administrators can modify visibility settings. Frontend features include intuitive visibility toggle button in Dataset Card with Eye/EyeOff icons, real-time UI updates reflecting new visibility state without page refresh, and complete internationalization for all UI elements and toast notifications in English and Russian. System includes automatic state synchronization across parent components maintaining data consistency, visual badge updates reflecting current public/private status, and comprehensive access control validation on both frontend and backend. Fixed localization bug in user profile where "common.datasets" was displayed instead of translated text due to incorrect namespace separator. Enhanced user experience by making dataset author names clickable links to user profiles throughout the application. Updated PROJECT_CONSTITUTION.md to document complete visibility toggle architecture and user experience improvements.*
 
 *January 2025 - Dataset Export System Implementation: Deployed professional export functionality enabling seamless integration with popular training frameworks. Implemented comprehensive backend infrastructure with export utility module (`backend/src/utils/exportHelper.ts`) providing smart URL-to-path conversion and JSONL generation, dedicated REST API endpoint (`GET /api/datasets/:id/export/kohya`) with proper authentication and access control, and intelligent path normalization removing domain/protocol while preserving directory structure. Added complete Kohya SS / sd-scripts format support generating standard-compliant JSONL with `file_name` and `caption` fields per line, designed for direct consumption by train_network.py scripts. Frontend implementation includes modern ExportDialog component with format selection radio buttons, visual format preview, informational notes about separate image downloads, loading states, and comprehensive error handling. Integrated export section into Files and Versions tab with dedicated card positioned below Dataset Files, providing one-click export with backend validation ensuring datasets have images. System features complete internationalization in English and Russian covering all UI elements, toast notifications, and error messages. Security implementation includes proper permission handling respecting dataset visibility rules, allowing private dataset export only by owner or administrators while enabling public dataset export for any authenticated user. Updated PROJECT_CONSTITUTION.md to document complete export system architecture.*
 

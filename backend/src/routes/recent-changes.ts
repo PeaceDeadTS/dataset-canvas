@@ -4,13 +4,14 @@ import { CaptionEditHistory } from '../entity/CaptionEditHistory.entity';
 import { Discussion } from '../entity/Discussion.entity';
 import { DiscussionPost } from '../entity/DiscussionPost.entity';
 import { DiscussionEditHistory } from '../entity/DiscussionEditHistory.entity';
+import { DatasetActivity, ActivityType } from '../entity/DatasetActivity.entity';
 import { checkJwtOptional } from '../middleware/checkJwt';
 import logger from '../logger';
 
 const router = Router();
 
 interface UnifiedChange {
-  type: 'caption_edit' | 'discussion_created' | 'discussion_post' | 'post_edit';
+  type: 'caption_edit' | 'discussion_created' | 'discussion_post' | 'post_edit' | 'dataset_created' | 'file_uploaded';
   id: string;
   timestamp: Date;
   user: { id: string; username: string } | null;
@@ -168,6 +169,47 @@ router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
             discussionTitle: edit.post.discussion.title,
             oldContent: edit.oldContent,
             newContent: edit.newContent,
+          },
+        });
+      });
+    }
+
+    // Get dataset activities (created and file uploads)
+    if (type === 'all' || type === 'dataset_created' || type === 'file_uploaded') {
+      const activities = await AppDataSource.getRepository(DatasetActivity)
+        .createQueryBuilder('activity')
+        .leftJoinAndSelect('activity.user', 'user')
+        .leftJoinAndSelect('activity.dataset', 'dataset')
+        .leftJoinAndSelect('dataset.user', 'datasetOwner')
+        .orderBy('activity.createdAt', 'DESC')
+        .limit(limitNum * 2)
+        .getMany();
+
+      activities.forEach((activity) => {
+        const activityType = activity.activityType === ActivityType.DATASET_CREATED ? 'dataset_created' : 'file_uploaded';
+        
+        // Skip if filtering by specific type and this activity doesn't match
+        if (type !== 'all' && type !== activityType) {
+          return;
+        }
+
+        changes.push({
+          type: activityType as 'dataset_created' | 'file_uploaded',
+          id: `${activityType}_${activity.id}`,
+          timestamp: activity.createdAt,
+          user: activity.user ? { id: activity.user.id, username: activity.user.username } : null,
+          dataset: {
+            id: activity.dataset.id,
+            name: activity.dataset.name,
+            owner: activity.dataset.user ? {
+              id: activity.dataset.user.id,
+              username: activity.dataset.user.username,
+            } : null,
+          },
+          data: {
+            datasetId: activity.datasetId,
+            fileName: activity.fileName,
+            imageCount: activity.imageCount,
           },
         });
       });

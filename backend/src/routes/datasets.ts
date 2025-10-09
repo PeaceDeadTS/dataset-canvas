@@ -19,6 +19,7 @@ import { PermissionType } from '../entity/Permission.entity';
 import { Like } from '../entity/Like.entity';
 import { Discussion } from '../entity/Discussion.entity';
 import { DiscussionPost } from '../entity/DiscussionPost.entity';
+import { DatasetActivity, ActivityType } from '../entity/DatasetActivity.entity';
 import logger from '../logger';
 import { parseCOCOJSON, isCocoFormat } from '../utils/cocoParser';
 import { generateKohyaJSONL } from '../utils/exportHelper';
@@ -30,6 +31,7 @@ const datasetRepository = AppDataSource.getRepository(Dataset);
 const userRepository = AppDataSource.getRepository(User);
 const imageRepository = AppDataSource.getRepository(DatasetImage);
 const fileRepository = AppDataSource.getRepository(DatasetFile);
+const activityRepository = AppDataSource.getRepository(DatasetActivity);
 
 // GET /api/datasets - Get all visible datasets with optional sorting
 router.get('/', checkJwtOptional, async (req: Request, res: Response) => {
@@ -164,6 +166,19 @@ router.post('/', checkJwt, async (req: Request, res: Response) => {
     });
 
     await datasetRepository.save(dataset);
+    
+    // Log dataset creation activity
+    try {
+      const activity = activityRepository.create({
+        activityType: ActivityType.DATASET_CREATED,
+        userId: userId,
+        datasetId: dataset.id,
+      });
+      await activityRepository.save(activity);
+      logger.info('Dataset creation activity logged', { datasetId: dataset.id, userId });
+    } catch (activityError) {
+      logger.error('Failed to log dataset creation activity', { datasetId: dataset.id, userId, error: activityError });
+    }
     
     // Important: load dataset with user relation for correct response
     const savedDataset = await datasetRepository.findOne({
@@ -344,6 +359,22 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
                 }
 
                 logger.info(`Successfully uploaded COCO file ${uniqueFilename} to dataset ${dataset.name}. Updated: ${updatedCount}, New: ${newCount}, Deleted: ${deletedCount}`);
+                
+                // Log file upload activity
+                try {
+                    const activity = activityRepository.create({
+                        activityType: ActivityType.FILE_UPLOADED,
+                        userId: userId!,
+                        datasetId: dataset.id,
+                        fileName: req.file.originalname,
+                        imageCount: imagesToSave.length,
+                    });
+                    await activityRepository.save(activity);
+                    logger.info('File upload activity logged', { datasetId: dataset.id, userId, imageCount: imagesToSave.length });
+                } catch (activityError) {
+                    logger.error('Failed to log file upload activity', { datasetId: dataset.id, userId, error: activityError });
+                }
+                
                 res.status(201).json({
                     message: `Successfully uploaded ${imagesToSave.length} images to dataset ${dataset.name}`,
                     format: 'coco',
@@ -444,6 +475,22 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
                         const finalNewCount = imagesToSave.length - finalUpdatedCount;
 
                         logger.info(`Successfully uploaded CSV file ${uniqueFilename} to dataset ${dataset.name}. Updated: ${finalUpdatedCount}, New: ${finalNewCount}, Deleted: ${imagesToDelete.length}`);
+                        
+                        // Log file upload activity
+                        try {
+                            const activity = activityRepository.create({
+                                activityType: ActivityType.FILE_UPLOADED,
+                                userId: userId!,
+                                datasetId: dataset.id,
+                                fileName: req.file!.originalname,
+                                imageCount: imagesToSave.length,
+                            });
+                            await activityRepository.save(activity);
+                            logger.info('File upload activity logged', { datasetId: dataset.id, userId, imageCount: imagesToSave.length });
+                        } catch (activityError) {
+                            logger.error('Failed to log file upload activity', { datasetId: dataset.id, userId, error: activityError });
+                        }
+                        
                         res.status(201).json({
                             message: `Successfully uploaded ${imagesToSave.length} images to dataset ${dataset.name}`,
                             format: 'csv',
