@@ -38,7 +38,7 @@ export const ExportDialog = ({ open, onOpenChange, datasetId, datasetName }: Exp
       
       switch (selectedFormat) {
         case 'kohya':
-          endpoint = `/api/datasets/${datasetId}/export/kohya`;
+          endpoint = `/datasets/${datasetId}/export/kohya`;
           filename = `${datasetName.replace(/[^a-zA-Z0-9_-]/g, '_')}_kohya.jsonl`;
           break;
         default:
