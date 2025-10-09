@@ -222,8 +222,8 @@ export const FilesAndVersionsTab: React.FC<FilesAndVersionsTabProps> = ({
             </CardContent>
           </Card>
 
-          {/* Export Section - Only visible when dataset has images */}
-          {dataset.imageCount > 0 && (
+          {/* Export Section - Only visible when dataset has uploaded files */}
+          {files.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
