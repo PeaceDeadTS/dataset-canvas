@@ -4,6 +4,9 @@ export class CreateDatasetActivity1758100000000 implements MigrationInterface {
   name = 'CreateDatasetActivity1758100000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Drop table if exists (in case of failed previous migration)
+    await queryRunner.query(`DROP TABLE IF EXISTS \`dataset_activity\``);
+    
     // Create dataset_activity table
     await queryRunner.query(`
       CREATE TABLE \`dataset_activity\` (
