@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Markdown styles */
+@import './styles/markdown.css';
+
 /* Design system for modern dataset management interface 
 All colors MUST be HSL. Inspired by professional data platforms.
 */

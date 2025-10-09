@@ -1,0 +1,125 @@
+/* Markdown Content Styles */
+.markdown-content {
+  color: hsl(var(--foreground));
+  line-height: 1.7;
+}
+
+.markdown-content > * + * {
+  margin-top: 1em;
+}
+
+/* Responsive images - handled by component */
+.markdown-content img {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  transition: border-color 0.2s;
+}
+
+.markdown-content img:hover {
+  border-color: hsl(var(--primary));
+}
+
+/* Links */
+.markdown-content a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-decoration-color: hsl(var(--primary) / 0.3);
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.2s;
+}
+
+.markdown-content a:hover {
+  text-decoration-color: hsl(var(--primary));
+}
+
+/* Code - handled by component but adding extra styles */
+.markdown-content code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.875em;
+}
+
+.markdown-content pre {
+  overflow-x: auto;
+  border-radius: var(--radius);
+}
+
+.markdown-content pre code {
+  font-size: 0.875rem;
+}
+
+/* Tables - handled by component */
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+}
+
+/* Blockquotes - handled by component */
+.markdown-content blockquote {
+  margin: 1.5em 0;
+}
+
+/* Lists - handled by component */
+.markdown-content ul,
+.markdown-content ol {
+  padding-left: 1.5em;
+}
+
+.markdown-content li {
+  margin: 0.25em 0;
+}
+
+/* Headings - handled by component but ensuring proper spacing */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  color: hsl(var(--foreground));
+}
+
+.markdown-content h1 {
+  border-bottom: 2px solid hsl(var(--border));
+  padding-bottom: 0.3em;
+}
+
+.markdown-content h2 {
+  border-bottom: 1px solid hsl(var(--border));
+  padding-bottom: 0.3em;
+}
+
+/* Horizontal Rule - handled by component */
+.markdown-content hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 2em 0;
+}
+
+/* Task Lists (GitHub Flavored Markdown) */
+.markdown-content input[type="checkbox"] {
+  margin-right: 0.5em;
+}
+
+/* Strikethrough */
+.markdown-content del {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Ensure proper spacing in nested elements */
+.markdown-content blockquote p {
+  margin: 0;
+}
+
+.markdown-content li p {
+  margin: 0.25em 0;
+}
+
+/* Dark mode adjustments are handled by Tailwind's dark: prefix in component */
+

@@ -36,6 +36,9 @@ export class DiscussionPost {
   @Column({ type: 'text' })
   content!: string;
 
+  @Column({ type: 'longtext', nullable: true })
+  contentMarkdown?: string;
+
   // For replies - can be null if it's a top-level post
   @ManyToOne(() => DiscussionPost, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'reply_to_id' })

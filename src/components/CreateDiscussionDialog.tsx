@@ -16,7 +16,7 @@ import { Label } from './ui/label';
 interface CreateDiscussionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateDiscussion: (title: string, content: string) => Promise<void>;
+  onCreateDiscussion: (title: string, content: string, contentMarkdown?: string) => Promise<void>;
 }
 
 export function CreateDiscussionDialog({
@@ -34,7 +34,7 @@ export function CreateDiscussionDialog({
 
     setIsSubmitting(true);
     try {
-      await onCreateDiscussion(title, content);
+      await onCreateDiscussion(title, content, content); // Send same content as markdown for now
       setTitle('');
       setContent('');
       onOpenChange(false);

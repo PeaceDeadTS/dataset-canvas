@@ -36,6 +36,12 @@ export class DiscussionEditHistory {
   @Column({ name: 'new_content', type: 'text' })
   newContent!: string;
 
+  @Column({ name: 'old_content_markdown', type: 'longtext', nullable: true })
+  oldContentMarkdown?: string;
+
+  @Column({ name: 'new_content_markdown', type: 'longtext', nullable: true })
+  newContentMarkdown?: string;
+
   @CreateDateColumn({ name: 'edited_at' })
   editedAt!: Date;
 }

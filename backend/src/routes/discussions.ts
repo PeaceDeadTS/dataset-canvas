@@ -102,7 +102,7 @@ router.post(
     try {
       const datasetId = req.params.datasetId;
       const userId = req.user!.userId;
-      const { title, content } = req.body;
+      const { title, content, contentMarkdown } = req.body;
 
       if (!title || !content) {
         return res
@@ -137,6 +137,7 @@ router.post(
         discussionId: discussion.id,
         authorId: userId,
         content,
+        contentMarkdown: contentMarkdown || content, // Use markdown if provided, otherwise use plain content
       });
       await postRepository.save(post);
 
@@ -226,7 +227,7 @@ router.post(
     try {
       const discussionId = Number(req.params.id);
       const userId = req.user!.userId;
-      const { content, replyToId } = req.body;
+      const { content, contentMarkdown, replyToId } = req.body;
 
       if (!content) {
         return res.status(400).json({ message: 'Content is required' });
@@ -252,6 +253,7 @@ router.post(
         discussionId,
         authorId: userId,
         content,
+        contentMarkdown: contentMarkdown || content, // Use markdown if provided, otherwise use plain content
         replyToId: replyToId || null,
       });
       await postRepository.save(post);
@@ -286,7 +288,7 @@ router.patch(
     try {
       const postId = Number(req.params.id);
       const userId = req.user!.userId;
-      const { content } = req.body;
+      const { content, contentMarkdown } = req.body;
 
       if (!content) {
         return res.status(400).json({ message: 'Content is required' });
@@ -311,11 +313,14 @@ router.patch(
         editorId: userId,
         oldContent: post.content,
         newContent: content,
+        oldContentMarkdown: post.contentMarkdown || post.content,
+        newContentMarkdown: contentMarkdown || content,
       });
       await historyRepository.save(history);
 
       // Update post
       post.content = content;
+      post.contentMarkdown = contentMarkdown || content;
       await postRepository.save(post);
 
       const updatedPost = await postRepository.findOne({

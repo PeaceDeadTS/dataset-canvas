@@ -19,6 +19,9 @@ export class Dataset {
   @Column('text', { nullable: true })
   description?: string;
 
+  @Column('longtext', { nullable: true })
+  descriptionMarkdown?: string;
+
   @Column({ type: 'boolean', default: true })
   isPublic!: boolean;
 

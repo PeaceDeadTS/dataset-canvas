@@ -10,6 +10,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ru, enUS } from 'date-fns/locale';
 import { PostEditHistory } from './PostEditHistory';
 import { PostLikesDisplay } from './PostLikesDisplay';
+import { MarkdownRenderer } from './MarkdownRenderer';
 import axios from '../lib/axios';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/use-toast';
@@ -182,7 +183,11 @@ export function DiscussionPostComponent({
 
       {/* Post content */}
       <div className="prose prose-sm max-w-none">
-        <p className="whitespace-pre-wrap">{post.content}</p>
+        {post.contentMarkdown ? (
+          <MarkdownRenderer content={post.contentMarkdown} className="text-sm" />
+        ) : (
+          <p className="whitespace-pre-wrap">{post.content}</p>
+        )}
       </div>
 
       {/* Post likes - показываем только если пост не удален */}

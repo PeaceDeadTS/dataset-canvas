@@ -58,6 +58,7 @@ export interface Dataset {
     id: string;
     name: string;
     description?: string;
+    descriptionMarkdown?: string; // Markdown version of description
     isPublic: boolean;
     format: DatasetFormat;
     user?: User; // Сделали опциональным для безопасности
@@ -180,6 +181,7 @@ export interface DiscussionPost {
     authorId: string;
     author?: User;
     content: string;
+    contentMarkdown?: string; // Markdown version of content
     replyToId: number | null;
     replyTo?: DiscussionPost | null;
     isDeleted: boolean;
@@ -199,6 +201,8 @@ export interface DiscussionEditHistory {
     editor?: User;
     oldContent: string;
     newContent: string;
+    oldContentMarkdown?: string; // Markdown version of old content
+    newContentMarkdown?: string; // Markdown version of new content
     editedAt: string;
 }
 

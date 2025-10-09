@@ -7,11 +7,13 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Dataset, DatasetStatistics } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { Upload, FileText, BarChart3, Calendar, User, Lock, Globe, CheckCircle, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Upload, FileText, BarChart3, Calendar, User, Lock, Globe, CheckCircle, AlertTriangle, Eye, EyeOff, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from '@/lib/axios';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { MarkdownRenderer } from './MarkdownRenderer';
+import { DatasetDescriptionEditor } from './DatasetDescriptionEditor';
 
 interface DatasetCardTabProps {
   dataset: Dataset;
@@ -35,6 +37,8 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
   const [loadingStats, setLoadingStats] = useState(true);
   const [showAllResolutions, setShowAllResolutions] = useState(false);
   const [togglingVisibility, setTogglingVisibility] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [localDataset, setLocalDataset] = useState(dataset);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -91,11 +95,39 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
     loadStatistics();
   }, [id]);
 
+  useEffect(() => {
+    setLocalDataset(dataset);
+  }, [dataset]);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
   };
 
   const canChangeVisibility = user && (user.id === dataset.userId || user.role === 'Administrator');
+  const canEditDescription = canChangeVisibility; // Same permission logic
+
+  const handleSaveDescription = async (markdown: string) => {
+    if (!id) return;
+    
+    try {
+      await axios.patch(`/datasets/${id}/description`, {
+        descriptionMarkdown: markdown
+      });
+      
+      // Update local state
+      setLocalDataset(prev => ({
+        ...prev,
+        descriptionMarkdown: markdown,
+        description: markdown.substring(0, 500) // Preview text
+      }));
+      
+      toast.success(t('pages:dataset.description_updated', 'Description updated successfully'));
+    } catch (error: any) {
+      console.error('Failed to update description:', error);
+      toast.error(error.response?.data?.message || t('pages:dataset.description_update_error', 'Failed to update description'));
+      throw error; // Re-throw to keep dialog open on error
+    }
+  };
 
   const handleToggleVisibility = async () => {
     if (!id || !canChangeVisibility) return;
@@ -212,11 +244,31 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold mb-2">{t('pages:dataset.description')}</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold">{t('pages:dataset.description')}</h3>
+                  {canEditDescription && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setIsEditingDescription(true)}
+                    >
+                      <Edit2 className="w-4 h-4 mr-2" />
+                      {t('common:edit', 'Edit')}
+                    </Button>
+                  )}
+                </div>
                 <div className="p-4 bg-muted/50 rounded-lg border-l-4 border-muted-foreground/20">
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {dataset.description || t('pages:datasets.no_description')}
-                  </p>
+                  {localDataset.descriptionMarkdown ? (
+                    <MarkdownRenderer content={localDataset.descriptionMarkdown} />
+                  ) : localDataset.description ? (
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {localDataset.description}
+                    </p>
+                  ) : (
+                    <p className="text-muted-foreground text-sm leading-relaxed italic">
+                      {t('pages:datasets.no_description')}
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -443,6 +495,14 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
           </Card>
         </div>
       </div>
+
+      {/* Description Editor Dialog */}
+      <DatasetDescriptionEditor
+        initialValue={localDataset.descriptionMarkdown || localDataset.description || ''}
+        isOpen={isEditingDescription}
+        onClose={() => setIsEditingDescription(false)}
+        onSave={handleSaveDescription}
+      />
     </div>
   );
 };

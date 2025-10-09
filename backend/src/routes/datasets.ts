@@ -1298,5 +1298,66 @@ router.patch('/:id/visibility', checkJwt, async (req: Request, res: Response) =>
   }
 });
 
+// PATCH /api/datasets/:id/description - Update dataset description (Markdown)
+router.patch('/:id/description', checkJwt, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { descriptionMarkdown } = req.body;
+  const userId = req.user?.userId;
+  const userRole = req.user?.role;
+
+  try {
+    const dataset = await datasetRepository.findOne({ 
+      where: { id },
+      relations: ['user']
+    });
+
+    if (!dataset) {
+      return res.status(404).json({ message: 'Dataset not found' });
+    }
+
+    // Authorization: owner or admin can edit description
+    const isOwner = dataset.userId === userId;
+    const isAdmin = userRole === UserRole.ADMIN;
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: 'Access denied. Only dataset owner or administrator can edit description.' });
+    }
+
+    // Validate descriptionMarkdown parameter
+    if (typeof descriptionMarkdown !== 'string') {
+      return res.status(400).json({ message: 'descriptionMarkdown must be a string' });
+    }
+
+    // Update description
+    dataset.descriptionMarkdown = descriptionMarkdown;
+    // Also update plain description for backward compatibility (strip markdown for preview)
+    dataset.description = descriptionMarkdown.substring(0, 500);
+    await datasetRepository.save(dataset);
+
+    logger.info('Dataset description updated', {
+      datasetId: id,
+      datasetName: dataset.name,
+      updatedBy: userId,
+      updatedByUsername: req.user?.username,
+      isAdmin,
+      descriptionLength: descriptionMarkdown.length
+    });
+
+    res.json({
+      message: 'Dataset description updated successfully',
+      dataset: {
+        id: dataset.id,
+        name: dataset.name,
+        description: dataset.description,
+        descriptionMarkdown: dataset.descriptionMarkdown
+      }
+    });
+
+  } catch (error) {
+    logger.error(`Failed to update description for dataset ${id}`, { error });
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 
 export default router;

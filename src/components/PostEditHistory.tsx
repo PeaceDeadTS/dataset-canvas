@@ -111,8 +111,8 @@ export function PostEditHistory({ postId }: PostEditHistoryProps) {
           {expandedHistoryId === entry.id && (
             <div className="mt-3">
               <DiffViewer
-                oldText={entry.oldContent}
-                newText={entry.newContent}
+                oldText={entry.oldContentMarkdown || entry.oldContent}
+                newText={entry.newContentMarkdown || entry.newContent}
               />
             </div>
           )}

@@ -245,5 +245,19 @@
     "saveChanges": "Save Changes",
     "cancel": "Cancel",
     "quote": "Quote"
+  },
+  "markdown": {
+    "supported": "Markdown Supported",
+    "bold": "bold text",
+    "italic": "italic text",
+    "strikethrough": "strikethrough text",
+    "link": "link text",
+    "image": "image alt text",
+    "code": "inline code",
+    "codeBlock": "code block",
+    "heading": "Heading",
+    "list": "List item",
+    "quote": "Blockquote",
+    "table": "Table"
   }
 }

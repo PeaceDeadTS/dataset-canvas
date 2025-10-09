@@ -60,10 +60,11 @@ export function DiscussionThread({
     }
   };
 
-  const handleReply = async (content: string) => {
+  const handleReply = async (content: string, contentMarkdown?: string) => {
     try {
       await axios.post(`/discussions/${discussionId}/posts`, {
         content,
+        contentMarkdown,
         replyToId: replyTo?.postId || null,
       });
       toast({ title: t('common:discussions.postCreateSuccess') });
@@ -87,11 +88,11 @@ export function DiscussionThread({
     }
   };
 
-  const handleSaveEdit = async (content: string) => {
+  const handleSaveEdit = async (content: string, contentMarkdown?: string) => {
     if (!editingPostId) return;
 
     try {
-      await axios.patch(`/posts/${editingPostId}`, { content });
+      await axios.patch(`/posts/${editingPostId}`, { content, contentMarkdown });
       toast({ title: t('common:discussions.postUpdateSuccess') });
       setEditingPostId(null);
       setEditingContent('');

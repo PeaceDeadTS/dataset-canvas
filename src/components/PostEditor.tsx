@@ -3,13 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Card } from './ui/card';
-import { X } from 'lucide-react';
+import { X, HelpCircle } from 'lucide-react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from './ui/popover';
 
 interface PostEditorProps {
   initialContent?: string;
   replyTo?: { username: string; content: string } | null;
   placeholder?: string;
-  onSubmit: (content: string) => Promise<void>;
+  onSubmit: (content: string, contentMarkdown?: string) => Promise<void>;
   onCancel?: () => void;
   submitLabel?: string;
 }
@@ -35,7 +40,8 @@ export function PostEditor({
 
     setIsSubmitting(true);
     try {
-      await onSubmit(content);
+      // Send both plain content and markdown (same for now, as users type markdown)
+      await onSubmit(content, content);
       setContent('');
     } catch (error) {
       console.error('Failed to submit:', error);
@@ -81,9 +87,32 @@ export function PostEditor({
       />
 
       <div className="flex items-center justify-between mt-3">
-        <p className="text-xs text-muted-foreground">
-          {t('common:discussions.quote')}: Ctrl+Enter
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-muted-foreground">
+            {t('common:discussions.quote')}: Ctrl+Enter
+          </p>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <HelpCircle className="h-3 w-3" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">{t('common:markdown.supported', 'Markdown Supported')}</h4>
+                <div className="text-xs space-y-1 text-muted-foreground">
+                  <p>**{t('common:markdown.bold', 'bold')}**</p>
+                  <p>*{t('common:markdown.italic', 'italic')}*</p>
+                  <p>~~{t('common:markdown.strikethrough', 'strikethrough')}~~</p>
+                  <p>[{t('common:markdown.link', 'link')}](url)</p>
+                  <p>![{t('common:markdown.image', 'image')}](url)</p>
+                  <p>`{t('common:markdown.code', 'code')}`</p>
+                  <p>```{t('common:markdown.codeBlock', 'code block')}```</p>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
         <div className="flex gap-2">
           {onCancel && (
             <Button
