@@ -10,8 +10,8 @@ import {
 } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
+import { MarkdownEditorField } from './MarkdownEditorField';
 
 interface CreateDiscussionDialogProps {
   open: boolean;
@@ -47,7 +47,7 @@ export function CreateDiscussionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>{t('discussions.createDiscussion')}</DialogTitle>
           <DialogDescription>
@@ -72,13 +72,13 @@ export function CreateDiscussionDialog({
 
           <div className="space-y-2">
             <Label htmlFor="content">{t('discussions.firstPost')}</Label>
-            <Textarea
-              id="content"
+            <MarkdownEditorField
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={setContent}
               placeholder={t('discussions.firstPostPlaceholder')}
-              rows={6}
               disabled={isSubmitting}
+              minHeight={300}
+              showTabs={true}
             />
             {content.trim() === '' && (
               <p className="text-xs text-destructive">{t('discussions.contentRequired')}</p>

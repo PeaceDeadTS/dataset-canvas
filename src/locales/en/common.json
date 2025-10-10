@@ -258,6 +258,10 @@
     "heading": "Heading",
     "list": "List item",
     "quote": "Blockquote",
-    "table": "Table"
+    "table": "Table",
+    "edit": "Edit",
+    "preview": "Preview",
+    "placeholder": "Write your message using Markdown...\n\n**bold**, *italic*, [link](url), ![image](url), `code`",
+    "noPreview": "Nothing to preview. Start writing in the Edit tab."
   }
 }

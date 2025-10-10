@@ -1,14 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
 import { Card } from './ui/card';
-import { X, HelpCircle } from 'lucide-react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from './ui/popover';
+import { X } from 'lucide-react';
+import { MarkdownEditorField } from './MarkdownEditorField';
 
 interface PostEditorProps {
   initialContent?: string;
@@ -50,14 +45,6 @@ export function PostEditor({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.ctrlKey) {
-      handleSubmit();
-    } else if (e.key === 'Escape' && onCancel) {
-      onCancel();
-    }
-  };
-
   return (
     <Card className="p-4">
       {replyTo && (
@@ -76,64 +63,35 @@ export function PostEditor({
         </div>
       )}
 
-      <Textarea
+      <MarkdownEditorField
         value={content}
-        onChange={(e) => setContent(e.target.value)}
-        onKeyDown={handleKeyDown}
+        onChange={setContent}
         placeholder={placeholder || t('common:discussions.replyPlaceholder')}
-        rows={4}
         disabled={isSubmitting}
-        className="resize-none"
+        minHeight={200}
+        showTabs={true}
       />
 
-      <div className="flex items-center justify-between mt-3">
-        <div className="flex items-center gap-2">
-          <p className="text-xs text-muted-foreground">
-            {t('common:discussions.quote')}: Ctrl+Enter
-          </p>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                <HelpCircle className="h-3 w-3" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm">{t('common:markdown.supported', 'Markdown Supported')}</h4>
-                <div className="text-xs space-y-1 text-muted-foreground">
-                  <p>**{t('common:markdown.bold', 'bold')}**</p>
-                  <p>*{t('common:markdown.italic', 'italic')}*</p>
-                  <p>~~{t('common:markdown.strikethrough', 'strikethrough')}~~</p>
-                  <p>[{t('common:markdown.link', 'link')}](url)</p>
-                  <p>![{t('common:markdown.image', 'image')}](url)</p>
-                  <p>`{t('common:markdown.code', 'code')}`</p>
-                  <p>```{t('common:markdown.codeBlock', 'code block')}```</p>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div className="flex gap-2">
-          {onCancel && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              {t('common:discussions.cancel')}
-            </Button>
-          )}
+      <div className="flex items-center justify-end gap-2 mt-3">
+        {onCancel && (
           <Button
+            variant="outline"
             size="sm"
-            onClick={handleSubmit}
-            disabled={!content.trim() || isSubmitting}
+            onClick={onCancel}
+            disabled={isSubmitting}
           >
-            {isSubmitting
-              ? t('common:loading')
-              : submitLabel || t('common:discussions.reply')}
+            {t('common:discussions.cancel')}
           </Button>
-        </div>
+        )}
+        <Button
+          size="sm"
+          onClick={handleSubmit}
+          disabled={!content.trim() || isSubmitting}
+        >
+          {isSubmitting
+            ? t('common:loading')
+            : submitLabel || t('common:discussions.reply')}
+        </Button>
       </div>
     </Card>
   );
