@@ -60,3 +60,36 @@ export function generateKohyaJSONL(images: Array<{ url: string; prompt: string }
   return lines.join('\n');
 }
 
+/**
+ * Generates plain text list of image URLs
+ * Each line contains one image URL
+ */
+export function generateURLListTXT(images: Array<{ url: string }>): string {
+  return images.map(image => image.url).join('\n');
+}
+
+/**
+ * Generates CSV list of image URLs with metadata
+ * Format: url,filename,width,height
+ */
+export function generateURLListCSV(
+  images: Array<{ 
+    url: string; 
+    filename: string;
+    width?: number;
+    height?: number;
+  }>
+): string {
+  const headers = 'url,filename,width,height';
+  const rows = images.map(image => {
+    // Escape commas and quotes in values
+    const url = `"${image.url.replace(/"/g, '""')}"`;
+    const filename = `"${image.filename.replace(/"/g, '""')}"`;
+    const width = image.width || '';
+    const height = image.height || '';
+    return `${url},${filename},${width},${height}`;
+  });
+  
+  return [headers, ...rows].join('\n');
+}
+

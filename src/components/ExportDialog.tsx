@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Download, FileJson, Loader2 } from 'lucide-react';
+import { Download, FileJson, Loader2, FileText, Table } from 'lucide-react';
 import axios from '@/lib/axios';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,7 +22,7 @@ interface ExportDialogProps {
   datasetName: string;
 }
 
-type ExportFormat = 'kohya';
+type ExportFormat = 'kohya' | 'url-list-txt' | 'url-list-csv';
 
 export const ExportDialog = ({ open, onOpenChange, datasetId, datasetName }: ExportDialogProps) => {
   const { t } = useTranslation(['pages', 'common']);
@@ -40,6 +40,14 @@ export const ExportDialog = ({ open, onOpenChange, datasetId, datasetName }: Exp
         case 'kohya':
           endpoint = `/datasets/${datasetId}/export/kohya`;
           filename = `${datasetName.replace(/[^a-zA-Z0-9_-]/g, '_')}_kohya.jsonl`;
+          break;
+        case 'url-list-txt':
+          endpoint = `/datasets/${datasetId}/export/url-list-txt`;
+          filename = `${datasetName.replace(/[^a-zA-Z0-9_-]/g, '_')}_urls.txt`;
+          break;
+        case 'url-list-csv':
+          endpoint = `/datasets/${datasetId}/export/url-list-csv`;
+          filename = `${datasetName.replace(/[^a-zA-Z0-9_-]/g, '_')}_urls.csv`;
           break;
         default:
           throw new Error('Unknown export format');
@@ -111,6 +119,45 @@ export const ExportDialog = ({ open, onOpenChange, datasetId, datasetName }: Exp
                   </p>
                   <div className="mt-2 rounded-md bg-muted p-2 text-xs font-mono">
                     {'{"file_name": "path/to/image.jpg", "caption": "..."}'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3 rounded-md border p-4">
+                <RadioGroupItem value="url-list-txt" id="url-list-txt" className="mt-1" />
+                <div className="flex-1 space-y-1">
+                  <Label htmlFor="url-list-txt" className="cursor-pointer font-medium">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      {t('pages:dataset.export.urlListTxtTitle')}
+                    </div>
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('pages:dataset.export.urlListTxtDescription')}
+                  </p>
+                  <div className="mt-2 rounded-md bg-muted p-2 text-xs font-mono">
+                    https://example.com/image1.jpg<br />
+                    https://example.com/image2.jpg<br />
+                    https://example.com/image3.jpg
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3 rounded-md border p-4">
+                <RadioGroupItem value="url-list-csv" id="url-list-csv" className="mt-1" />
+                <div className="flex-1 space-y-1">
+                  <Label htmlFor="url-list-csv" className="cursor-pointer font-medium">
+                    <div className="flex items-center gap-2">
+                      <Table className="h-4 w-4" />
+                      {t('pages:dataset.export.urlListCsvTitle')}
+                    </div>
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('pages:dataset.export.urlListCsvDescription')}
+                  </p>
+                  <div className="mt-2 rounded-md bg-muted p-2 text-xs font-mono">
+                    url,filename,width,height<br />
+                    "https://example.com/img.jpg","img.jpg",512,512
                   </div>
                 </div>
               </div>
