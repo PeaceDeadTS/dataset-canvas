@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
+import http from 'http';
 import { AppDataSource } from './data-source'; // Import AppDataSource
 import authRoutes from './routes/auth';
 import datasetsRoutes from './routes/datasets';
@@ -47,7 +48,17 @@ export async function startServer() {
 
     if (process.env.NODE_ENV !== 'test') {
       const port = process.env.PORT || 5000;
-      app.listen(port, () => {
+      const server = http.createServer(app);
+
+      const requestTimeoutMs = Number(process.env.SERVER_REQUEST_TIMEOUT_MS || 30 * 60 * 1000);
+      const headersTimeoutMs = Number(process.env.SERVER_HEADERS_TIMEOUT_MS || 31 * 60 * 1000);
+      const keepAliveTimeoutMs = Number(process.env.SERVER_KEEP_ALIVE_TIMEOUT_MS || 65 * 1000);
+
+      server.requestTimeout = requestTimeoutMs;
+      server.headersTimeout = headersTimeoutMs;
+      server.keepAliveTimeout = keepAliveTimeoutMs;
+
+      server.listen(port, () => {
         logger.info(`Server is running on port ${port}`);
       });
     }

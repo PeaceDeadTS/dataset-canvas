@@ -79,13 +79,18 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 0,
       });
       toast.success(response.data.message || t('pages:dataset.upload_success'));
       onUploadSuccess();
       // Перезагружаем статистику после успешной загрузки
       await loadStatistics();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || err.response?.data || t('pages:dataset.upload_error'));
+      if (err?.code === 'ECONNABORTED') {
+        toast.error(t('pages:dataset.upload_timeout'));
+      } else {
+        toast.error(err.response?.data?.message || err.response?.data || t('pages:dataset.upload_error'));
+      }
       console.error(err);
     } finally {
       setUploading(false);
