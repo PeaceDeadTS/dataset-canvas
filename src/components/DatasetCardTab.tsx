@@ -105,7 +105,7 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
     return new Date(dateString).toLocaleDateString();
   };
 
-  const canChangeVisibility = user && (user.id === dataset.userId || user.role === 'Administrator');
+  const canChangeVisibility = user && (user.id === dataset.user?.id || user.role === 'Administrator');
   const canEditDescription = canChangeVisibility; // Same permission logic
 
   const handleSaveDescription = async (markdown: string) => {
@@ -316,10 +316,22 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
                   <div className="space-y-2">
                     {statistics.resolutionStats
                       .slice(0, showAllResolutions ? statistics.resolutionStats.length : 5)
-                      .map(({ resolution, count, percentage }) => (
-                        <div key={resolution} className="flex items-center justify-between">
+                      .map(({ resolution, count, percentage, isQwenNative }) => (
+                        <div
+                          key={resolution}
+                          className={`flex items-center justify-between rounded-md px-2 py-1 -mx-2 ${
+                            isQwenNative
+                              ? 'bg-green-50/70 border border-green-200/60'
+                              : ''
+                          }`}
+                        >
                           <div className="flex items-center gap-2 min-w-0 flex-1">
                             <span className="text-sm font-mono truncate">{resolution}</span>
+                            {isQwenNative && (
+                              <Badge className="bg-green-600 text-white hover:bg-green-600">
+                                Qwen-Image native
+                              </Badge>
+                            )}
                             <span className="text-xs text-muted-foreground">
                               {count} {t('common:pairs')}, {percentage}%
                             </span>
@@ -354,28 +366,29 @@ export const DatasetCardTab: React.FC<DatasetCardTabProps> = ({
               {/* Training Compatibility Check */}
               {!loadingStats && statistics && (
                 <div className={`p-3 rounded-lg border ${
-                  statistics.divisibilityCheck.allDivisibleBy64 
+                  statistics.trainingCompatibilityCheck.allTrainingCompatible 
                     ? 'bg-green-50 border-green-200 text-green-800' 
                     : 'bg-yellow-50 border-yellow-200 text-yellow-800'
                 }`}>
                   <div className="flex items-center gap-2">
-                    {statistics.divisibilityCheck.allDivisibleBy64 ? (
+                    {statistics.trainingCompatibilityCheck.allTrainingCompatible ? (
                       <CheckCircle className="h-4 w-4" />
                     ) : (
                       <AlertTriangle className="h-4 w-4" />
                     )}
                     <span className="text-sm font-medium">
-                      {statistics.divisibilityCheck.allDivisibleBy64 
+                      {statistics.trainingCompatibilityCheck.allTrainingCompatible 
                         ? t('pages:dataset.training_compatible') 
                         : t('pages:dataset.training_warning')
                       }
                     </span>
                   </div>
-                  {!statistics.divisibilityCheck.allDivisibleBy64 && (
+                  {!statistics.trainingCompatibilityCheck.allTrainingCompatible && (
                     <p className="text-xs mt-1">
                       {t('pages:dataset.divisibility_details', {
-                        compatible: statistics.divisibilityCheck.divisibleCount,
-                        total: statistics.divisibilityCheck.totalCount
+                        compatible: statistics.trainingCompatibilityCheck.compatibleCount,
+                        total: statistics.trainingCompatibilityCheck.totalCount,
+                        qwenNative: statistics.trainingCompatibilityCheck.qwenNativeCount,
                       })}
                     </p>
                   )}

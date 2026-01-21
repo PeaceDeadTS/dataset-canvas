@@ -84,19 +84,21 @@ export interface ResolutionStat {
     resolution: string;
     count: number;
     percentage: number;
+    isQwenNative?: boolean;
 }
 
-export interface DivisibilityCheck {
-    allDivisibleBy64: boolean;
-    divisibleCount: number;
+export interface TrainingCompatibilityCheck {
+    allTrainingCompatible: boolean;
+    compatibleCount: number;
     totalCount: number;
+    qwenNativeCount: number;
 }
 
 export interface DatasetStatistics {
     totalSamples: number;
     resolutionStats: ResolutionStat[];
     avgPromptLength: number;
-    divisibilityCheck: DivisibilityCheck;
+    trainingCompatibilityCheck: TrainingCompatibilityCheck;
 }
 
 // User Edit types for caption editing history

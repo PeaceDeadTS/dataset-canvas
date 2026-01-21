@@ -87,7 +87,7 @@
     "show_less_resolutions": "Показать меньше разрешений",
     "training_compatible": "Совместимо с обучением",
     "training_warning": "Предупреждение о совместимости с обучением",
-    "divisibility_details": "{{compatible}} из {{total}} изображений имеют размеры, делящиеся на 64",
+    "divisibility_details": "{{compatible}} из {{total}} изображений совместимы: делятся на 64, либо это Qwen-Image native (делятся на 16). Qwen-Image native: {{qwenNative}}",
     "files_description": "Скачать оригинальные файлы и версии датасета",
     "files_description_csv": "Скачать оригинальные CSV файлы и версии датасета",
     "files_description_coco": "Скачать оригинальные COCO JSON файлы и версии датасета",

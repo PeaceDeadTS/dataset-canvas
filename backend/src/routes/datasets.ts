@@ -736,6 +736,16 @@ router.get('/:id/statistics', checkJwtOptional, async (req: Request, res: Respon
     const userRole = req.user?.role;
 
     try {
+        const QWEN_IMAGE_NATIVE_RESOLUTIONS = new Set<string>([
+            '1328x1328',
+            '1664x928',
+            '928x1664',
+            '1472x1104',
+            '1104x1472',
+            '1584x1056',
+            '1056x1584',
+        ]);
+
         const dataset = await datasetRepository.findOne({
             where: { id },
             relations: ['user']
@@ -762,24 +772,32 @@ router.get('/:id/statistics', checkJwtOptional, async (req: Request, res: Respon
                 totalSamples: 0,
                 resolutionStats: [],
                 avgPromptLength: 0,
-                divisibilityCheck: {
-                    allDivisibleBy64: true,
-                    divisibleCount: 0,
-                    totalCount: 0
-                }
+                trainingCompatibilityCheck: {
+                    allTrainingCompatible: true,
+                    compatibleCount: 0,
+                    totalCount: 0,
+                    qwenNativeCount: 0,
+                },
             });
         }
 
         // Calculate resolution statistics
         const resolutionMap = new Map<string, number>();
+        const qwenNativeResolutionSetInDataset = new Set<string>();
         let totalPromptLength = 0;
         let promptCount = 0;
-        let divisibleBy64Count = 0;
+        let trainingCompatibleCount = 0;
+        let qwenNativeImageCount = 0;
 
         images.forEach(image => {
             // Resolution statistics
             const resolution = `${image.width}x${image.height}`;
             resolutionMap.set(resolution, (resolutionMap.get(resolution) || 0) + 1);
+
+            const isQwenNativeResolution = QWEN_IMAGE_NATIVE_RESOLUTIONS.has(resolution);
+            if (isQwenNativeResolution) {
+                qwenNativeResolutionSetInDataset.add(resolution);
+            }
 
             // Prompt length statistics
             if (image.prompt && image.prompt.trim()) {
@@ -787,9 +805,16 @@ router.get('/:id/statistics', checkJwtOptional, async (req: Request, res: Respon
                 promptCount++;
             }
 
-            // Divisibility by 64 check
-            if (image.width % 64 === 0 && image.height % 64 === 0) {
-                divisibleBy64Count++;
+            // Training compatibility check
+            const isDivisibleBy64 = image.width % 64 === 0 && image.height % 64 === 0;
+            const isDivisibleBy16 = image.width % 16 === 0 && image.height % 16 === 0;
+            const isTrainingCompatible = isDivisibleBy64 || (isQwenNativeResolution && isDivisibleBy16);
+
+            if (isTrainingCompatible) {
+                trainingCompatibleCount++;
+            }
+            if (isQwenNativeResolution && isDivisibleBy16) {
+                qwenNativeImageCount++;
             }
         });
 
@@ -798,7 +823,8 @@ router.get('/:id/statistics', checkJwtOptional, async (req: Request, res: Respon
             .map(([resolution, count]) => ({
                 resolution,
                 count,
-                percentage: Math.round((count / totalSamples) * 100 * 100) / 100 // Round to 2 decimal places
+                percentage: Math.round((count / totalSamples) * 100 * 100) / 100, // Round to 2 decimal places
+                isQwenNative: qwenNativeResolutionSetInDataset.has(resolution),
             }))
             .sort((a, b) => b.count - a.count); // Sort by count descending
 
@@ -807,18 +833,19 @@ router.get('/:id/statistics', checkJwtOptional, async (req: Request, res: Respon
             ? Math.round((totalPromptLength / promptCount) * 100) / 100 
             : 0;
 
-        // Divisibility check
-        const allDivisibleBy64 = divisibleBy64Count === totalSamples;
+        // Training compatibility check
+        const allTrainingCompatible = trainingCompatibleCount === totalSamples;
 
         const statistics = {
             totalSamples,
             resolutionStats,
             avgPromptLength,
-            divisibilityCheck: {
-                allDivisibleBy64,
-                divisibleCount: divisibleBy64Count,
-                totalCount: totalSamples
-            }
+            trainingCompatibilityCheck: {
+                allTrainingCompatible,
+                compatibleCount: trainingCompatibleCount,
+                totalCount: totalSamples,
+                qwenNativeCount: qwenNativeImageCount,
+            },
         };
 
         res.json(statistics);
