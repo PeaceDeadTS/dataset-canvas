@@ -46,6 +46,9 @@ The project is architected with a distinct frontend and backend.
         *   **Removed Images**: Images present in the database but missing from the CSV are automatically deleted
         *   **Statistics Tracking**: Upload response includes detailed statistics (total, updated, new, deleted counts) for transparency
         *   This approach maintains stable image identifiers across dataset updates, essential for tracking edit history and maintaining data integrity in caption editing and discussion systems.
+    *   **Large Upload Resilience**: Upload requests are designed to work on slow connections and with large datasets:
+        *   **Frontend**: The upload request disables the default Axios timeout for `POST /api/datasets/:id/upload` (per-request `timeout: 0`) to avoid client-side aborts.
+        *   **Backend**: The server is started via `http.createServer(app)` and configures `requestTimeout`, `headersTimeout`, and `keepAliveTimeout` (env-configurable) to prevent premature termination of long-running uploads.
 
 ### 2.2. Authentication & Authorization
 
@@ -216,7 +219,10 @@ This section provides a summary of the core features implemented in the applicat
 *   **Role-Based Access Control (RBAC)**: Developed a full RBAC system (Administrator, Developer, User) that governs all API actions with proper middleware implementation.
 *   **CRUD API for Datasets**: Built a full CRUD API (`/api/datasets`) that respects RBAC rules for creating, reading, updating, and deleting datasets. The API properly handles user relations and authorization for private datasets. Enhanced with comprehensive statistics endpoint (`/api/datasets/:id/statistics`) providing:
     *   **Resolution Distribution Analytics**: Server-side calculation of image resolution statistics with percentage breakdowns and frequency sorting
-    *   **Training Compatibility Analysis**: Automatic validation for neural network training requirements (64px divisibility check)
+    *   **Training Compatibility Analysis**: Automatic validation for neural network training requirements:
+        *   Default rule: `width` and `height` must be divisible by 64
+        *   Exceptions: known `Qwen-Image native` resolutions are also treated as compatible if they are divisible by 16
+        *   UI highlights `Qwen-Image native` resolutions in the Resolution Distribution list with a distinct green badge
     *   **Prompt Length Metrics**: Average prompt length calculation for text-to-image dataset analysis
     *   **Performance Optimization**: Efficient database queries with proper error handling and access control
 *   **Private Dataset Support**: Full implementation of private dataset functionality with proper access control:
