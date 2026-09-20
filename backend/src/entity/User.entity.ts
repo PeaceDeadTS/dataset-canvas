@@ -46,7 +46,7 @@ export class User {
   @Column({ unique: true, type: 'varchar' })
   email!: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', select: false })
   password!: string;
 
   @Column({ default: UserRole.USER })
@@ -71,5 +71,17 @@ export class User {
 
   checkIfPasswordIsValid(password: string): boolean {
     return bcrypt.compareSync(password, this.password);
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      username: this.username,
+      email: this.email,
+      role: this.role,
+      theme: this.theme,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    };
   }
 }
