@@ -1,8 +1,10 @@
 import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs';
 import http from 'http';
-import { AppDataSource } from './data-source'; // Import AppDataSource
+import { AppDataSource } from './data-source';
+import { getCorsOrigin, getListenTarget, isUnixSocket } from './config';
 import authRoutes from './routes/auth';
 import datasetsRoutes from './routes/datasets';
 import usersRoutes from './routes/users';
@@ -13,11 +15,13 @@ import logger from './logger';
 
 const app = express();
 
+app.set('trust proxy', true);
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173', // Explicitly specify allowed origin
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allow all required methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allow required headers
-  exposedHeaders: ['token'], // Specify that frontend can read 'token' header
+  origin: getCorsOrigin(),
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['token'],
 }));
 app.use(express.json());
 
@@ -47,7 +51,7 @@ export async function startServer() {
     logger.info('Data Source has been initialized!');
 
     if (process.env.NODE_ENV !== 'test') {
-      const port = process.env.PORT || 5000;
+      const listenTarget = getListenTarget();
       const server = http.createServer(app);
 
       const requestTimeoutMs = Number(process.env.SERVER_REQUEST_TIMEOUT_MS || 30 * 60 * 1000);
@@ -58,9 +62,19 @@ export async function startServer() {
       server.headersTimeout = headersTimeoutMs;
       server.keepAliveTimeout = keepAliveTimeoutMs;
 
-      server.listen(port, () => {
-        logger.info(`Server is running on port ${port}`);
-      });
+      if (isUnixSocket(listenTarget)) {
+        if (fs.existsSync(listenTarget)) {
+          fs.unlinkSync(listenTarget);
+        }
+        server.listen(listenTarget, () => {
+          fs.chmodSync(listenTarget, 0o660);
+          logger.info(`Server is listening on unix socket ${listenTarget}`);
+        });
+      } else {
+        server.listen(listenTarget, () => {
+          logger.info(`Server is running on port ${listenTarget}`);
+        });
+      }
     }
   } catch (error) {
     logger.error('Error during Data Source initialization', { error });

@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSanitize from 'rehype-sanitize';
 import { MarkdownImageModal } from './MarkdownImageModal';
+import { publicMediaUrl } from '@/lib/mediaUrl';
 
 interface MarkdownRendererProps {
   content: string;
@@ -21,15 +22,16 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
           components={{
             // Custom image renderer with click-to-enlarge functionality
             img: ({ src, alt, ...props }) => {
+              const resolvedSrc = src ? publicMediaUrl(src) : src;
               const handleImageClick = () => {
-                if (src) {
-                  setImageModal({ src, alt: alt || 'Image' });
+                if (resolvedSrc) {
+                  setImageModal({ src: resolvedSrc, alt: alt || 'Image' });
                 }
               };
 
               return (
                 <img
-                  src={src}
+                  src={resolvedSrc}
                   alt={alt}
                   {...props}
                   className="inline-block max-w-full h-auto cursor-pointer rounded border border-border hover:border-primary transition-colors"

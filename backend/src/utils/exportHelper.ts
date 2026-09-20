@@ -5,7 +5,7 @@
 /**
  * Extracts file path from full URL by removing the domain and protocol
  * Examples:
- *   https://datasets.pbc.red/media/datasets/games/poker/games_poker_0002.png 
+ *   https://cdn2.pbc.wiki/media/datasets/games/poker/games_poker_0002.png 
  *   -> media/datasets/games/poker/games_poker_0002.png
  *   
  *   http://example.com/path/to/image.jpg

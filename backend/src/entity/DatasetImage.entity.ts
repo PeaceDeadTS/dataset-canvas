@@ -7,6 +7,7 @@ import {
   ManyToOne,
 } from "typeorm";
 import { Dataset } from "./Dataset.entity";
+import { rewritePublicMediaUrl } from "../utils/publicMediaUrl";
 
 @Entity()
 export class DatasetImage {
@@ -22,7 +23,12 @@ export class DatasetImage {
   @Column()
   filename!: string;
 
-  @Column()
+  @Column({
+    transformer: {
+      from: (value: string) => rewritePublicMediaUrl(value),
+      to: (value: string) => value,
+    },
+  })
   url!: string;
 
   @Column()

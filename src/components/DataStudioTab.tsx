@@ -12,6 +12,7 @@ import { CaptionHistoryList } from './CaptionHistoryList';
 import { useUserPermissions } from '@/hooks/use-user-permissions';
 import axios from '@/lib/axios';
 import { useToast } from '@/hooks/use-toast';
+import { publicMediaUrl } from '@/lib/mediaUrl';
 
 interface DataStudioTabProps {
   dataset: Dataset;
@@ -291,19 +292,19 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                           <TableCell className="py-4" onClick={(e) => { e.stopPropagation(); openLightbox(image); }}>
                             <div className="flex flex-col items-center gap-2 w-full min-w-0">
                               <LazyImage 
-                                src={image.url} 
+                                src={publicMediaUrl(image.url)} 
                                 alt={image.filename} 
                                 className="h-16 w-16 object-cover rounded flex-shrink-0" 
                               />
                               <a 
-                                href={image.url}
+                                href={publicMediaUrl(image.url)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
                                 className="text-xs text-muted-foreground hover:text-primary underline w-full text-center overflow-hidden text-ellipsis whitespace-nowrap"
-                                title={image.url}
+                                title={publicMediaUrl(image.url)}
                               >
-                                {new URL(image.url).pathname.split('/').pop()}
+                                {new URL(publicMediaUrl(image.url)).pathname.split('/').pop()}
                               </a>
                             </div>
                           </TableCell>
@@ -324,7 +325,7 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                         <div className="grid gap-4 py-4 max-h-[calc(90vh-10rem)] overflow-y-auto">
                            <div className="flex justify-center w-full">
                              <img 
-                               src={image.url} 
+                               src={publicMediaUrl(image.url)} 
                                alt={image.filename} 
                                className="max-w-full max-h-[40vh] sm:max-h-[45vh] md:max-h-[50vh] object-contain rounded-md"
                                loading="lazy"
@@ -338,12 +339,12 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
                             <div>
                               <p><strong>{t('common:imageDetails.url')}:</strong></p>
                               <a 
-                                href={image.url}
+                                href={publicMediaUrl(image.url)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-muted-foreground hover:text-primary break-all max-w-full text-xs underline"
                               >
-                                {image.url}
+                                {publicMediaUrl(image.url)}
                               </a>
                             </div>
                             <div className="space-y-2">
@@ -450,7 +451,7 @@ export const DataStudioTab: React.FC<DataStudioTabProps> = ({
           onClick={closeLightbox}
         >
           <img 
-            src={selectedImage.url} 
+            src={publicMediaUrl(selectedImage.url)} 
             alt={selectedImage.filename} 
             className="max-w-[90vw] max-h-[90vh] object-contain"
             loading="lazy"

@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { publicMediaUrl } from "@/lib/mediaUrl";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -21,7 +22,7 @@ export function extractMarkdownImages(markdown: string): Array<{ alt: string; ur
   while ((match = imageRegex.exec(markdown)) !== null) {
     images.push({
       alt: match[1] || '',
-      url: match[2]
+      url: publicMediaUrl(match[2])
     });
   }
   

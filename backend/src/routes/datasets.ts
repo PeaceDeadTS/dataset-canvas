@@ -23,6 +23,8 @@ import { DatasetActivity, ActivityType } from '../entity/DatasetActivity.entity'
 import logger from '../logger';
 import { parseCOCOJSON, isCocoFormat } from '../utils/cocoParser';
 import { generateKohyaJSONL, generateURLListTXT, generateURLListCSV } from '../utils/exportHelper';
+import { rewritePublicMediaUrl } from '../utils/publicMediaUrl';
+import { ensureUploadsDir, resolveStoredFilePath } from '../config';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -241,11 +243,7 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
             logger.info(`Dataset ${dataset.name} format set to ${detectedFormat}`);
         }
 
-        // Create uploads directory if it doesn't exist
-        const uploadsDir = path.join(process.cwd(), 'uploads');
-        if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-        }
+        const uploadsDir = ensureUploadsDir();
 
         // Generate unique filename
         const fileExtension = path.extname(req.file.originalname) || (isCoco ? '.json' : '.csv');
@@ -290,7 +288,7 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
 
                 existingImages.forEach(img => {
                     if (img.url) {
-                        existingImagesByUrl.set(img.url, img);
+                        existingImagesByUrl.set(rewritePublicMediaUrl(img.url), img);
                     }
                     if (img.cocoImageId) {
                         existingImagesByCocoId.set(img.cocoImageId, img);
@@ -300,19 +298,20 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
                 // Process parsed COCO images
                 parsedImages.forEach((parsedImg, index) => {
                     let imageToUpdate: DatasetImage | undefined;
+                    const normalizedUrl = rewritePublicMediaUrl(parsedImg.url);
 
                     // Try to match by cocoImageId first, then by URL
                     if (existingImagesByCocoId.has(parsedImg.cocoImageId)) {
                         imageToUpdate = existingImagesByCocoId.get(parsedImg.cocoImageId);
-                    } else if (existingImagesByUrl.has(parsedImg.url)) {
-                        imageToUpdate = existingImagesByUrl.get(parsedImg.url);
+                    } else if (existingImagesByUrl.has(normalizedUrl)) {
+                        imageToUpdate = existingImagesByUrl.get(normalizedUrl);
                     }
 
                     if (imageToUpdate) {
                         // Update existing image
                         imageToUpdate.row_number = index + 1;
                         imageToUpdate.filename = parsedImg.filename;
-                        imageToUpdate.url = parsedImg.url;
+                        imageToUpdate.url = normalizedUrl;
                         imageToUpdate.flickrUrl = parsedImg.flickrUrl;
                         imageToUpdate.width = parsedImg.width;
                         imageToUpdate.height = parsedImg.height;
@@ -327,7 +326,7 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
                         newImage.img_key = parsedImg.img_key;
                         newImage.row_number = index + 1;
                         newImage.filename = parsedImg.filename;
-                        newImage.url = parsedImg.url;
+                        newImage.url = normalizedUrl;
                         newImage.flickrUrl = parsedImg.flickrUrl;
                         newImage.width = parsedImg.width;
                         newImage.height = parsedImg.height;
@@ -341,7 +340,7 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
                     }
 
                     imagesToSave.push(imageToUpdate);
-                    processedUrls.add(parsedImg.url);
+                    processedUrls.add(normalizedUrl);
                 });
 
                 // Save all images
@@ -349,7 +348,7 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
 
                 // Delete images no longer in COCO file
                 const imagesToDelete = existingImages.filter(img => 
-                    img.url && !processedUrls.has(img.url)
+                    img.url && !processedUrls.has(rewritePublicMediaUrl(img.url))
                 );
 
                 if (imagesToDelete.length > 0) {
@@ -408,7 +407,7 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
 
             existingImages.forEach(img => {
                 if (img.url) {
-                    existingImagesByUrl.set(img.url, img);
+                    existingImagesByUrl.set(rewritePublicMediaUrl(img.url), img);
                 }
                 if (img.img_key) {
                     existingImagesByImgKey.set(img.img_key, img);
@@ -421,7 +420,7 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
             readable
                 .pipe(csv())
                 .on('data', (row) => {
-                    const url = row.url;
+                    const url = rewritePublicMediaUrl(row.url);
                     const csvImgKey = row.img_key;
 
                     let imageToUpdate: DatasetImage | undefined;
@@ -463,7 +462,7 @@ router.post('/:id/upload', checkJwt, upload.single('file'), async (req: Request,
                         await imageRepository.save(imagesToSave);
 
                         const imagesToDelete = existingImages.filter(img =>
-                            img.url && !processedUrls.has(img.url)
+                            img.url && !processedUrls.has(rewritePublicMediaUrl(img.url))
                         );
 
                         if (imagesToDelete.length > 0) {
@@ -699,9 +698,11 @@ router.get('/:id/files/:fileId/download', checkJwtOptional, async (req: Request,
             return res.status(404).json({ error: 'File not found' });
         }
 
+        const diskPath = resolveStoredFilePath(file.filePath);
+
         // Check if file exists on disk
-        if (!fs.existsSync(file.filePath)) {
-            logger.error(`File not found on disk: ${file.filePath}`);
+        if (!fs.existsSync(diskPath)) {
+            logger.error(`File not found on disk: ${file.filePath} (resolved: ${diskPath})`);
             return res.status(404).json({ error: 'File not found on disk' });
         }
 
@@ -711,11 +712,11 @@ router.get('/:id/files/:fileId/download', checkJwtOptional, async (req: Request,
         res.setHeader('Content-Length', file.size);
 
         // Stream the file
-        const fileStream = fs.createReadStream(file.filePath);
+        const fileStream = fs.createReadStream(diskPath);
         fileStream.pipe(res);
 
         fileStream.on('error', (error) => {
-            logger.error(`Error streaming file ${file.filePath}`, { error });
+            logger.error(`Error streaming file ${diskPath}`, { error });
             if (!res.headersSent) {
                 res.status(500).json({ error: 'Error downloading file' });
             }
