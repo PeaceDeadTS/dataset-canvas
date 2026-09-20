@@ -20,19 +20,37 @@ export function ensureUploadsDir(): string {
   return dir;
 }
 
+function isInsideUploads(resolved: string): boolean {
+  const uploads = path.resolve(getUploadsDir());
+  const rel = path.relative(uploads, resolved);
+  return rel !== '' && !rel.startsWith('..') && !path.isAbsolute(rel);
+}
+
 /**
  * Resolve a DatasetFile path after the uploads directory moved.
- * Prefer the stored absolute path; fall back to UPLOADS_DIR + basename.
+ * Only paths inside UPLOADS_DIR are returned.
  */
 export function resolveStoredFilePath(storedPath: string): string {
-  if (storedPath && fs.existsSync(storedPath)) {
-    return storedPath;
+  if (!storedPath) {
+    return '';
   }
-  const fallback = path.join(getUploadsDir(), path.basename(storedPath || ''));
-  if (storedPath && fs.existsSync(fallback)) {
-    return fallback;
+
+  const uploads = path.resolve(getUploadsDir());
+  const candidates = [
+    path.resolve(storedPath),
+    path.resolve(uploads, path.basename(storedPath)),
+  ];
+
+  for (const candidate of candidates) {
+    if (!isInsideUploads(candidate)) {
+      continue;
+    }
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
   }
-  return storedPath;
+
+  return '';
 }
 
 export function getListenTarget(): string | number {

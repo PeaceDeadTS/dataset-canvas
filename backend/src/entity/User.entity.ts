@@ -66,7 +66,7 @@ export class User {
   updatedAt!: Date;
 
   hashPassword() {
-    this.password = bcrypt.hashSync(this.password, 8);
+    this.password = bcrypt.hashSync(this.password, 12);
   }
 
   checkIfPasswordIsValid(password: string): boolean {
@@ -77,7 +77,6 @@ export class User {
     return {
       id: this.id,
       username: this.username,
-      email: this.email,
       role: this.role,
       theme: this.theme,
       createdAt: this.createdAt,

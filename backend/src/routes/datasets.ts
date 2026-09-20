@@ -25,9 +25,14 @@ import { parseCOCOJSON, isCocoFormat } from '../utils/cocoParser';
 import { generateKohyaJSONL, generateURLListTXT, generateURLListCSV } from '../utils/exportHelper';
 import { rewritePublicMediaUrl } from '../utils/publicMediaUrl';
 import { ensureUploadsDir, resolveStoredFilePath } from '../config';
+import { contentDispositionAttachment } from '../utils/httpFilename';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 200 * 1024 * 1024 },
+});
 
 const datasetRepository = AppDataSource.getRepository(Dataset);
 const userRepository = AppDataSource.getRepository(User);
@@ -708,7 +713,7 @@ router.get('/:id/files/:fileId/download', checkJwtOptional, async (req: Request,
 
         // Set headers for file download
         res.setHeader('Content-Type', file.mimeType || 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
+        res.setHeader('Content-Disposition', contentDispositionAttachment(file.originalName));
         res.setHeader('Content-Length', file.size);
 
         // Stream the file
@@ -1247,7 +1252,7 @@ router.get('/:id/export/kohya', checkJwtOptional, async (req: Request, res: Resp
     // Set headers for file download
     const filename = `${dataset.name.replace(/[^a-zA-Z0-9_-]/g, '_')}_kohya.jsonl`;
     res.setHeader('Content-Type', 'application/jsonl');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Disposition', contentDispositionAttachment(filename));
     res.setHeader('Content-Length', Buffer.byteLength(jsonlContent));
 
     // Send the file
@@ -1303,7 +1308,7 @@ router.get('/:id/export/url-list-txt', checkJwtOptional, async (req: Request, re
     // Set headers for file download
     const filename = `${dataset.name.replace(/[^a-zA-Z0-9_-]/g, '_')}_urls.txt`;
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Disposition', contentDispositionAttachment(filename));
     res.setHeader('Content-Length', Buffer.byteLength(txtContent));
 
     // Send the file
@@ -1367,7 +1372,7 @@ router.get('/:id/export/url-list-csv', checkJwtOptional, async (req: Request, re
     // Set headers for file download
     const filename = `${dataset.name.replace(/[^a-zA-Z0-9_-]/g, '_')}_urls.csv`;
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Disposition', contentDispositionAttachment(filename));
     res.setHeader('Content-Length', Buffer.byteLength(csvContent));
 
     // Send the file

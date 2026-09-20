@@ -5,6 +5,7 @@ import fs from 'fs';
 import http from 'http';
 import { AppDataSource } from './data-source';
 import { getCorsOrigin, getListenTarget, isUnixSocket } from './config';
+import { getJwtSecret } from './auth/jwt';
 import authRoutes from './routes/auth';
 import datasetsRoutes from './routes/datasets';
 import usersRoutes from './routes/users';
@@ -15,7 +16,15 @@ import logger from './logger';
 
 const app = express();
 
+app.disable('x-powered-by');
 app.set('trust proxy', true);
+
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 app.use(cors({
   origin: getCorsOrigin(),
@@ -23,7 +32,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['token'],
 }));
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/datasets', datasetsRoutes);
@@ -47,7 +56,8 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
 
 export async function startServer() {
   try {
-    await AppDataSource.initialize(); // Use AppDataSource
+    getJwtSecret();
+    await AppDataSource.initialize();
     logger.info('Data Source has been initialized!');
 
     if (process.env.NODE_ENV !== 'test') {

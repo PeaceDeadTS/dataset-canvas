@@ -1,13 +1,26 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import { AppDataSource } from '../data-source'; // Импортируем AppDataSource
+import { AppDataSource } from '../data-source';
 import { User, UserRole } from '../entity/User.entity';
 import { Permission } from '../entity/Permission.entity';
+import { signAccessToken } from '../auth/jwt';
+import { rateLimit } from '../auth/rateLimit';
 import logger from '../logger';
-import { Request, Response } from 'express';
 
 const router = Router();
+const authLimit = rateLimit({ windowMs: 15 * 60 * 1000, max: 8, keyPrefix: 'auth' });
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_RE = /^[a-zA-Z0-9_.-]{3,32}$/;
+const MIN_PASSWORD_LENGTH = 10;
+
+function registrationEnabled(): boolean {
+  const raw = process.env.ALLOW_REGISTRATION;
+  if (raw === undefined || raw === '') {
+    return true;
+  }
+  return raw === '1' || raw.toLowerCase() === 'true';
+}
 
 /**
  * Default permissions granted to all new users upon registration
@@ -21,11 +34,24 @@ const DEFAULT_USER_PERMISSIONS = [
 ];
 
 // POST /api/auth/register
-router.post('/register', async (req, res) => {
+router.post('/register', authLimit, async (req, res) => {
+  if (!registrationEnabled()) {
+    return res.status(403).send('Registration is disabled');
+  }
+
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
     return res.status(400).send('Username, email, and password are required');
+  }
+  if (!USERNAME_RE.test(String(username))) {
+    return res.status(400).send('Username must be 3-32 characters: letters, numbers, _ . -');
+  }
+  if (!EMAIL_RE.test(String(email))) {
+    return res.status(400).send('Invalid email');
+  }
+  if (String(password).length < MIN_PASSWORD_LENGTH) {
+    return res.status(400).send(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
   }
 
   try {
@@ -81,7 +107,7 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /api/auth/login
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', authLimit, async (req: Request, res: Response) => {
   const { email, password, rememberMe } = req.body;
 
   if (!email || !password) {
@@ -89,20 +115,19 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 
   try {
-    // Check if user exists and password is correct
-    const user = await AppDataSource.manager.findOne(User, { where: { email: req.body.email }, select: ['id', 'email', 'role', 'password', 'username'] });
+    const user = await AppDataSource.manager.findOne(User, {
+      where: { email },
+      select: ['id', 'email', 'role', 'password', 'username'],
+    });
     if (!user) return res.status(401).send('Invalid credentials');
 
-    const validPassword = await bcrypt.compare(req.body.password, user.password);
+    const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(401).send('Invalid credentials');
 
-    // Sign JWT with different expiration time based on rememberMe
-    // If rememberMe is true, token lasts 30 days, otherwise 1 hour
     const expiresIn = rememberMe ? '30d' : '1h';
-    const token = jwt.sign(
+    const token = signAccessToken(
       { userId: user.id, email: user.email, role: user.role, username: user.username },
-      process.env.JWT_SECRET!,
-      { expiresIn }
+      expiresIn
     );
 
     res.json({ token });

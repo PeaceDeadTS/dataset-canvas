@@ -6,6 +6,10 @@ import { vi } from 'vitest';
 
 const execAsync = promisify(exec);
 
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'test-jwt-secret-at-least-32-chars!!';
+}
+
 let testDataSource: DataSource;
 
 // Create a mutable copy of the connection options

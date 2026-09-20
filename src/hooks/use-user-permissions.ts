@@ -23,7 +23,7 @@ export const useUserPermissions = () => {
       }
 
       try {
-        const response = await axios.get(`/permissions/user/${user.userId}`);
+        const response = await axios.get(`/permissions/user/${user.id}`);
         setPermissions(response.data.permissions || []);
       } catch (error) {
         console.error('Error loading permissions:', error);
