@@ -21,7 +21,7 @@ export function ensureUploadsDir(): string {
 }
 
 /**
- * Resolve a DatasetFile path after the /mnt/d -> /mnt/e move.
+ * Resolve a DatasetFile path after the uploads directory moved.
  * Prefer the stored absolute path; fall back to UPLOADS_DIR + basename.
  */
 export function resolveStoredFilePath(storedPath: string): string {

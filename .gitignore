@@ -15,6 +15,11 @@ dist-ssr
 uploads
 .codegraph
 
+# Production ops stay in the private mediawiki sandbox, not this public repo
+BUNNY-PULLZONE.md
+dataset-canvas-backend.service
+nginx-*.conf
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
